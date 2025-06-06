@@ -136,6 +136,12 @@ class APIClient {
         });
     }
 
+    async claimTask(taskId) {
+        return this.request(`/tasks/${taskId}/claim`, {
+            method: 'POST',
+        });
+    }
+
     async updateTaskStatus(taskId, status) {
         return this.request(`/tasks/${taskId}/status`, {
             method: 'PUT',

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Boolean
+from sqlalchemy import Column, String, Boolean, Integer, JSON
 from passlib.context import CryptContext
 from .base import BaseModel
 
@@ -12,6 +12,10 @@ class User(BaseModel):
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
     is_online = Column(Boolean, default=False, nullable=False)
+    impact_score = Column(Integer, default=0, nullable=False)
+    skills = Column(JSON, default=list)  # List of user's skills
+    role = Column(String, nullable=True)  # e.g., "Ecosystem Designer", "Data Analyst"
+    status = Column(String, default="available")  # available, busy
     
     def set_password(self, password: str):
         self.hashed_password = pwd_context.hash(password)

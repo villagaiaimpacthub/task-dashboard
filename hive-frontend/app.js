@@ -38,6 +38,7 @@ class HIVEApp {
         document.getElementById('loginForm').addEventListener('submit', (e) => this.handleLogin(e));
         document.getElementById('registerForm').addEventListener('submit', (e) => this.handleRegister(e));
         document.getElementById('logoutBtn').addEventListener('click', () => this.handleLogout());
+        document.getElementById('logoutBtnInsideModal').addEventListener('click', () => this.handleLogout());
 
         // Auth tabs
         document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -48,6 +49,9 @@ class HIVEApp {
         document.getElementById('createTaskBtn').addEventListener('click', () => this.showTaskModal());
         document.getElementById('fabBtn').addEventListener('click', () => this.showTaskModal());
         document.getElementById('taskForm').addEventListener('submit', (e) => this.handleCreateTask(e));
+        document.getElementById('settingsBtn').addEventListener('click', () => this.showSettingsModal());
+        document.getElementById('addSkillForm').addEventListener('submit', (e) => this.handleAddSkill(e));
+        document.getElementById('currentSkills').addEventListener('click', (e) => this.handleRemoveSkill(e));
 
         // Filters
         document.querySelectorAll('.filter-item').forEach(item => {
@@ -71,6 +75,14 @@ class HIVEApp {
                     this.closeModal(e);
                 }
             });
+        });
+
+        // Skill tag filtering
+        const skillsContainer = document.querySelector('.sidebar .filter-group:last-of-type');
+        skillsContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('skill-tag')) {
+                this.handleSkillFilterClick(e.target);
+            }
         });
     }
 
@@ -175,8 +187,18 @@ class HIVEApp {
     updateUserInterface() {
         if (this.currentUser) {
             const avatar = document.getElementById('userAvatar');
-            const initials = this.currentUser.email.substring(0, 2).toUpperCase();
-            avatar.textContent = initials;
+            if (avatar) {
+                const initials = this.currentUser.email.substring(0, 2).toUpperCase();
+                avatar.textContent = initials;
+            }
+            
+            // Update impact score
+            const impactScore = document.querySelector('.impact-score');
+            if (impactScore) {
+                impactScore.textContent = `+${this.currentUser.impact_score || 0} Impact`;
+            }
+            // Render user skills
+            this.renderUserSkills();
         }
     }
 
@@ -185,7 +207,8 @@ class HIVEApp {
         await Promise.all([
             this.loadTasks(),
             this.loadDashboardStats(),
-            this.loadOnlineUsers()
+            this.loadOnlineUsers(),
+            this.loadActiveTasks()
         ]);
     }
 
@@ -203,34 +226,131 @@ class HIVEApp {
 
     async refreshTasks() {
         await this.loadTasks();
+        await this.loadActiveTasks();
+    }
+
+    async loadActiveTasks() {
+        try {
+            if (!this.currentUser) return;
+            
+            // Filter tasks assigned to current user that are in progress
+            const activeTasks = this.tasks.filter(task => 
+                task.assignee_id === this.currentUser.id && 
+                ['in_progress', 'available'].includes(task.status)
+            );
+            
+            this.renderActiveTasks(activeTasks);
+        } catch (error) {
+            console.error('Failed to load active tasks:', error);
+        }
+    }
+
+    renderActiveTasks(activeTasks) {
+        const container = document.getElementById('activeTasks');
+        
+        if (!container) {
+            console.error('Active tasks container not found');
+            return;
+        }
+        
+        if (activeTasks.length === 0) {
+            container.innerHTML = '<div class="active-task">No active tasks</div>';
+            return;
+        }
+        
+        container.innerHTML = activeTasks.map(task => `
+            <div class="active-task">
+                <div class="active-task-title">${task.title}</div>
+                <div class="active-task-status">${task.status} • +${task.impact_points || 0} impact</div>
+                <div class="task-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${task.status === 'in_progress' ? '60%' : '20%'}"></div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
     }
 
     filterTasks() {
-        if (this.currentFilter === 'all') {
+        const filter = this.currentFilter;
+        if (filter === 'all') {
             this.filteredTasks = [...this.tasks];
+        } else if (['urgent', 'high', 'medium', 'low'].includes(filter)) {
+            // Priority filtering
+            this.filteredTasks = this.tasks.filter(task => task.priority === filter);
+        } else if (['regenerative-ag', 'clean-energy', 'circular-economy', 'restoration', 'community', 'ocean-health'].includes(filter)) {
+            // Category filtering
+            const categoryMap = {
+                'regenerative-ag': 'Regenerative Ag',
+                'clean-energy': 'Clean Energy',
+                'circular-economy': 'Circular Economy',
+                'restoration': 'Restoration',
+                'community': 'Community',
+                'ocean-health': 'Ocean Health'
+            };
+            this.filteredTasks = this.tasks.filter(task => task.category === categoryMap[filter]);
+        } else if (['my-created', 'my-active', 'my-completed', 'assigned-to-me'].includes(filter)) {
+            // My Work filtering
+            switch (filter) {
+                case 'my-created':
+                    this.filteredTasks = this.tasks.filter(task => task.owner_id === this.currentUser?.id);
+                    break;
+                case 'my-active':
+                    this.filteredTasks = this.tasks.filter(task => 
+                        task.assignee_id === this.currentUser?.id && 
+                        ['available', 'in_progress'].includes(task.status)
+                    );
+                    break;
+                case 'my-completed':
+                    this.filteredTasks = this.tasks.filter(task => 
+                        (task.owner_id === this.currentUser?.id || task.assignee_id === this.currentUser?.id) && 
+                        task.status === 'completed'
+                    );
+                    break;
+                case 'assigned-to-me':
+                    this.filteredTasks = this.tasks.filter(task => task.assignee_id === this.currentUser?.id);
+                    break;
+            }
         } else {
-            this.filteredTasks = this.tasks.filter(task => task.status === this.currentFilter);
+            this.filteredTasks = this.tasks.filter(task => task.status === filter);
         }
         this.renderTasks();
     }
 
     updateTaskCounts() {
+        if (!this.currentUser) return;
+        
         const counts = {
             all: this.tasks.length,
-            draft: this.tasks.filter(t => t.status === 'draft').length,
-            available: this.tasks.filter(t => t.status === 'available').length,
-            in_progress: this.tasks.filter(t => t.status === 'in_progress').length,
-            completed: this.tasks.filter(t => t.status === 'completed').length
+            urgent: this.tasks.filter(t => t.priority === 'urgent').length,
+            high: this.tasks.filter(t => t.priority === 'high').length,
+            medium: this.tasks.filter(t => t.priority === 'medium').length,
+            low: this.tasks.filter(t => t.priority === 'low').length,
+            myCreated: this.tasks.filter(t => t.owner_id === this.currentUser.id).length,
+            myActive: this.tasks.filter(t => 
+                t.assignee_id === this.currentUser.id && 
+                ['available', 'in_progress'].includes(t.status)
+            ).length,
+            myCompleted: this.tasks.filter(t => 
+                (t.owner_id === this.currentUser.id || t.assignee_id === this.currentUser.id) && 
+                t.status === 'completed'
+            ).length,
+            assignedToMe: this.tasks.filter(t => t.assignee_id === this.currentUser.id).length
         };
 
-        Object.entries(counts).forEach(([status, count]) => {
-            const el = document.getElementById(`${status}Count`);
+        Object.entries(counts).forEach(([key, count]) => {
+            const el = document.getElementById(`${key}Count`);
             if (el) el.textContent = count;
         });
     }
 
     renderTasks() {
         const container = document.getElementById('taskGrid');
+        
+        if (!container) {
+            console.error('Task grid container not found');
+            return;
+        }
         
         if (this.filteredTasks.length === 0) {
             container.innerHTML = '<div class="loading">No tasks found</div>';
@@ -245,31 +365,63 @@ class HIVEApp {
 
     createTaskCard(task) {
         const isOwner = task.owner_id === this.currentUser?.id;
-        const canUpdate = isOwner || task.assignee_id === this.currentUser?.id;
+        const canAssign = isOwner && !task.assignee_id && task.status === 'available';
+        const canClaim = !task.assignee_id && task.status === 'available' && !isOwner;
+        
+        // Generate skills HTML
+        const skillsHtml = (task.required_skills || []).map(skill => 
+            `<div class="skill-tag">${skill}</div>`
+        ).join('');
+        
+        // Determine action button
+        let actionButton = '';
+        
+        if (canClaim) {
+            actionButton = `<button class="claim-btn" data-task-id="${task.id}">Claim Task</button>`;
+        } else if (canAssign) {
+            actionButton = `<button class="assign-btn" data-task-id="${task.id}">Assign</button>`;
+        } else if (task.assignee_id === this.currentUser?.id) {
+            actionButton = `<button class="update-status-btn" data-task-id="${task.id}">Update Status</button>`;
+        } else if (isOwner && task.status === 'draft') {
+            actionButton = `<button class="assign-btn" data-task-id="${task.id}">Make Available</button>`;
+        }
         
         return `
             <div class="task-card" data-task-id="${task.id}">
                 <div class="task-meta">
-                    <div class="task-status status-${task.status}">${task.status}</div>
-                    <div class="task-type">Task</div>
+                    <div class="task-priority priority-${task.priority}">${task.priority}</div>
+                    <div class="task-type">${task.category || 'General'}</div>
                 </div>
                 <div class="task-title">${task.title}</div>
-                <div class="task-description">${task.description || 'No description provided'}</div>
-                <div class="task-footer">
-                    <div class="task-info">
-                        <small>Created: ${new Date(task.created_at).toLocaleDateString()}</small>
-                        ${task.assignee_id ? `<br><small>Assigned</small>` : ''}
+                <div class="task-description">
+                    ${task.description || 'No description provided'}
+                </div>
+                <div class="task-details">
+                    <div class="detail-item">
+                        <span class="detail-icon">⏱️</span>
+                        <span>${task.estimated_hours || '2-4 hours'}</span>
                     </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">👥</span>
+                        <span>${task.team_size || '3-5 collaborators'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">📍</span>
+                        <span>${task.location || 'Global'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">📅</span>
+                        <span>Due: ${task.due_date || '1 week'}</span>
+                    </div>
+                </div>
+                <div class="task-skills">
+                    ${skillsHtml}
+                </div>
+                <div class="task-footer">
+                    <div class="impact-points">+${task.impact_points || 100} Impact</div>
                     <div class="task-actions">
-                        ${isOwner && !task.assignee_id ? 
-                            `<button class="action-btn assign-btn" data-task-id="${task.id}">Assign</button>` : ''
-                        }
-                        ${canUpdate ? 
-                            `<button class="action-btn status-btn" data-task-id="${task.id}">Update Status</button>` : ''
-                        }
-                        ${isOwner ? 
-                            `<button class="action-btn delete-btn" data-task-id="${task.id}">Delete</button>` : ''
-                        }
+                        ${actionButton}
+                        ${isOwner ? `<button class="delete-btn" data-task-id="${task.id}">Delete</button>` : ''}
                     </div>
                 </div>
             </div>
@@ -277,12 +429,22 @@ class HIVEApp {
     }
 
     setupTaskEventListeners() {
+        // Claim buttons
+        document.querySelectorAll('.claim-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => this.handleClaimTask(e));
+        });
+
         // Assign buttons
         document.querySelectorAll('.assign-btn').forEach(btn => {
             btn.addEventListener('click', (e) => this.handleAssignTask(e));
         });
 
-        // Status buttons
+        // Update status buttons
+        document.querySelectorAll('.update-status-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => this.handleUpdateStatus(e));
+        });
+
+        // Status buttons (legacy)
         document.querySelectorAll('.status-btn').forEach(btn => {
             btn.addEventListener('click', (e) => this.handleUpdateStatus(e));
         });
@@ -291,6 +453,36 @@ class HIVEApp {
         document.querySelectorAll('.delete-btn').forEach(btn => {
             btn.addEventListener('click', (e) => this.handleDeleteTask(e));
         });
+    }
+
+    async handleClaimTask(e) {
+        e.stopPropagation();
+        const taskId = e.target.dataset.taskId;
+        const task = this.tasks.find(t => t.id === taskId);
+        
+        if (!task || !this.currentUser) return;
+        
+        try {
+            // Claim task (this will assign and update status in one call)
+            await api.claimTask(taskId);
+            
+            // Update user's impact score
+            const newImpactScore = this.currentUser.impact_score + (task.impact_points || 0);
+            this.currentUser.impact_score = newImpactScore;
+            
+            // Update UI
+            const impactScoreEl = document.querySelector('.impact-score');
+            if (impactScoreEl) {
+                impactScoreEl.textContent = `+${newImpactScore} Impact`;
+            }
+            
+            await this.loadTasks();
+            await this.loadActiveTasks();
+            this.showNotification(`Task claimed! +${task.impact_points || 0} impact points earned!`);
+        } catch (error) {
+            console.error('Failed to claim task:', error);
+            this.showNotification('Failed to claim task', 'error');
+        }
     }
 
     async handleAssignTask(e) {
@@ -372,29 +564,49 @@ class HIVEApp {
 
     // Filter handling
     handleFilterClick(e) {
-        const filter = e.currentTarget.dataset.filter;
-        if (!filter) return;
-        
-        // Update active filter
         document.querySelectorAll('.filter-item').forEach(item => item.classList.remove('active'));
-        e.currentTarget.classList.add('active');
+        document.querySelectorAll('.skill-tag').forEach(tag => tag.classList.remove('active'));
         
-        this.currentFilter = filter;
+        const filterItem = e.currentTarget;
+        filterItem.classList.add('active');
+        this.currentFilter = filterItem.dataset.filter;
+        this.filterTasks();
+    }
+
+    handleSkillFilterClick(skillTag) {
+        document.querySelectorAll('.filter-item').forEach(item => item.classList.remove('active'));
+
+        const skill = skillTag.textContent;
+        const wasActive = skillTag.classList.contains('active');
+        
+        document.querySelectorAll('.skill-tag').forEach(tag => tag.classList.remove('active'));
+
+        if (wasActive) {
+            // If the skill was active, deselect it and show all tasks
+            this.currentFilter = 'all';
+            document.querySelector('.filter-item[data-filter="all"]').classList.add('active');
+        } else {
+            skillTag.classList.add('active');
+            this.currentFilter = `skill:${skill}`;
+        }
+        
         this.filterTasks();
     }
 
     // View toggle
     toggleView(e) {
-        const isGrid = e.target.textContent.includes('Grid');
+        const viewType = e.target.textContent.toLowerCase().includes('grid') ? 'grid' : 'list';
         
         document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
         e.target.classList.add('active');
         
         const grid = document.getElementById('taskGrid');
-        if (isGrid) {
-            grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(320px, 1fr))';
-        } else {
-            grid.style.gridTemplateColumns = '1fr';
+        if (grid) {
+            if (viewType === 'grid') {
+                grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(320px, 1fr))';
+            } else {
+                grid.style.gridTemplateColumns = '1fr';
+            }
         }
     }
 
@@ -410,7 +622,7 @@ class HIVEApp {
 
     renderDashboardStats() {
         const container = document.getElementById('dashboardStats');
-        if (!this.dashboardStats) return;
+        if (!container || !this.dashboardStats) return;
         
         const { tasks, users } = this.dashboardStats;
         
@@ -450,6 +662,11 @@ class HIVEApp {
     renderOnlineUsers(users) {
         const container = document.getElementById('onlineUsers');
         
+        if (!container) {
+            console.error('Online users container not found');
+            return;
+        }
+        
         if (users.length === 0) {
             container.innerHTML = '<div class="team-member">No users online</div>';
             return;
@@ -467,25 +684,91 @@ class HIVEApp {
         `).join('');
     }
 
+    // Skill management
+    renderUserSkills() {
+        const skillsSidebar = document.querySelector('.sidebar .filter-group:last-of-type');
+        const skillsSettings = document.getElementById('currentSkills');
+        
+        if (this.currentUser && this.currentUser.skills) {
+            const skillsHtml = this.currentUser.skills.map(skill => `<div class="skill-tag">${skill}</div>`).join('');
+            skillsSidebar.innerHTML = skillsHtml;
+
+            const skillsSettingsHtml = this.currentUser.skills.map(skill => `
+                <div class="skill-item">
+                    <span>${skill}</span>
+                    <button class="remove-skill-btn" data-skill="${skill}">&times;</button>
+                </div>
+            `).join('');
+            skillsSettings.innerHTML = skillsSettingsHtml;
+        } else {
+            skillsSidebar.innerHTML = '<p>No skills added yet.</p>';
+            skillsSettings.innerHTML = '';
+        }
+    }
+
+    async handleAddSkill(e) {
+        e.preventDefault();
+        const input = document.getElementById('newSkillInput');
+        const newSkill = input.value.trim();
+
+        if (newSkill && !this.currentUser.skills.includes(newSkill)) {
+            try {
+                this.currentUser.skills.push(newSkill);
+                await api.updateCurrentUser({ skills: this.currentUser.skills });
+                this.renderUserSkills();
+                input.value = '';
+                this.showNotification(`Skill "${newSkill}" added successfully!`);
+            } catch (error) {
+                console.error('Failed to add skill:', error);
+                this.showNotification('Failed to add skill.', 'error');
+                // Revert optimistic update
+                this.currentUser.skills = this.currentUser.skills.filter(s => s !== newSkill);
+            }
+        }
+    }
+
+    async handleRemoveSkill(e) {
+        if (e.target.classList.contains('remove-skill-btn')) {
+            const skillToRemove = e.target.dataset.skill;
+            const originalSkills = [...this.currentUser.skills];
+            this.currentUser.skills = this.currentUser.skills.filter(s => s !== skillToRemove);
+
+            try {
+                await api.updateCurrentUser({ skills: this.currentUser.skills });
+                this.renderUserSkills();
+                this.showNotification(`Skill "${skillToRemove}" removed.`);
+            } catch (error) {
+                console.error('Failed to remove skill:', error);
+                this.showNotification('Failed to remove skill.', 'error');
+                this.currentUser.skills = originalSkills; // Revert
+            }
+        }
+    }
+
     // UI helpers
     showLoginModal() {
-        document.getElementById('loginModal').classList.add('show');
+        const modal = document.getElementById('loginModal');
+        if (modal) modal.classList.add('show');
     }
 
     hideLoginModal() {
-        document.getElementById('loginModal').classList.remove('show');
+        const modal = document.getElementById('loginModal');
+        if (modal) modal.classList.remove('show');
     }
 
     showTaskModal() {
-        document.getElementById('taskModal').classList.add('show');
+        const modal = document.getElementById('taskModal');
+        if (modal) modal.classList.add('show');
     }
 
     hideTaskModal() {
-        document.getElementById('taskModal').classList.remove('show');
+        const modal = document.getElementById('taskModal');
+        if (modal) modal.classList.remove('show');
     }
 
     showMainInterface() {
-        document.querySelector('.main-container').style.display = 'grid';
+        const container = document.querySelector('.main-container');
+        if (container) container.style.display = 'grid';
     }
 
     closeModal(e) {
@@ -524,6 +807,15 @@ class HIVEApp {
             notification.style.transform = 'translateX(400px)';
             setTimeout(() => notification.remove(), 300);
         }, 3000);
+    }
+
+    showSettingsModal() {
+        this.renderUserSkills(); // Make sure skills are up-to-date
+        document.getElementById('settingsModal').classList.add('show');
+    }
+
+    hideSettingsModal() {
+        document.getElementById('settingsModal').classList.remove('show');
     }
 }
 

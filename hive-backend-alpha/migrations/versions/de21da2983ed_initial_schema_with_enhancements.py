@@ -1,8 +1,8 @@
-"""initial_tables
+"""initial_schema_with_enhancements
 
-Revision ID: 7a915d703bdb
+Revision ID: de21da2983ed
 Revises: 
-Create Date: 2025-06-06 16:25:24.594780
+Create Date: 2025-06-06 22:56:10.624711
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '7a915d703bdb'
+revision = 'de21da2983ed'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -23,6 +23,10 @@ def upgrade() -> None:
     sa.Column('hashed_password', sa.String(), nullable=False),
     sa.Column('is_active', sa.Boolean(), nullable=False),
     sa.Column('is_online', sa.Boolean(), nullable=False),
+    sa.Column('impact_score', sa.Integer(), nullable=False),
+    sa.Column('skills', sa.JSON(), nullable=True),
+    sa.Column('role', sa.String(), nullable=True),
+    sa.Column('status', sa.String(), nullable=True),
     sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
@@ -33,6 +37,14 @@ def upgrade() -> None:
     sa.Column('title', sa.String(), nullable=False),
     sa.Column('description', sa.Text(), nullable=True),
     sa.Column('status', sa.String(), nullable=False),
+    sa.Column('priority', sa.String(), nullable=False),
+    sa.Column('category', sa.String(), nullable=True),
+    sa.Column('impact_points', sa.Integer(), nullable=True),
+    sa.Column('estimated_hours', sa.String(), nullable=True),
+    sa.Column('location', sa.String(), nullable=True),
+    sa.Column('team_size', sa.String(), nullable=True),
+    sa.Column('due_date', sa.String(), nullable=True),
+    sa.Column('required_skills', sa.JSON(), nullable=True),
     sa.Column('owner_id', sa.UUID(), nullable=False),
     sa.Column('assignee_id', sa.UUID(), nullable=True),
     sa.Column('id', sa.UUID(), nullable=False),

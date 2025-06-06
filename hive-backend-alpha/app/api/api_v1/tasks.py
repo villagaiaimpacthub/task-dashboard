@@ -126,6 +126,43 @@ async def assign_task_to_user(
     return await assignment_service.assign_task(db, task, assignee, current_user)
 
 
+@router.post("/{task_id}/claim", response_model=TaskResponse)
+async def claim_task(
+    task_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Allow a user to claim an available task for themselves."""
+    task = await task_service.get_task_by_id(db, task_id)
+    if not task:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task not found"
+        )
+    
+    # Check if task can be claimed
+    if task.assignee_id is not None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Task is already assigned"
+        )
+    
+    if task.status != "available":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Task is not available for claiming"
+        )
+    
+    # User cannot claim their own task
+    if task.owner_id == current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot claim your own task"
+        )
+    
+    return await assignment_service.assign_task(db, task, current_user, current_user)
+
+
 @router.put("/{task_id}/status", response_model=TaskResponse)
 async def update_task_status(
     task_id: UUID,

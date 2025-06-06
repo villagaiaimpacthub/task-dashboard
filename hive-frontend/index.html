@@ -42,47 +42,96 @@
         <div class="header-bar">
             <div class="logo">HIVE</div>
             <div class="prime-directive">
-                🌍 PRIME DIRECTIVE: Planetary Regeneration Through Collective Intelligence
+                Prime Directive: The elevation of consciousness for the benefit of all beings.
             </div>
             <div class="user-info">
                 <div class="impact-score">+0 Impact</div>
-                <div class="member-avatar" id="userAvatar">--</div>
+                <button id="settingsBtn" class="settings-btn" title="Settings">⚙️</button>
                 <button id="logoutBtn" class="logout-btn">Logout</button>
             </div>
         </div>
 
         <!-- Left Sidebar -->
         <div class="sidebar">
-            <div class="section-header">Task Filters</div>
+            <div class="section-header">Priority</div>
             <div class="filter-group">
                 <div class="filter-item active" data-filter="all">
-                    <div class="filter-icon">📋</div>
+                    <div class="filter-icon">🌟</div>
                     <span>All Tasks (<span id="allCount">0</span>)</span>
                 </div>
-                <div class="filter-item" data-filter="draft">
-                    <div class="filter-icon">📝</div>
-                    <span>Draft (<span id="draftCount">0</span>)</span>
+                <div class="filter-item" data-filter="urgent">
+                    <div class="filter-icon urgent">🚨</div>
+                    <span>Urgent (<span id="urgentCount">0</span>)</span>
                 </div>
-                <div class="filter-item" data-filter="available">
-                    <div class="filter-icon available">🌱</div>
-                    <span>Available (<span id="availableCount">0</span>)</span>
+                <div class="filter-item" data-filter="high">
+                    <div class="filter-icon high">🔥</div>
+                    <span>High Priority (<span id="highCount">0</span>)</span>
                 </div>
-                <div class="filter-item" data-filter="in_progress">
-                    <div class="filter-icon in_progress">⚡</div>
-                    <span>In Progress (<span id="inProgressCount">0</span>)</span>
+                <div class="filter-item" data-filter="medium">
+                    <div class="filter-icon medium">🌿</div>
+                    <span>Medium (<span id="mediumCount">0</span>)</span>
                 </div>
-                <div class="filter-item" data-filter="completed">
-                    <div class="filter-icon completed">✅</div>
-                    <span>Completed (<span id="completedCount">0</span>)</span>
+                <div class="filter-item" data-filter="low">
+                    <div class="filter-icon low">🌊</div>
+                    <span>Low Priority (<span id="lowCount">0</span>)</span>
+                </div>
+            </div>
+
+            <div class="section-header">Category</div>
+            <div class="filter-group">
+                <div class="filter-item" data-filter="regenerative-ag">
+                    <div class="filter-icon" style="background: #e8f5e9; color: #2e7d32;">🌾</div>
+                    <span>Regenerative Ag</span>
+                </div>
+                <div class="filter-item" data-filter="clean-energy">
+                    <div class="filter-icon" style="background: #e3f2fd; color: #1565c0;">⚡</div>
+                    <span>Clean Energy</span>
+                </div>
+                <div class="filter-item" data-filter="circular-economy">
+                    <div class="filter-icon" style="background: #fff3e0; color: #ef6c00;">♻️</div>
+                    <span>Circular Economy</span>
+                </div>
+                <div class="filter-item" data-filter="restoration">
+                    <div class="filter-icon" style="background: #f1f8e9; color: #558b2f;">🌳</div>
+                    <span>Restoration</span>
+                </div>
+                <div class="filter-item" data-filter="community">
+                    <div class="filter-icon" style="background: #e8eaf6; color: #3f51b5;">🤝</div>
+                    <span>Community</span>
+                </div>
+                <div class="filter-item" data-filter="ocean-health">
+                    <div class="filter-icon" style="background: #e0f2f1; color: #00695c;">🌊</div>
+                    <span>Ocean Health</span>
+                </div>
+            </div>
+
+            <div class="section-header">My Work</div>
+            <div class="filter-group">
+                <div class="filter-item" data-filter="my-created">
+                    <div class="filter-icon" style="background: #e8f5e9; color: #2e7d32;">📋</div>
+                    <span>My Created Tasks (<span id="myCreatedCount">0</span>)</span>
+                </div>
+                <div class="filter-item" data-filter="my-active">
+                    <div class="filter-icon" style="background: #fff3e0; color: #ef6c00;">⚡</div>
+                    <span>My Active Tasks (<span id="myActiveCount">0</span>)</span>
+                </div>
+                <div class="filter-item" data-filter="my-completed">
+                    <div class="filter-icon" style="background: #e3f2fd; color: #1565c0;">✅</div>
+                    <span>My Completed (<span id="myCompletedCount">0</span>)</span>
+                </div>
+                <div class="filter-item" data-filter="assigned-to-me">
+                    <div class="filter-icon" style="background: #f1f8e9; color: #558b2f;">👥</div>
+                    <span>Assigned to Me (<span id="assignedToMeCount">0</span>)</span>
                 </div>
             </div>
 
             <div class="section-header">Your Skills</div>
             <div class="filter-group">
-                <div class="skill-tag">Task Management</div>
-                <div class="skill-tag">Project Coordination</div>
-                <div class="skill-tag">Community Building</div>
                 <div class="skill-tag">Systems Design</div>
+                <div class="skill-tag">Data Analysis</div>
+                <div class="skill-tag">Community Building</div>
+                <div class="skill-tag">Project Management</div>
+                <div class="skill-tag">Environmental Science</div>
             </div>
         </div>
 
@@ -151,6 +200,74 @@
                     </div>
                 </form>
                 <div id="taskError" class="error-message"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Settings</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="settings-section skills-management">
+                    <h3>Your Skills</h3>
+                    <div id="currentSkills" class="current-skills">
+                        <!-- User skills will be loaded here -->
+                    </div>
+                    <form id="addSkillForm" class="add-skill-form">
+                        <input type="text" id="newSkillInput" placeholder="Add a new skill (e.g., Python)" required>
+                        <button type="submit" class="submit-btn">Add Skill</button>
+                    </form>
+                </div>
+
+                <div class="settings-section profile-settings">
+                    <h3>Profile</h3>
+                    <div class="form-group">
+                        <label for="displayName">Display Name</label>
+                        <input type="text" id="displayName" placeholder="Enter your display name">
+                    </div>
+                    <div class="form-group">
+                        <label for="userBio">Bio</label>
+                        <textarea id="userBio" rows="3" placeholder="Tell us a little about yourself"></textarea>
+                    </div>
+                </div>
+
+                <div class="settings-section notification-settings">
+                    <h3>Notifications</h3>
+                    <div class="toggle-group">
+                        <label for="taskAssignmentNotifs">Task assignments</label>
+                        <label class="switch">
+                            <input type="checkbox" id="taskAssignmentNotifs" checked>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-group">
+                        <label for="taskUpdateNotifs">Task status updates</label>
+                        <label class="switch">
+                            <input type="checkbox" id="taskUpdateNotifs" checked>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="settings-section theme-settings">
+                    <h3>Theme</h3>
+                    <div class="toggle-group">
+                        <label for="themeToggle">Dark Mode</label>
+                        <label class="switch">
+                            <input type="checkbox" id="themeToggle">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                </div>
+
+                 <div class="settings-section">
+                    <h3>Account</h3>
+                    <button id="logoutBtnInsideModal" class="logout-btn" style="background: #e57373; width: auto;">Logout</button>
+                </div>
             </div>
         </div>
     </div>

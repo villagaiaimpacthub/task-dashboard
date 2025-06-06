@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 from pydantic import BaseModel, EmailStr
-from typing import Optional
+from typing import Optional, List
 
 
 class UserCreate(BaseModel):
@@ -16,6 +16,9 @@ class UserLogin(BaseModel):
 
 class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None
+    skills: Optional[List[str]] = None
+    role: Optional[str] = None
+    status: Optional[str] = None
 
 
 class UserResponse(BaseModel):
@@ -23,6 +26,10 @@ class UserResponse(BaseModel):
     email: str
     is_active: bool
     is_online: bool
+    impact_score: int
+    skills: List[str]
+    role: Optional[str]
+    status: str
     created_at: datetime
     updated_at: datetime
     
