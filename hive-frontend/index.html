@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HIVE - Collective Task Coordination</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Welcome to HIVE</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="auth-tabs">
+                    <button class="tab-btn active" data-tab="login">Login</button>
+                    <button class="tab-btn" data-tab="register">Register</button>
+                </div>
+                
+                <form id="loginForm" class="auth-form active">
+                    <input type="email" id="loginEmail" placeholder="Email" required>
+                    <input type="password" id="loginPassword" placeholder="Password" required>
+                    <button type="submit" class="submit-btn auth-btn">Login</button>
+                </form>
+                
+                <form id="registerForm" class="auth-form">
+                    <input type="email" id="registerEmail" placeholder="Email" required>
+                    <input type="password" id="registerPassword" placeholder="Password" required>
+                    <button type="submit" class="submit-btn auth-btn">Register</button>
+                </form>
+                
+                <div id="authError" class="error-message"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <!-- Header -->
+        <div class="header-bar">
+            <div class="logo">HIVE</div>
+            <div class="prime-directive">
+                🌍 PRIME DIRECTIVE: Planetary Regeneration Through Collective Intelligence
+            </div>
+            <div class="user-info">
+                <div class="impact-score">+0 Impact</div>
+                <div class="member-avatar" id="userAvatar">--</div>
+                <button id="logoutBtn" class="logout-btn">Logout</button>
+            </div>
+        </div>
+
+        <!-- Left Sidebar -->
+        <div class="sidebar">
+            <div class="section-header">Task Filters</div>
+            <div class="filter-group">
+                <div class="filter-item active" data-filter="all">
+                    <div class="filter-icon">📋</div>
+                    <span>All Tasks (<span id="allCount">0</span>)</span>
+                </div>
+                <div class="filter-item" data-filter="draft">
+                    <div class="filter-icon">📝</div>
+                    <span>Draft (<span id="draftCount">0</span>)</span>
+                </div>
+                <div class="filter-item" data-filter="available">
+                    <div class="filter-icon available">🌱</div>
+                    <span>Available (<span id="availableCount">0</span>)</span>
+                </div>
+                <div class="filter-item" data-filter="in_progress">
+                    <div class="filter-icon in_progress">⚡</div>
+                    <span>In Progress (<span id="inProgressCount">0</span>)</span>
+                </div>
+                <div class="filter-item" data-filter="completed">
+                    <div class="filter-icon completed">✅</div>
+                    <span>Completed (<span id="completedCount">0</span>)</span>
+                </div>
+            </div>
+
+            <div class="section-header">Your Skills</div>
+            <div class="filter-group">
+                <div class="skill-tag">Task Management</div>
+                <div class="skill-tag">Project Coordination</div>
+                <div class="skill-tag">Community Building</div>
+                <div class="skill-tag">Systems Design</div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="content-header">
+                <h2 style="color: #2c3e34; font-size: 24px; font-weight: 600;">Available Tasks</h2>
+                <div class="action-buttons">
+                    <button id="createTaskBtn" class="create-btn">+ Create Task</button>
+                    <div class="view-toggle">
+                        <button class="toggle-btn active">Grid View</button>
+                        <button class="toggle-btn">List View</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="taskGrid" class="task-grid">
+                <!-- Tasks will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="right-panel">
+            <div class="panel-section">
+                <div class="panel-title">Your Active Tasks</div>
+                <div id="activeTasks" class="active-tasks">
+                    <!-- Active tasks will be loaded here -->
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <div class="panel-title">Team Coordination</div>
+                <div id="onlineUsers" class="team-members">
+                    <!-- Online users will be loaded here -->
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <div class="panel-title">Collective Impact</div>
+                <div id="dashboardStats" class="dashboard-stats">
+                    <!-- Dashboard statistics will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task Creation Modal -->
+    <div id="taskModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Create New Task</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="taskForm">
+                    <div class="form-group">
+                        <label for="taskTitle">Task Title</label>
+                        <input type="text" id="taskTitle" placeholder="e.g., Design a permaculture garden" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="taskDescription">Task Description</label>
+                        <textarea id="taskDescription" placeholder="Provide a brief overview of the task and its objectives." rows="4"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="submit-btn">Create Task</button>
+                    </div>
+                </form>
+                <div id="taskError" class="error-message"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Connection Status -->
+    <div id="connectionStatus" class="connection-status">
+        <span id="statusIndicator" class="status-indicator">●</span>
+        <span id="statusText">Connecting...</span>
+    </div>
+
+    <!-- Floating Action Button -->
+    <button class="fab" id="fabBtn" title="Propose New Task">+</button>
+
+    <script src="api.js"></script>
+    <script src="websocket.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

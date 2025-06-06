@@ -1,0 +1,160 @@
+HIVE Task Alpha 1.3: Basic Dashboard Analytics & Live Status (NEW Task)
+Claude Code & Cursor Implementation Guide - Alpha Version
+> Peter Mick Rule: Write code as if the maintainer is a violent psychopath who knows where you live 😈
+> 
+🎯 Objective
+Implement basic backend analytics and live user status APIs to provide real aggregated data for the HIVE dashboard's "Collective Impact" and "Team Coordination" sections, moving them beyond client-side simulation for the alpha version.
+📋 Prerequisites
+ * [ ] HIVE Task Alpha 1.2: Basic Infrastructure & Testing completed and verified.
+ * [ ] HIVE Task Alpha 1.0: Core Backend Foundation (with its enhancement) completed and verified (for User and Task models).
+ * [ ] HIVE Task Alpha 1.1: Basic Task Workflow & Real-time completed and verified (for task statuses, WebSocket).
+ * [ ] PostgreSQL and Redis containers running and accessible.
+🗂️ Exact File Structure
+hive-backend-alpha/
+├── app/
+│   ├── models/
+│   │   ├── __init__.py
+│   │   ├── user.py                    # MODIFIED: Add is_online status
+│   │   └── task.py                    # Ensure status field is correctly used for counts
+│   ├── schemas/
+│   │   ├── __init__.py
+│   │   ├── dashboard.py               # NEW: Schemas for aggregated dashboard data
+│   │   └── user.py                    # MODIFIED: Update UserResponse with is_online
+│   ├── services/
+│   │   ├── __init__.py
+│   │   ├── dashboard_service.py       # NEW: Logic for aggregating basic dashboard stats
+│   │   └── user_service.py            # MODIFIED: Handle user online/offline status
+│   ├── api/api_v1/
+│   │   ├── __init__.py
+│   │   ├── dashboard.py               # NEW: API endpoints for dashboard aggregations
+│   │   └── users.py                   # MODIFIED: Add endpoint for setting user online status
+│   ├── websockets/
+│   │   ├── __init__.py
+│   │   └── connection_manager.py      # MODIFIED: Update user online status on connect/disconnect
+│   ├── core/
+│   │   └── logging.py                 # Enhanced for dashboard stat queries
+├── tests/
+│   ├── unit/
+│   │   ├── test_dashboard_service.py  # Unit tests for aggregation logic
+│   │   └── test_user_status.py        # Unit tests for user online status
+│   ├── integration/
+│   │   ├── test_dashboard_api.py      # Integration tests for dashboard API endpoints
+│   │   └── test_user_online_status.py # Integration tests for user online status via WS/API
+├── migrations/                        # Alembic migration for User.is_online
+└── README.md                          # Update README
+
+💻 Implementation Specifications
+Core Requirements
+1. User Live Status (for "Team Coordination" section)
+ * User Model Enhancement (app/models/user.py):
+   * Add is_online: Boolean, default to False.
+ * Service Layer Modification (app/services/user_service.py):
+   * Add set_user_online_status(user_id, status: bool) method.
+ * WebSocket Integration (app/websockets/connection_manager.py):
+   * When a user connects via WebSocket, call user_service.set_user_online_status(user_id, True).
+   * When a user disconnects, call user_service.set_user_online_status(user_id, False).
+   * (Optional for Alpha, but ideal): On status change, broadcast a basic user_status_update WebSocket message.
+ * Pydantic Schemas Update (app/schemas/user.py):
+   * Update UserResponse to include is_online.
+ * API Endpoint (app/api/api_v1/users.py):
+   * GET /users/online: List all online users (or a sample of them).
+     * Security: Authenticated.
+2. Basic Dashboard Aggregations (for "Collective Impact" & Filter Counts)
+ * New Pydantic Schemas (app/schemas/dashboard.py):
+   * DashboardSummaryResponse: Includes fields like total_tasks, completed_tasks, active_users, online_users, tasks_by_priority, tasks_by_category.
+ * New Dashboard Service (app/services/dashboard_service.py):
+   * get_dashboard_summary():
+     * Queries Task model to count total_tasks and completed_tasks (where status="completed").
+     * Queries User model to count active_users (e.g., is_active=True) and online_users (where is_online=True).
+     * Performs simple SQL GROUP BY queries on Task model to get tasks_by_priority and tasks_by_category counts.
+ * New API Endpoint (app/api/api_v1/dashboard.py):
+   * GET /dashboard/summary: Returns the aggregated dashboard statistics.
+     * Security: Public (for basic dashboard display) or Authenticated (if data is sensitive). For alpha, keep it public for ease of integration.
+Technology Stack
+ * (No new technologies, leverages existing FastAPI, SQLAlchemy, PostgreSQL, Redis)
+API Specifications
+ * GET /api/v1/dashboard/summary:
+   * Response: DashboardSummaryResponse (e.g., {"total_tasks": 100, "completed_tasks": 50, "online_users": 5, "tasks_by_priority": {"high": 10, "medium": 20}, ...})
+ * GET /api/v1/users/online:
+   * Response: List[UserResponse] (filtered to only online users, possibly light version of UserResponse).
+✅ Acceptance Criteria
+ * [ ] User model in app/models/user.py includes is_online field.
+ * [ ] DashboardSummaryResponse schema is defined in app/schemas/dashboard.py.
+ * [ ] DashboardService.get_dashboard_summary() correctly queries and aggregates data from Task and User models.
+ * [ ] GET /api/v1/dashboard/summary endpoint returns correct aggregated data.
+ * [ ] GET /api/v1/users/online returns a list of users with is_online=True.
+ * [ ] User's is_online status in the database updates correctly when they connect/disconnect via WebSocket.
+ * [ ] Database migrations are generated to add the is_online column to the users table.
+ * [ ] The dashboard's "Collective Impact" and filter counts can now be updated by fetching data from GET /dashboard/summary.
+ * [ ] The dashboard's "Team Coordination" section can now display real online/offline statuses from GET /users/online.
+🔐 Security Requirements (Simplified for Alpha)
+ * [ ] Data exposed via GET /dashboard/summary is aggregated and does not contain PII.
+ * [ ] GET /users/online only exposes non-sensitive user profile data (e.g., name, role, not email).
+ * [ ] User is_online status is updated securely via backend logic, not directly by frontend.
+📊 Performance Requirements (Simplified for Alpha)
+ * [ ] GET /api/v1/dashboard/summary completes under 500ms.
+ * [ ] User online status updates (DB write) complete under 100ms.
+ * [ ] GET /api/v1/users/online completes under 300ms for up to 100 users.
+🧪 Test Requirements (Simplified for Alpha)
+ * [ ] Unit Tests: DashboardService.get_dashboard_summary() logic for various counts and aggregations.
+ * [ ] Integration Tests:
+   * API for GET /dashboard/summary returns expected counts based on seeded data.
+   * API for GET /users/online returns correct online users.
+   * WebSocket connect/disconnect triggers is_online status updates in the DB.
+ * [ ] Manual Testing: Confirm dashboard's "Collective Impact" and "Team Coordination" sections update dynamically with real (albeit alpha) backend data.
+🔗 Integration Points
+ * Depends on:
+   * HIVE Task Alpha 1.2: Basic Infrastructure & Testing (for basic Celery/DB/test setup).
+   * HIVE Task Alpha 1.0: Core Backend Foundation (for User, Task models, basic APIs).
+   * HIVE Task Alpha 1.1: Basic Task Workflow & Real-time (for WebSocket connection_manager, task status changes).
+ * Provides to:
+   * HIVE Task Alpha 0.1: Simplified Development Dashboard: Directly provides the necessary aggregated data and live user status to make the dashboard dynamic.
+🚀 Claude Code Execution Commands
+Primary Implementation
+claude-code implement-task \
+  --task-id="alpha-1.3-dashboard-analytics-live-status" \
+  --project="hive-backend-alpha" \
+  --objective="Implement basic dashboard analytics and live user status APIs for real aggregated data." \
+  --files="app/models/user.py,app/models/task.py,app/schemas/dashboard.py,app/schemas/user.py,app/services/dashboard_service.py,app/services/user_service.py,app/api/api_v1/dashboard.py,app/api/api_v1/users.py,app/websockets/connection_manager.py,tests/unit/test_dashboard_service.py,tests/unit/test_user_status.py,tests/integration/test_dashboard_api.py,tests/integration/test_user_online_status.py,migrations/" \
+  --requirements="add-user-is-online,dashboard-summary-api-total-completed-tasks-online-users,tasks-by-priority-category-counts,users-online-api,update-user-online-status-on-ws-connect-disconnect" \
+  --framework="fastapi" \
+  --database="postgresql" \
+  --security-level="basic-alpha" \
+  --test-coverage="foundational-alpha" \
+  --performance-targets="summary-500ms,status-update-100ms"
+
+Validation Commands
+# Ensure Docker Compose services are running (PostgreSQL, Redis, FastAPI)
+docker-compose ps
+
+# Generate and apply new migrations for User.is_online
+poetry run alembic revision --autogenerate -m "add_is_online_to_user"
+poetry run alembic upgrade head
+
+# Run tests
+poetry run pytest tests/unit/test_dashboard_service.py tests/integration/test_dashboard_api.py
+
+# Manually test dashboard summary endpoint:
+# curl http://localhost:8000/api/v1/dashboard/summary
+
+# Manually test user online status:
+# 1. Login user to get ACCESS_TOKEN (Task Alpha 1.0)
+# 2. Open WebSocket connection with that token (Task Alpha 1.1):
+#    let ws = new WebSocket('ws://localhost:8000/ws?token=<ACCESS_TOKEN>');
+# 3. Check DB for user's is_online status:
+#    docker-compose exec postgres psql -U postgres -d hive_dev -c "SELECT email, is_online FROM users WHERE email='your_user_email';"
+# 4. Close WebSocket connection, check DB again.
+
+🎯 Cursor IDE Integration
+ * Workspace setup: Open hive-backend-alpha/ as the root workspace in Cursor.
+ * Extensions needed: (As per previous alpha tasks)
+ * Debug configuration: (As per previous alpha tasks)
+ * Environment setup: (As per previous alpha tasks)
+📝 Documentation Requirements
+ * [ ] README.md: Update with instructions on testing new dashboard APIs.
+ * [ ] Inline comments in app/models/user.py (is_online), app/schemas/dashboard.py, app/services/dashboard_service.py.
+ * [ ] Basic docstrings for new API endpoints.
+Execute After: HIVE Task Alpha 1.2: Basic Infrastructure & Testing.
+Final Task for Alpha Version Refinement: This is the last task we've identified to bring the alpha to "near perfection" in terms of dashboard alignment.
+Estimated Time: 15-20 hours for Claude Code implementation.
+Complexity: 7/10 (Involves simple aggregations and integrating online status).

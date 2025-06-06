@@ -1,0 +1,2179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HIVE - Collective Task Coordination</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            color: #2c3e34;
+            background: #faf9f7;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Main Layout */
+        .main-container {
+            display: grid;
+            grid-template-columns: 300px 1fr 400px;
+            height: 100vh;
+        }
+
+        /* Header Bar */
+        .header-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            padding: 0 32px;
+            border-bottom: 1px solid rgba(76, 175, 80, 0.1);
+        }
+
+        .logo {
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #4caf50 0%, #66bb6a 50%, #81c784 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-right: 24px;
+        }
+
+        .prime-directive {
+            flex: 1;
+            text-align: center;
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e34;
+            background: rgba(76, 175, 80, 0.08);
+            padding: 12px 24px;
+            border-radius: 20px;
+            border: 1px solid rgba(76, 175, 80, 0.2);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .impact-score {
+            background: linear-gradient(135deg, #4caf50, #45a049);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: white;
+            border-right: 1px solid rgba(76, 175, 80, 0.1);
+            padding-top: 70px;
+            overflow-y: auto;
+        }
+
+        .section-header {
+            padding: 20px 24px 12px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #7a8f7d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid rgba(76, 175, 80, 0.1);
+        }
+
+        .filter-group {
+            padding: 16px 24px;
+        }
+
+        .filter-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 8px;
+            margin: 2px 0;
+        }
+
+        .filter-item:hover {
+            background: rgba(76, 175, 80, 0.05);
+            padding-left: 8px;
+        }
+
+        .filter-item.active {
+            background: rgba(76, 175, 80, 0.1);
+            color: #2e7d32;
+            font-weight: 600;
+            padding-left: 8px;
+        }
+
+        .filter-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .filter-icon.urgent { background: #ffebee; color: #c62828; }
+        .filter-icon.high { background: #fff3e0; color: #ef6c00; }
+        .filter-icon.medium { background: #f1f8e9; color: #558b2f; }
+        .filter-icon.low { background: #e3f2fd; color: #1565c0; }
+
+        .skill-tag {
+            background: rgba(76, 175, 80, 0.1);
+            color: #2e7d32;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            margin: 2px 4px 2px 0;
+            display: inline-block;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 86px 32px 32px;
+            overflow-y: auto;
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .view-toggle {
+            display: flex;
+            background: rgba(76, 175, 80, 0.1);
+            border-radius: 12px;
+            padding: 4px;
+        }
+
+        .toggle-btn {
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .toggle-btn.active {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            color: #2e7d32;
+        }
+
+        /* Task Grid */
+        .task-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .task-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(76, 175, 80, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .task-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.15);
+            border-color: rgba(76, 175, 80, 0.3);
+        }
+
+        .task-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .task-priority {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .priority-urgent { background: #ffebee; color: #c62828; }
+        .priority-high { background: #fff3e0; color: #ef6c00; }
+        .priority-medium { background: #f1f8e9; color: #558b2f; }
+        .priority-low { background: #e3f2fd; color: #1565c0; }
+
+        .task-type {
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 500;
+            background: rgba(76, 175, 80, 0.1);
+            color: #2e7d32;
+        }
+
+        .task-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e34;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+
+        .task-description {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+
+        .task-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .detail-icon {
+            width: 16px;
+            height: 16px;
+            opacity: 0.7;
+        }
+
+        .task-skills {
+            margin-bottom: 16px;
+        }
+
+        .task-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .impact-points {
+            background: linear-gradient(135deg, #4caf50, #45a049);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .claim-btn {
+            background: #2c3e34;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .claim-btn:hover {
+            background: #243329;
+            transform: translateY(-1px);
+        }
+
+        /* Right Panel */
+        .right-panel {
+            background: white;
+            border-left: 1px solid rgba(76, 175, 80, 0.1);
+            padding-top: 70px;
+            overflow-y: auto;
+        }
+
+        .panel-section {
+            padding: 24px;
+            border-bottom: 1px solid rgba(76, 175, 80, 0.1);
+        }
+
+        .panel-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e34;
+            margin-bottom: 16px;
+        }
+
+        .active-tasks {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .active-task {
+            background: rgba(76, 175, 80, 0.05);
+            padding: 12px;
+            border-radius: 10px;
+            border-left: 4px solid #4caf50;
+        }
+
+        .active-task-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2c3e34;
+            margin-bottom: 4px;
+        }
+
+        .active-task-progress {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(76, 175, 80, 0.2);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #4caf50;
+            transition: width 0.3s ease;
+        }
+
+        .team-member {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0;
+        }
+
+        .member-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4caf50, #66bb6a);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .member-info {
+            flex: 1;
+        }
+
+        .member-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2c3e34;
+        }
+
+        .member-role {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .member-status {
+            padding: 3px 8px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .status-available { background: #e8f5e9; color: #2e7d32; }
+        .status-busy { background: #fff3e0; color: #ef6c00; }
+
+        /* Floating Action Button */
+        .fab {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #4caf50, #45a049);
+            border-radius: 50%;
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .fab:hover {
+            transform: scale(1.1) translateY(-2px);
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.5);
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(44, 62, 52, 0.6);
+            backdrop-filter: blur(8px);
+            display: none; /* Initially hidden */
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 32px;
+            width: 100%;
+            max-width: 550px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            transform: scale(0.95);
+            transition: all 0.3s ease;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            border-bottom: 1px solid rgba(76, 175, 80, 0.1);
+            padding-bottom: 16px;
+        }
+
+        .modal-header h2 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #2c3e34;
+        }
+
+        .close-modal-btn {
+            background: transparent;
+            border: none;
+            font-size: 28px;
+            font-weight: 300;
+            color: #7a8f7d;
+            cursor: pointer;
+            transition: color 0.2s;
+            line-height: 1;
+        }
+
+        .close-modal-btn:hover {
+            color: #2c3e34;
+        }
+
+        .create-task-form .form-group {
+            margin-bottom: 20px;
+        }
+
+        .create-task-form label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #2c3e34;
+            margin-bottom: 8px;
+        }
+
+        .create-task-form input[type="text"],
+        .create-task-form textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid rgba(76, 175, 80, 0.2);
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: inherit;
+            background: #faf9f7;
+            color: #2c3e34;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .create-task-form input[type="text"]:focus,
+        .create-task-form textarea:focus {
+            outline: none;
+            border-color: #4caf50;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+        }
+
+        .create-task-form input[type="text"]::placeholder,
+        .create-task-form textarea::placeholder {
+            color: #7a8f7d;
+            opacity: 0.8;
+        }
+
+        .create-task-form textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-actions {
+            margin-top: 32px;
+            text-align: right;
+        }
+
+        .submit-task-btn {
+            background: linear-gradient(135deg, #4caf50, #45a049);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.25);
+        }
+
+        .submit-task-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.35);
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header-bar">
+            <div class="logo">HIVE</div>
+            <div class="prime-directive">
+                <span>🌱</span>
+                <span>Cooperate, Create, and Thrive</span>
+                <span>🌱</span>
+            </div>
+            <div class="user-info">
+                <div class="impact-score">Impact: 1234</div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="section-header">Priority</div>
+            <div class="filter-group">
+                <div class="filter-item active" data-filter="all">
+                    <div class="filter-icon">🌟</div>
+                    <span>All Tasks</span>
+                </div>
+                <div class="filter-item" data-filter="urgent">
+                    <div class="filter-icon urgent">🚨</div>
+                    <span>Urgent</span>
+                </div>
+                <div class="filter-item" data-filter="high">
+                    <div class="filter-icon high">🔥</div>
+                    <span>High Priority</span>
+                </div>
+                <div class="filter-item" data-filter="medium">
+                    <div class="filter-icon medium">🌿</div>
+                    <span>Medium Priority</span>
+                </div>
+                <div class="filter-item" data-filter="low">
+                    <div class="filter-icon low">🌊</div>
+                    <span>Low Priority</span>
+                </div>
+            </div>
+
+            <div class="section-header">Category</div>
+            <div class="filter-group">
+                <div class="filter-item active" data-filter="all">
+                    <span>All Categories</span>
+                </div>
+                <div class="filter-item" data-filter="community">
+                    <span>Community</span>
+                </div>
+                <div class="filter-item" data-filter="infrastructure">
+                    <span>Infrastructure</span>
+                </div>
+                <div class="filter-item" data-filter="education">
+                    <span>Education</span>
+                </div>
+                <div class="filter-item" data-filter="research">
+                    <span>Research</span>
+                </div>
+                <div class="filter-item" data-filter="skills">
+                    <span>Skills Development</span>
+                </div>
+            </div>
+
+            <div class="section-header">Skills</div>
+            <div class="filter-group">
+                <div class="filter-item active" data-filter="all">
+                    <span>All Skills</span>
+                </div>
+                <div class="filter-item" data-filter="community-building">
+                    <span class="skill-tag">Community Building</span>
+                </div>
+                <div class="filter-item" data-filter="infrastructure-design">
+                    <span class="skill-tag">Infrastructure Design</span>
+                </div>
+                <div class="filter-item" data-filter="education-facilitation">
+                    <span class="skill-tag">Education Facilitation</span>
+                </div>
+                <div class="filter-item" data-filter="research-analysis">
+                    <span class="skill-tag">Research Analysis</span>
+                </div>
+                <div class="filter-item" data-filter="skills-development">
+                    <span class="skill-tag">Skills Development</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="content-header">
+                <div class="view-toggle">
+                    <button class="toggle-btn active" onclick="toggleView('grid')">Grid View</button>
+                    <button class="toggle-btn" onclick="toggleView('list')">List View</button>
+                </div>
+            </div>
+
+            <div class="task-grid">
+                <!-- Task cards will be dynamically generated here -->
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <div class="panel-section">
+                <div class="panel-title">Active Tasks</div>
+                <div class="active-tasks">
+                    <!-- Active tasks will be dynamically generated here -->
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <div class="panel-title">Team Members</div>
+                <div class="team-members">
+                    <!-- Team members will be dynamically generated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Task Modal -->
+    <div class="modal-overlay" id="createTaskModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Create New Task</h2>
+                <button class="close-modal-btn" title="Close">&times;</button>
+            </div>
+            <form class="create-task-form">
+                <div class="form-group">
+                    <label for="taskTitle">Task Title</label>
+                    <input type="text" id="taskTitle" name="taskTitle" placeholder="e.g., Design a permaculture garden" required>
+                </div>
+                <div class="form-group">
+                    <label for="taskDescription">Task Description</label>
+                    <textarea id="taskDescription" name="taskDescription" rows="4" placeholder="Provide a brief overview of the task and its objectives."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="submit-task-btn">Create Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <button class="fab" title="Propose New Task">+</button>
+
+    <script>
+        // Sample task data
+        const allTasks = [
+            {
+                id: 1,
+                title: 'Design a permaculture garden',
+                description: 'Create a sustainable and productive permaculture garden that promotes biodiversity and food security.',
+                category: 'Infrastructure',
+                priority: 'high',
+                skills: ['Infrastructure Design', 'Community Building'],
+                impact: 80,
+                claimed: false
+            },
+            {
+                id: 2,
+                title: 'Organize a community workshop',
+                description: 'Facilitate a workshop to empower local residents with skills for sustainable living and community building.',
+                category: 'Community',
+                priority: 'medium',
+                skills: ['Community Building', 'Education Facilitation'],
+                impact: 60,
+                claimed: false
+            },
+            {
+                id: 3,
+                title: 'Research local water sources',
+                description: 'Investigate the availability and quality of water sources in the area to inform infrastructure planning.',
+                category: 'Research',
+                priority: 'low',
+                skills: ['Research Analysis'],
+                impact: 40,
+                claimed: false
+            },
+            {
+                id: 4,
+                title: 'Develop a skills training program',
+                description: 'Design and implement a skills training program to upskill local residents and enhance their employability.',
+                category: 'Skills Development',
+                priority: 'high',
+                skills: ['Skills Development', 'Education Facilitation'],
+                impact: 90,
+                claimed: false
+            },
+            {
+                id: 5,
+                title: 'Build a community library',
+                description: 'Construct a community library to promote literacy, knowledge sharing, and cultural exchange.',
+                category: 'Infrastructure',
+                priority: 'medium',
+                skills: ['Infrastructure Design', 'Community Building'],
+                impact: 70,
+                claimed: false
+            },
+            {
+                id: 6,
+                title: 'Investigate local wildlife',
+                description: 'Conduct research on the wildlife in the area to inform conservation efforts and enhance biodiversity.',
+                category: 'Research',
+                priority: 'low',
+                skills: ['Research Analysis'],
+                impact: 50,
+                claimed: false
+            },
+            {
+                id: 7,
+                title: 'Organize a community cleanup',
+                description: 'Coordinate a community cleanup event to improve the local environment and foster a sense of ownership.',
+                category: 'Community',
+                priority: 'medium',
+                skills: ['Community Building'],
+                impact: 60,
+                claimed: false
+            },
+            {
+                id: 8,
+                title: 'Develop a sustainable energy plan',
+                description: 'Create a plan to transition the community towards sustainable and renewable energy sources.',
+                category: 'Infrastructure',
+                priority: 'high',
+                skills: ['Infrastructure Design', 'Research Analysis'],
+                impact: 80,
+                claimed: false
+            },
+            {
+                id: 9,
+                title: 'Facilitate a financial literacy workshop',
+                description: 'Teach local residents about personal finance, budgeting, and credit management to improve financial well-being.',
+                category: 'Education',
+                priority: 'medium',
+                skills: ['Education Facilitation'],
+                impact: 60,
+                claimed: false
+            },
+            {
+                id: 10,
+                title: 'Research local agriculture',
+                description: 'Investigate the potential for sustainable agriculture in the area to promote food security and local economy.',
+                category: 'Research',
+                priority: 'low',
+                skills: ['Research Analysis'],
+                impact: 40,
+                claimed: false
+            }
+        ];
+
+        let currentFilter = 'all';
+
+        function getTaskDescription(taskId) {
+            const task = allTasks.find(t => t.id === taskId);
+            return task ? task.description : 'No description available';
+        }
+
+        function createTaskCard(task) {
+            const card = document.createElement('div');
+            card.className = 'task-card';
+            card.dataset.taskId = task.id;
+            
+            const priorityClass = `priority-${task.priority}`;
+            const claimedText = task.claimed ? 'Claimed!' : 'Claim Task';
+            const claimedStyle = task.claimed ? 'background: #4caf50; opacity: 0.7;' : '';
+            
+            card.innerHTML = `
+                <div class="task-meta">
+                    <div class="task-priority ${priorityClass}">${task.priority}</div>
+                    <div class="task-type">${task.category}</div>
+                </div>
+                <div class="task-title">${task.title}</div>
+                <div class="task-description">
+                    ${task.description || getTaskDescription(task.id)}
+                </div>
+                <div class="task-details">
+                    <div class="detail-item">
+                        <span class="detail-icon">⏱️</span>
+                        <span>Estimated Time: 2 hours</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">👥</span>
+                        <span>Team Size: 3-5</span>
+                    </div>
+                </div>
+                <div class="task-skills">
+                    ${task.skills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+                </div>
+                <div class="task-footer">
+                    <div class="impact-points">Impact: ${task.impact}</div>
+                    <button class="claim-btn" style="${claimedStyle}">${claimedText}</button>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        function filterTasks(filter) {
+            currentFilter = filter;
+            const filteredTasks = allTasks.filter(task => {
+                if (filter === 'all') return true;
+                if (filter === 'urgent' || filter === 'high' || filter === 'medium' || filter === 'low') {
+                    return task.priority === filter;
+                }
+                if (filter === 'community' || filter === 'infrastructure' || filter === 'education' || filter === 'research' || filter === 'skills') {
+                    return task.category.toLowerCase() === filter;
+                }
+                if (filter === 'community-building' || filter === 'infrastructure-design' || filter === 'education-facilitation' || filter === 'research-analysis' || filter === 'skills-development') {
+                    return task.skills.map(skill => skill.toLowerCase()).includes(filter);
+                }
+                return true;
+            });
+            
+            renderTasks(filteredTasks);
+        }
+
+        function renderTasks(tasks) {
+            const taskGrid = document.querySelector('.task-grid');
+            taskGrid.innerHTML = '';
+            tasks.forEach(task => {
+                const card = createTaskCard(task);
+                taskGrid.appendChild(card);
+            });
+        }
+
+        function toggleView(viewType) {
+            const buttons = document.querySelectorAll('.toggle-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (viewType === 'list') {
+                document.querySelector('.task-grid').style.gridTemplateColumns = '1fr';
+                showNotification('List view activated');
+            } else {
+                document.querySelector('.task-grid').style.gridTemplateColumns = 'repeat(auto-fill, minmax(320px, 1fr))';
+                showNotification('Grid view activated');
+            }
+        }
+
+        // --- MODAL ---
+
+        function showCreateTaskModal() {
+            const modal = document.getElementById('createTaskModal');
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                modal.style.opacity = '1';
+                modal.querySelector('.modal-content').style.transform = 'scale(1)';
+            }, 10);
+        }
+
+        function hideCreateTaskModal() {
+            const modal = document.getElementById('createTaskModal');
+            modal.style.opacity = '0';
+            modal.querySelector('.modal-content').style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                modal.style.display = 'none';
+                document.querySelector('.create-task-form').reset();
+            }, 300);
+        }
+
+        function handleCreateTaskSubmit(event) {
+            event.preventDefault();
+            const form = event.target;
+            const taskTitle = form.elements.taskTitle.value.trim();
+            const taskDescription = form.elements.taskDescription.value.trim();
+
+            if (taskTitle) {
+                const newTask = {
+                    id: allTasks.length + 1,
+                    title: taskTitle,
+                    description: taskDescription,
+                    category: 'Community',
+                    priority: 'medium',
+                    skills: ['Community Building'],
+                    impact: Math.floor(Math.random() * 100) + 50,
+                    claimed: false
+                };
+                
+                allTasks.unshift(newTask); // Add to the beginning of the list
+                filterTasks(currentFilter);
+                showNotification('New task created successfully!');
+                hideCreateTaskModal();
+            }
+        }
+
+        // Setup all event listeners
+        function setupEventListeners() {
+            // Filter buttons
+            document.querySelectorAll('.filter-group .filter-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    document.querySelector('.filter-group .filter-item.active').classList.remove('active');
+                    this.classList.add('active');
+                    const filter = this.dataset.filter;
+                    filterTasks(filter);
+                });
+            });
+
+            // Claim buttons
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('claim-btn')) {
+                    const taskId = parseInt(e.target.closest('.task-card').dataset.taskId);
+                    claimTask(taskId);
+                }
+            });
+
+            // Task card clicks
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.task-card') && !e.target.classList.contains('claim-btn')) {
+                    const taskCard = e.target.closest('.task-card');
+                    const taskId = parseInt(taskCard.dataset.taskId);
+                    const task = allTasks.find(t => t.id === taskId);
+                    showNotification(`Viewing details for: ${task.title}`);
+                }
+            });
+
+            // FAB to open modal
+            document.querySelector('.fab').addEventListener('click', showCreateTaskModal);
+
+            // Modal events
+            document.querySelector('.close-modal-btn').addEventListener('click', hideCreateTaskModal);
+            document.getElementById('createTaskModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    hideCreateTaskModal();
+                }
+            });
+            document.querySelector('.create-task-form').addEventListener('submit', handleCreateTaskSubmit);
+
+
+            // Category filter buttons
+            document.querySelectorAll('.filter-group .filter-item').forEach((item, index) => {
+                if (index >= 5) { // Category items start after priority items
+                    item.addEventListener('click', function() {
+                        document.querySelector('.filter-group .filter-item.active').classList.remove('active');
+                        this.classList.add('active');
+                        const filter = this.dataset.filter;
+                        filterTasks(filter);
+                    });
+                }
+            });
+        }
+
+        function claimTask(taskId) {
+            const task = allTasks.find(t => t.id === taskId);
+            if (task) {
+                task.claimed = !task.claimed;
+                const claimBtn = document.querySelector(`.task-card[data-task-id="${taskId}"] .claim-btn`);
+                claimBtn.textContent = task.claimed ? 'Claimed!' : 'Claim Task';
+                claimBtn.style.background = task.claimed ? '#4caf50' : '#2c3e34';
+                claimBtn.style.opacity = task.claimed ? '0.7' : '1';
+                showNotification(`Task "${task.title}" ${task.claimed ? 'claimed' : 'unclaimed'}`);
+            }
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }
+
+        // Initialize the app
+        function init() {
+            filterTasks(currentFilter);
+            setupEventListeners();
+        }
+
+        init();
+    </script>
+</body>
+</html>
+<body>
+    <div class="main-container">
+        <!-- Header -->
+        <div class="header-bar">
+            <div class="logo">HIVE</div>
+            <div class="prime-directive">
+                🌍 PRIME DIRECTIVE: Planetary Regeneration Through Collective Intelligence
+            </div>
+            <div class="user-info">
+                <div class="impact-score">+2,847 Impact</div>
+                <div class="member-avatar">SJ</div>
+            </div>
+        </div>
+
+        <!-- Left Sidebar -->
+        <div class="sidebar">
+            <div class="section-header">Task Filters</div>
+            <div class="filter-group">
+                <div class="filter-item active">
+                    <div class="filter-icon urgent">🔥</div>
+                    <span>Urgent (12)</span>
+                </div>
+                <div class="filter-item">
+                    <div class="filter-icon high">⚡</div>
+                    <span>High Priority (34)</span>
+                </div>
+                <div class="filter-item">
+                    <div class="filter-icon medium">🌱</div>
+                    <span>Medium (67)</span>
+                </div>
+                <div class="filter-item">
+                    <div class="filter-icon low">💡</div>
+                    <span>Low Priority (23)</span>
+                </div>
+            </div>
+
+            <div class="section-header">Categories</div>
+            <div class="filter-group">
+                <div class="filter-item">
+                    <div class="filter-icon" style="background: #e8f5e9; color: #2e7d32;">🌾</div>
+                    <span>Regenerative Ag</span>
+                </div>
+                <div class="filter-item">
+                    <div class="filter-icon" style="background: #e3f2fd; color: #1565c0;">⚡</div>
+                    <span>Clean Energy</span>
+                </div>
+                <div class="filter-item">
+                    <div class="filter-icon" style="background: #fff3e0; color: #ef6c00;">♻️</div>
+                    <span>Circular Economy</span>
+                </div>
+                <div class="filter-item">
+                    <div class="filter-icon" style="background: #f1f8e9; color: #558b2f;">🌳</div>
+                    <span>Restoration</span>
+                </div>
+                <div class="filter-item">
+                    <div class="filter-icon" style="background: #e8eaf6; color: #3f51b5;">🤝</div>
+                    <span>Community</span>
+                </div>
+            </div>
+
+            <div class="section-header">Your Skills</div>
+            <div class="filter-group">
+                <div class="skill-tag">Data Analysis</div>
+                <div class="skill-tag">Systems Design</div>
+                <div class="skill-tag">Project Management</div>
+                <div class="skill-tag">Permaculture</div>
+                <div class="skill-tag">Community Building</div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="content-header">
+                <h2 style="color: #2c3e34; font-size: 24px; font-weight: 600;">Available Tasks</h2>
+                <div class="view-toggle">
+                    <button class="toggle-btn active">Grid View</button>
+                    <button class="toggle-btn">List View</button>
+                </div>
+            </div>
+
+            <div class="task-grid">
+                <!-- Urgent Task -->
+                <div class="task-card">
+                    <div class="task-meta">
+                        <div class="task-priority priority-urgent">Urgent</div>
+                        <div class="task-type">Regenerative Ag</div>
+                    </div>
+                    <div class="task-title">Coordinate Seed Exchange Network</div>
+                    <div class="task-description">
+                        Link 47 heritage seed collectors across 3 bioregions to prevent genetic erosion and increase crop resilience.
+                    </div>
+                    <div class="task-details">
+                        <div class="detail-item">
+                            <span class="detail-icon">⏱️</span>
+                            <span>2-4 hours</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">👥</span>
+                            <span>3 collaborators</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">📍</span>
+                            <span>North America</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">📅</span>
+                            <span>Due: Today</span>
+                        </div>
+                    </div>
+                    <div class="task-skills">
+                        <div class="skill-tag">Community Building</div>
+                        <div class="skill-tag">Systems Design</div>
+                    </div>
+                    <div class="task-footer">
+                        <div class="impact-points">+150 Impact</div>
+                        <button class="claim-btn">Claim Task</button>
+                    </div>
+                </div>
+
+                <!-- High Priority Task -->
+                <div class="task-card">
+                    <div class="task-meta">
+                        <div class="task-priority priority-high">High</div>
+                        <div class="task-type">Clean Energy</div>
+                    </div>
+                    <div class="task-title">Solar Microgrid Design</div>
+                    <div class="task-description">
+                        Design distributed energy system for rural community of 250 households in partnership with local cooperative.
+                    </div>
+                    <div class="task-details">
+                        <div class="detail-item">
+                            <span class="detail-icon">⏱️</span>
+                            <span>6-8 hours</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">👥</span>
+                            <span>5 collaborators</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">📍</span>
+                            <span>Guatemala</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">📅</span>
+                            <span>Due: 3 days</span>
+                        </div>
+                    </div>
+                    <div class="task-skills">
+                        <div class="skill-tag">Engineering</div>
+                        <div class="skill-tag">Project Management</div>
+                    </div>
+                    <div class="task-footer">
+                        <div class="impact-points">+320 Impact</div>
+                        <button class="claim-btn">Claim Task</button>
+                    </div>
+                </div>
+
+                <!-- Medium Priority Task -->
+                <div class="task-card">
+                    <div class="task-meta">
+                        <div class="task-priority priority-medium">Medium</div>
+                        <div class="task-type">Ocean Health</div>
+                    </div>
+                    <div class="task-title">Marine Plastic Cleanup Protocol</div>
+                    <div class="task-description">
+                        Develop standardized cleanup methodology that 12 coastal communities can implement simultaneously.
+                    </div>
+                    <div class="task-details">
+                        <div class="detail-item">
+                            <span class="detail-icon">⏱️</span>
+                            <span>4-6 hours</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">👥</span>
+                            <span>8 collaborators</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">📍</span>
+                            <span>Global</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">📅</span>
+                            <span>Due: 1 week</span>
+                        </div>
+                    </div>
+                    <div class="task-skills">
+                        <div class="skill-tag">Environmental Science</div>
+                        <div class="skill-tag">Community Building</div>
+                    </div>
+                    <div class="task-footer">
+                        <div class="impact-points">+240 Impact</div>
+                        <button class="claim-btn">Claim Task</button>
+                    </div>
+                </div>
+
+                <!-- Circular Economy Task -->
+                <div class="task-card">
+                    <div class="task-meta">
+                        <div class="task-priority priority-high">High</div>
+                        <div class="task-type">Circular Economy</div>
+                    </div>
+                    <div class="task-title">Waste-to-Resource Network</div>
+                    <div class="task-description">
+                        Map material flows between 23 manufacturers to create closed-loop production cycles eliminating waste.
+                    </div>
+                    <div class="task-details">
+                        <div class="detail-item">
+                            <span class="detail-icon">⏱️</span>
+                            <span>8-12 hours</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">👥</span>
+                            <span>6 collaborators</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">📍</span>
+                            <span>Europe</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">📅</span>
+                            <span>Due: 5 days</span>
+                        </div>
+                    </div>
+                    <div class="task-skills">
+                        <div class="skill-tag">Data Analysis</div>
+                        <div class="skill-tag">Systems Design</div>
+                    </div>
+                    <div class="task-footer">
+                        <div class="impact-points">+450 Impact</div>
+                        <button class="claim-btn">Claim Task</button>
+                    </div>
+                </div>
+
+                <!-- Forest Restoration Task -->
+                <div class="task-card">
+                    <div class="task-meta">
+                        <div class="task-priority priority-medium">Medium</div>
+                        <div class="task-type">Restoration</div>
+                    </div>
+                    <div class="task-title">Mycorrhizal Network Study</div>
+                    <div class="task-description">
+                        Document fungal network patterns across restored forest sites to optimize future reforestation efforts.
+                    </div>
+                    <div class="task-details">
+                        <div class="detail-item">
+                            <span class="detail-icon">⏱️</span>
+                            <span>12-16 hours</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">👥</span>
+                            <span>4 collaborators</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">📍</span>
+                            <span>Pacific Northwest</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">📅</span>
+                            <span>Due: 2 weeks</span>
+                        </div>
+                    </div>
+                    <div class="task-skills">
+                        <div class="skill-tag">Research</div>
+                        <div class="skill-tag">Ecology</div>
+                    </div>
+                    <div class="task-footer">
+                        <div class="impact-points">+180 Impact</div>
+                        <button class="claim-btn">Claim Task</button>
+                    </div>
+                </div>
+
+                <!-- Community Building Task -->
+                <div class="task-card">
+                    <div class="task-meta">
+                        <div class="task-priority priority-low">Low</div>
+                        <div class="task-type">Community</div>
+                    </div>
+                    <div class="task-title">Bioregional Skill Mapping</div>
+                    <div class="task-description">
+                        Create visual map of expertise across local watershed to identify collaboration opportunities and knowledge gaps.
+                    </div>
+                    <div class="task-details">
+                        <div class="detail-item">
+                            <span class="detail-icon">⏱️</span>
+                            <span>3-5 hours</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">👥</span>
+                            <span>12 collaborators</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">📍</span>
+                            <span>Your Bioregion</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">📅</span>
+                            <span>Due: 3 weeks</span>
+                        </div>
+                    </div>
+                    <div class="task-skills">
+                        <div class="skill-tag">Community Building</div>
+                        <div class="skill-tag">Data Visualization</div>
+                    </div>
+                    <div class="task-footer">
+                        <div class="impact-points">+90 Impact</div>
+                        <button class="claim-btn">Claim Task</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="right-panel">
+            <div class="panel-section">
+                <div class="panel-title">Your Active Tasks</div>
+                <div class="active-tasks">
+                    <div class="active-task">
+                        <div class="active-task-title">Permaculture Training Network</div>
+                        <div class="active-task-progress">3 of 5 modules complete</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 60%"></div>
+                        </div>
+                    </div>
+                    <div class="active-task">
+                        <div class="active-task-title">Water Catchment Design</div>
+                        <div class="active-task-progress">Research phase - 90% complete</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 90%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <div class="panel-title">Team Coordination</div>
+                <div class="team-member">
+                    <div class="member-avatar">AM</div>
+                    <div class="member-info">
+                        <div class="member-name">Ana Martinez</div>
+                        <div class="member-role">Ecosystem Designer</div>
+                    </div>
+                    <div class="member-status status-available">Available</div>
+                </div>
+                <div class="team-member">
+                    <div class="member-avatar">DJ</div>
+                    <div class="member-info">
+                        <div class="member-name">David Kim</div>
+                        <div class="member-role">Data Analyst</div>
+                    </div>
+                    <div class="member-status status-busy">In Task</div>
+                </div>
+                <div class="team-member">
+                    <div class="member-avatar">LP</div>
+                    <div class="member-info">
+                        <div class="member-name">Luna Patel</div>
+                        <div class="member-role">Community Coordinator</div>
+                    </div>
+                    <div class="member-status status-available">Available</div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <div class="panel-title">Collective Impact</div>
+                <div style="font-size: 24px; font-weight: 600; color: #4caf50; margin-bottom: 8px;">
+                    847,293 people
+                </div>
+                <div style="font-size: 14px; color: #666; margin-bottom: 16px;">
+                    actively coordinating regenerative actions
+                </div>
+                <div style="font-size: 14px; color: #666; line-height: 1.5;">
+                    <strong>Today's Global Actions:</strong><br>
+                    • 2,847 tasks completed<br>
+                    • 156 new collaborations formed<br>
+                    • 23 bioregions connected<br>
+                    • 18.7 tons CO2 sequestered
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Task Modal -->
+    <div class="modal-overlay" id="createTaskModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Create New Task</h2>
+                <button class="close-modal-btn" title="Close">&times;</button>
+            </div>
+            <form class="create-task-form">
+                <div class="form-group">
+                    <label for="taskTitle">Task Title</label>
+                    <input type="text" id="taskTitle" name="taskTitle" placeholder="e.g., Design a permaculture garden" required>
+                </div>
+                <div class="form-group">
+                    <label for="taskDescription">Task Description</label>
+                    <textarea id="taskDescription" name="taskDescription" rows="4" placeholder="Provide a brief overview of the task and its objectives."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="submit-task-btn">Create Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <button class="fab" title="Propose New Task">+</button>
+
+    <script>
+        // Sample task data
+        const allTasks = [
+            {
+                id: 1,
+                title: 'Design a permaculture garden',
+                description: 'Create a sustainable and productive permaculture garden that promotes biodiversity and food security.',
+                category: 'Infrastructure',
+                priority: 'high',
+                skills: ['Infrastructure Design', 'Community Building'],
+                impact: 80,
+                claimed: false
+            },
+            {
+                id: 2,
+                title: 'Organize a community workshop',
+                description: 'Facilitate a workshop to empower local residents with skills for sustainable living and community building.',
+                category: 'Community',
+                priority: 'medium',
+                skills: ['Community Building', 'Education Facilitation'],
+                impact: 60,
+                claimed: false
+            },
+            {
+                id: 3,
+                title: 'Research local water sources',
+                description: 'Investigate the availability and quality of water sources in the area to inform infrastructure planning.',
+                category: 'Research',
+                priority: 'low',
+                skills: ['Research Analysis'],
+                impact: 40,
+                claimed: false
+            },
+            {
+                id: 4,
+                title: 'Develop a skills training program',
+                description: 'Design and implement a skills training program to upskill local residents and enhance their employability.',
+                category: 'Skills Development',
+                priority: 'high',
+                skills: ['Skills Development', 'Education Facilitation'],
+                impact: 90,
+                claimed: false
+            },
+            {
+                id: 5,
+                title: 'Build a community library',
+                description: 'Construct a community library to promote literacy, knowledge sharing, and cultural exchange.',
+                category: 'Infrastructure',
+                priority: 'medium',
+                skills: ['Infrastructure Design', 'Community Building'],
+                impact: 70,
+                claimed: false
+            },
+            {
+                id: 6,
+                title: 'Investigate local wildlife',
+                description: 'Conduct research on the wildlife in the area to inform conservation efforts and enhance biodiversity.',
+                category: 'Research',
+                priority: 'low',
+                skills: ['Research Analysis'],
+                impact: 50,
+                claimed: false
+            },
+            {
+                id: 7,
+                title: 'Organize a community cleanup',
+                description: 'Coordinate a community cleanup event to improve the local environment and foster a sense of ownership.',
+                category: 'Community',
+                priority: 'medium',
+                skills: ['Community Building'],
+                impact: 60,
+                claimed: false
+            },
+            {
+                id: 8,
+                title: 'Develop a sustainable energy plan',
+                description: 'Create a plan to transition the community towards sustainable and renewable energy sources.',
+                category: 'Infrastructure',
+                priority: 'high',
+                skills: ['Infrastructure Design', 'Research Analysis'],
+                impact: 80,
+                claimed: false
+            },
+            {
+                id: 9,
+                title: 'Facilitate a financial literacy workshop',
+                description: 'Teach local residents about personal finance, budgeting, and credit management to improve financial well-being.',
+                category: 'Education',
+                priority: 'medium',
+                skills: ['Education Facilitation'],
+                impact: 60,
+                claimed: false
+            },
+            {
+                id: 10,
+                title: 'Research local agriculture',
+                description: 'Investigate the potential for sustainable agriculture in the area to promote food security and local economy.',
+                category: 'Research',
+                priority: 'low',
+                skills: ['Research Analysis'],
+                impact: 40,
+                claimed: false
+            }
+        ];
+
+        let currentFilter = 'all';
+
+        function getTaskDescription(taskId) {
+            const task = allTasks.find(t => t.id === taskId);
+            return task ? task.description : 'No description available';
+        }
+
+        function createTaskCard(task) {
+            const card = document.createElement('div');
+            card.className = 'task-card';
+            card.dataset.taskId = task.id;
+            
+            const priorityClass = `priority-${task.priority}`;
+            const claimedText = task.claimed ? 'Claimed!' : 'Claim Task';
+            const claimedStyle = task.claimed ? 'background: #4caf50; opacity: 0.7;' : '';
+            
+            card.innerHTML = `
+                <div class="task-meta">
+                    <div class="task-priority ${priorityClass}">${task.priority}</div>
+                    <div class="task-type">${task.category}</div>
+                </div>
+                <div class="task-title">${task.title}</div>
+                <div class="task-description">
+                    ${task.description || getTaskDescription(task.id)}
+                </div>
+                <div class="task-details">
+                    <div class="detail-item">
+                        <span class="detail-icon">⏱️</span>
+                        <span>Estimated Time: 2 hours</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">👥</span>
+                        <span>Team Size: 3-5</span>
+                    </div>
+                </div>
+                <div class="task-skills">
+                    ${task.skills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+                </div>
+                <div class="task-footer">
+                    <div class="impact-points">Impact: ${task.impact}</div>
+                    <button class="claim-btn" style="${claimedStyle}">${claimedText}</button>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        function filterTasks(filter) {
+            currentFilter = filter;
+            const filteredTasks = allTasks.filter(task => {
+                if (filter === 'all') return true;
+                if (filter === 'urgent' || filter === 'high' || filter === 'medium' || filter === 'low') {
+                    return task.priority === filter;
+                }
+                if (filter === 'community' || filter === 'infrastructure' || filter === 'education' || filter === 'research' || filter === 'skills') {
+                    return task.category.toLowerCase() === filter;
+                }
+                if (filter === 'community-building' || filter === 'infrastructure-design' || filter === 'education-facilitation' || filter === 'research-analysis' || filter === 'skills-development') {
+                    return task.skills.map(skill => skill.toLowerCase()).includes(filter);
+                }
+                return true;
+            });
+            
+            renderTasks(filteredTasks);
+        }
+
+        function renderTasks(tasks) {
+            const taskGrid = document.querySelector('.task-grid');
+            taskGrid.innerHTML = '';
+            tasks.forEach(task => {
+                const card = createTaskCard(task);
+                taskGrid.appendChild(card);
+            });
+        }
+
+        function toggleView(viewType) {
+            const buttons = document.querySelectorAll('.toggle-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (viewType === 'list') {
+                document.querySelector('.task-grid').style.gridTemplateColumns = '1fr';
+                showNotification('List view activated');
+            } else {
+                document.querySelector('.task-grid').style.gridTemplateColumns = 'repeat(auto-fill, minmax(320px, 1fr))';
+                showNotification('Grid view activated');
+            }
+        }
+
+        // --- MODAL ---
+
+        function showCreateTaskModal() {
+            const modal = document.getElementById('createTaskModal');
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                modal.style.opacity = '1';
+                modal.querySelector('.modal-content').style.transform = 'scale(1)';
+            }, 10);
+        }
+
+        function hideCreateTaskModal() {
+            const modal = document.getElementById('createTaskModal');
+            modal.style.opacity = '0';
+            modal.querySelector('.modal-content').style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                modal.style.display = 'none';
+                document.querySelector('.create-task-form').reset();
+            }, 300);
+        }
+
+        function handleCreateTaskSubmit(event) {
+            event.preventDefault();
+            const form = event.target;
+            const taskTitle = form.elements.taskTitle.value.trim();
+            const taskDescription = form.elements.taskDescription.value.trim();
+
+            if (taskTitle) {
+                const newTask = {
+                    id: allTasks.length + 1,
+                    title: taskTitle,
+                    description: taskDescription,
+                    category: 'Community',
+                    priority: 'medium',
+                    skills: ['Community Building'],
+                    impact: Math.floor(Math.random() * 100) + 50,
+                    claimed: false
+                };
+                
+                allTasks.unshift(newTask); // Add to the beginning of the list
+                filterTasks(currentFilter);
+                showNotification('New task created successfully!');
+                hideCreateTaskModal();
+            }
+        }
+
+        // Setup all event listeners
+        function setupEventListeners() {
+            // Filter buttons
+            document.querySelectorAll('.filter-group .filter-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    document.querySelector('.filter-group .filter-item.active').classList.remove('active');
+                    this.classList.add('active');
+                    const filter = this.dataset.filter;
+                    filterTasks(filter);
+                });
+            });
+
+            // Claim buttons
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('claim-btn')) {
+                    const taskId = parseInt(e.target.closest('.task-card').dataset.taskId);
+                    claimTask(taskId);
+                }
+            });
+
+            // Task card clicks
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.task-card') && !e.target.classList.contains('claim-btn')) {
+                    const taskCard = e.target.closest('.task-card');
+                    const taskId = parseInt(taskCard.dataset.taskId);
+                    const task = allTasks.find(t => t.id === taskId);
+                    showNotification(`Viewing details for: ${task.title}`);
+                }
+            });
+
+            // FAB to open modal
+            document.querySelector('.fab').addEventListener('click', showCreateTaskModal);
+
+            // Modal events
+            document.querySelector('.close-modal-btn').addEventListener('click', hideCreateTaskModal);
+            document.getElementById('createTaskModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    hideCreateTaskModal();
+                }
+            });
+            document.querySelector('.create-task-form').addEventListener('submit', handleCreateTaskSubmit);
+
+
+            // Category filter buttons
+            document.querySelectorAll('.filter-group .filter-item').forEach((item, index) => {
+                if (index >= 5) { // Category items start after priority items
+                    item.addEventListener('click', function() {
+                        document.querySelector('.filter-group .filter-item.active').classList.remove('active');
+                        this.classList.add('active');
+                        const filter = this.dataset.filter;
+                        filterTasks(filter);
+                    });
+                }
+            });
+        }
+
+        function claimTask(taskId) {
+            const task = allTasks.find(t => t.id === taskId);
+            if (task) {
+                task.claimed = !task.claimed;
+                const claimBtn = document.querySelector(`.task-card[data-task-id="${taskId}"] .claim-btn`);
+                claimBtn.textContent = task.claimed ? 'Claimed!' : 'Claim Task';
+                claimBtn.style.background = task.claimed ? '#4caf50' : '#2c3e34';
+                claimBtn.style.opacity = task.claimed ? '0.7' : '1';
+                showNotification(`Task "${task.title}" ${task.claimed ? 'claimed' : 'unclaimed'}`);
+            }
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }
+
+        // Initialize the app
+        function init() {
+            filterTasks(currentFilter);
+            setupEventListeners();
+        }
+
+        init();
+    </script>
+</body>
+</html>
+</body>
+</div>
+
+    <script>
+        // Task data for filtering and management
+        const allTasks = [
+            { id: 1, title: 'Coordinate Seed Exchange Network', category: 'Regenerative Ag', priority: 'urgent', skills: ['Community Building', 'Systems Design'], impact: 150, claimed: false },
+            { id: 2, title: 'Solar Microgrid Design', category: 'Clean Energy', priority: 'high', skills: ['Engineering', 'Project Management'], impact: 320, claimed: false },
+            { id: 3, title: 'Marine Plastic Cleanup Protocol', category: 'Ocean Health', priority: 'medium', skills: ['Environmental Science', 'Community Building'], impact: 240, claimed: false },
+            { id: 4, title: 'Waste-to-Resource Network', category: 'Circular Economy', priority: 'high', skills: ['Data Analysis', 'Systems Design'], impact: 450, claimed: false },
+            { id: 5, title: 'Mycorrhizal Network Study', category: 'Restoration', priority: 'medium', skills: ['Research', 'Ecology'], impact: 180, claimed: false },
+            { id: 6, title: 'Bioregional Skill Mapping', category: 'Community', priority: 'low', skills: ['Community Building', 'Data Visualization'], impact: 90, claimed: false },
+            { id: 7, title: 'Carbon Sequestration Monitoring', category: 'Regenerative Ag', priority: 'high', skills: ['Data Analysis', 'Environmental Science'], impact: 280, claimed: false },
+            { id: 8, title: 'Wind Farm Community Design', category: 'Clean Energy', priority: 'medium', skills: ['Engineering', 'Community Building'], impact: 380, claimed: false },
+            { id: 9, title: 'Coral Reef Restoration', category: 'Ocean Health', priority: 'urgent', skills: ['Marine Biology', 'Project Management'], impact: 420, claimed: false },
+            { id: 10, title: 'Composting Network Expansion', category: 'Circular Economy', priority: 'low', skills: ['Community Building', 'Systems Design'], impact: 120, claimed: false }
+        ];
+
+        let filteredTasks = [...allTasks];
+        let currentFilter = 'all';
+        let userImpactScore = 2847;
+
+        // Initialize the dashboard
+        function initializeDashboard() {
+            renderTasks(filteredTasks);
+            updateImpactScore();
+            setupEventListeners();
+        }
+
+        // Render tasks in the grid
+        function renderTasks(tasks) {
+            const taskGrid = document.querySelector('.task-grid');
+            taskGrid.innerHTML = '';
+
+            tasks.forEach(task => {
+                const taskCard = createTaskCard(task);
+                taskGrid.appendChild(taskCard);
+            });
+        }
+
+        // Create a task card element
+        function createTaskCard(task) {
+            const card = document.createElement('div');
+            card.className = 'task-card';
+            card.dataset.taskId = task.id;
+            
+            const priorityClass = `priority-${task.priority}`;
+            const claimedText = task.claimed ? 'Claimed!' : 'Claim Task';
+            const claimedStyle = task.claimed ? 'background: #4caf50; opacity: 0.7;' : '';
+            
+            card.innerHTML = `
+                <div class="task-meta">
+                    <div class="task-priority ${priorityClass}">${task.priority}</div>
+                    <div class="task-type">${task.category}</div>
+                </div>
+                <div class="task-title">${task.title}</div>
+                <div class="task-description">
+                    ${getTaskDescription(task.id)}
+                </div>
+                <div class="task-details">
+                    <div class="detail-item">
+                        <span class="detail-icon">⏱️</span>
+                        <span>${getTimeEstimate(task.priority)}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">👥</span>
+                        <span>${Math.floor(Math.random() * 8) + 3} collaborators</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">📍</span>
+                        <span>${getLocation(task.category)}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">📅</span>
+                        <span>Due: ${getDueDate(task.priority)}</span>
+                    </div>
+                </div>
+                <div class="task-skills">
+                    ${task.skills.map(skill => `<div class="skill-tag">${skill}</div>`).join('')}
+                </div>
+                <div class="task-footer">
+                    <div class="impact-points">+${task.impact} Impact</div>
+                    <button class="claim-btn" style="${claimedStyle}" ${task.claimed ? 'disabled' : ''}>${claimedText}</button>
+                </div>
+            `;
+
+            return card;
+        }
+
+        // Helper functions for task data
+        function getTaskDescription(id) {
+            const descriptions = {
+                1: 'Link 47 heritage seed collectors across 3 bioregions to prevent genetic erosion and increase crop resilience.',
+                2: 'Design distributed energy system for rural community of 250 households in partnership with local cooperative.',
+                3: 'Develop standardized cleanup methodology that 12 coastal communities can implement simultaneously.',
+                4: 'Map material flows between 23 manufacturers to create closed-loop production cycles eliminating waste.',
+                5: 'Document fungal network patterns across restored forest sites to optimize future reforestation efforts.',
+                6: 'Create visual map of expertise across local watershed to identify collaboration opportunities and knowledge gaps.',
+                7: 'Deploy sensor network across 15 regenerative farms to track soil carbon accumulation rates.',
+                8: 'Facilitate community ownership model for 50MW wind installation serving 3 rural towns.',
+                9: 'Coordinate volunteers for large-scale coral transplantation across 5 reef sites.',
+                10: 'Connect urban food waste streams with rural composting operations across metropolitan area.'
+            };
+            return descriptions[id] || 'Contributing to planetary regeneration through collective action.';
+        }
+
+        function getTimeEstimate(priority) {
+            const estimates = {
+                'urgent': '2-4 hours',
+                'high': '6-8 hours',
+                'medium': '4-6 hours',
+                'low': '3-5 hours'
+            };
+            return estimates[priority];
+        }
+
+        function getLocation(category) {
+            const locations = {
+                'Regenerative Ag': 'North America',
+                'Clean Energy': 'Europe',
+                'Ocean Health': 'Global',
+                'Circular Economy': 'Asia',
+                'Restoration': 'Pacific Northwest',
+                'Community': 'Your Bioregion'
+            };
+            return locations[category] || 'Global';
+        }
+
+        function getDueDate(priority) {
+            const dates = {
+                'urgent': 'Today',
+                'high': '3 days',
+                'medium': '1 week',
+                'low': '3 weeks'
+            };
+            return dates[priority];
+        }
+
+        // Filter tasks by category
+        function filterTasks(filterType) {
+            currentFilter = filterType;
+            
+            if (filterType === 'all') {
+                filteredTasks = [...allTasks];
+            } else if (['urgent', 'high', 'medium', 'low'].includes(filterType)) {
+                filteredTasks = allTasks.filter(task => task.priority === filterType);
+            } else {
+                filteredTasks = allTasks.filter(task => 
+                    task.category.toLowerCase().includes(filterType.toLowerCase()) ||
+                    task.skills.some(skill => skill.toLowerCase().includes(filterType.toLowerCase()))
+                );
+            }
+            
+            renderTasks(filteredTasks);
+            updateFilterCounts();
+        }
+
+        // Update filter counts
+        function updateFilterCounts() {
+            const urgentCount = allTasks.filter(t => t.priority === 'urgent' && !t.claimed).length;
+            const highCount = allTasks.filter(t => t.priority === 'high' && !t.claimed).length;
+            const mediumCount = allTasks.filter(t => t.priority === 'medium' && !t.claimed).length;
+            const lowCount = allTasks.filter(t => t.priority === 'low' && !t.claimed).length;
+
+            document.querySelector('.filter-item:nth-child(1) span').textContent = `Urgent (${urgentCount})`;
+            document.querySelector('.filter-item:nth-child(2) span').textContent = `High Priority (${highCount})`;
+            document.querySelector('.filter-item:nth-child(3) span').textContent = `Medium (${mediumCount})`;
+            document.querySelector('.filter-item:nth-child(4) span').textContent = `Low Priority (${lowCount})`;
+        }
+
+        // Claim a task
+        function claimTask(taskId) {
+            const task = allTasks.find(t => t.id === taskId);
+            if (task && !task.claimed) {
+                task.claimed = true;
+                userImpactScore += task.impact;
+                
+                // Update the specific task card
+                const taskCard = document.querySelector(`[data-task-id="${taskId}"]`);
+                const claimBtn = taskCard.querySelector('.claim-btn');
+                claimBtn.textContent = 'Claimed!';
+                claimBtn.style.background = '#4caf50';
+                claimBtn.disabled = true;
+                
+                // Add to active tasks
+                addToActiveTasks(task);
+                
+                // Update impact score
+                updateImpactScore();
+                
+                // Update filter counts
+                updateFilterCounts();
+                
+                // Show success notification
+                showNotification(`Task claimed! +${task.impact} impact points`);
+                
+                // Simulate adding to active tasks panel
+                setTimeout(() => {
+                    updateActiveTasks();
+                }, 500);
+            }
+        }
+
+        // Add task to active tasks panel
+        function addToActiveTasks(task) {
+            const activeTasksContainer = document.querySelector('.active-tasks');
+            const activeTask = document.createElement('div');
+            activeTask.className = 'active-task';
+            activeTask.innerHTML = `
+                <div class="active-task-title">${task.title}</div>
+                <div class="active-task-progress">Starting phase - 0% complete</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 0%"></div>
+                </div>
+            `;
+            activeTasksContainer.appendChild(activeTask);
+        }
+
+        // Update active tasks display
+        function updateActiveTasks() {
+            const activeTasks = document.querySelectorAll('.active-task');
+            activeTasks.forEach((task, index) => {
+                if (index >= 2) { // Skip the pre-existing tasks
+                    const progressFill = task.querySelector('.progress-fill');
+                    const progressText = task.querySelector('.active-task-progress');
+                    const randomProgress = Math.floor(Math.random() * 30) + 10;
+                    progressFill.style.width = `${randomProgress}%`;
+                    progressText.textContent = `Initial setup - ${randomProgress}% complete`;
+                }
+            });
+        }
+
+        // Update impact score display
+        function updateImpactScore() {
+            const impactElement = document.querySelector('.impact-score');
+            impactElement.textContent = `+${userImpactScore.toLocaleString()} Impact`;
+            
+            // Animate the change
+            impactElement.style.transform = 'scale(1.1)';
+            setTimeout(() => {
+                impactElement.style.transform = 'scale(1)';
+            }, 200);
+        }
+
+        // Show notification
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 32px;
+                background: #4caf50;
+                color: white;
+                padding: 16px 24px;
+                border-radius: 12px;
+                font-weight: 600;
+                z-index: 10000;
+                transform: translateX(400px);
+                transition: transform 0.3s ease;
+                box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(400px)';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // View toggle functionality
+        function toggleView(viewType) {
+            const buttons = document.querySelectorAll('.toggle-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (viewType === 'list') {
+                document.querySelector('.task-grid').style.gridTemplateColumns = '1fr';
+                showNotification('List view activated');
+            } else {
+                document.querySelector('.task-grid').style.gridTemplateColumns = 'repeat(auto-fill, minmax(320px, 1fr))';
+                showNotification('Grid view activated');
+            }
+        }
+
+        // Create new task (FAB functionality)
+        function createNewTask() {
+            const taskTitle = prompt('Enter task title:');
+            if (taskTitle) {
+                const newTask = {
+                    id: allTasks.length + 1,
+                    title: taskTitle,
+                    category: 'Community',
+                    priority: 'medium',
+                    skills: ['Community Building'],
+                    impact: Math.floor(Math.random() * 200) + 100,
+                    claimed: false
+                };
+                
+                allTasks.push(newTask);
+                filterTasks(currentFilter);
+                showNotification('New task created successfully!');
+            }
+        }
+
+        // Setup all event listeners
+        function setupEventListeners() {
+            // Filter buttons
+            document.querySelectorAll('.filter-item').forEach((item, index) => {
+                item.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-item').forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const filters = ['urgent', 'high', 'medium', 'low', 'regenerative', 'clean energy', 'circular', 'restoration', 'community'];
+                    filterTasks(index < 4 ? filters[index] : filters[index]);
+                });
+            });
+
+            // View toggle buttons
+            document.querySelectorAll('.toggle-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const viewType = this.textContent.toLowerCase().includes('grid') ? 'grid' : 'list';
+                    toggleView(viewType);
+                });
+            });
+
+            // Task claiming (using event delegation)
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('claim-btn') && !e.target.disabled) {
+                    e.stopPropagation();
+                    const taskId = parseInt(e.target.closest('.task-card').dataset.taskId);
+                    claimTask(taskId);
+                }
+            });
+
+            // Task card clicks
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.task-card') && !e.target.classList.contains('claim-btn')) {
+                    const taskCard = e.target.closest('.task-card');
+                    const taskId = parseInt(taskCard.dataset.taskId);
+                    const task = allTasks.find(t => t.id === taskId);
+                    showNotification(`Viewing details for: ${task.title}`);
+                }
+            });
+
+            // FAB functionality
+            document.querySelector('.fab').addEventListener('click', createNewTask);
+
+            // Category filter buttons
+            document.querySelectorAll('.filter-group .filter-item').forEach((item, index) => {
+                if (index >= 5) { // Category items start after priority items
+                    item.addEventListener('click', function() {
+                        const categoryMap = ['regenerative', 'clean energy', 'circular', 'restoration', 'community'];
+                        const categoryIndex = index - 5;
+                        if (categoryMap[categoryIndex]) {
+                            filterTasks(categoryMap[categoryIndex]);
+                        }
+                    });
+                }
+            });
+        }
+
+        // Simulate real-time updates
+        function simulateRealTimeUpdates() {
+            setInterval(() => {
+                // Update global impact counter
+                const impactElements = document.querySelectorAll('.panel-section:last-child div');
+                if (impactElements.length > 0) {
+                    const currentCount = parseInt(impactElements[0].textContent.replace(/[^\d]/g, ''));
+                    const newCount = currentCount + Math.floor(Math.random() * 50) + 10;
+                    impactElements[0].textContent = `${newCount.toLocaleString()} people`;
+                }
+                
+                // Randomly update team member status
+                const statusElements = document.querySelectorAll('.member-status');
+                statusElements.forEach(status => {
+                    if (Math.random() < 0.1) { // 10% chance to change status
+                        if (status.classList.contains('status-available')) {
+                            status.classList.remove('status-available');
+                            status.classList.add('status-busy');
+                            status.textContent = 'In Task';
+                        } else {
+                            status.classList.remove('status-busy');
+                            status.classList.add('status-available');
+                            status.textContent = 'Available';
+                        }
+                    }
+                });
+            }, 5000); // Update every 5 seconds
+        }
+
+        // Initialize everything when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDashboard();
+            simulateRealTimeUpdates();
+        });
+    </script>
+</body>
+</html>

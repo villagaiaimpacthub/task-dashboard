@@ -1,0 +1,58 @@
+HIVE Backend Development - Project Manifest
+Master Task Index & Execution Guide
+> Peter Mick Rule: Write code as if the maintainer is a violent psychopath who knows where you live 😈
+> 
+🎯 Objective
+This document serves as the central manifest for the HIVE Backend Development project, providing a comprehensive index of all task specification files and guiding the execution strategy for both the Full Production Version and the Simplified Alpha Version.
+📋 How to Use This Manifest
+ * Choose Your Project Scope: Decide whether to implement the "Full Production Version" or the "Simplified Alpha Version."
+ * Locate Task Files: Use the index below to find the exact .md file names for the tasks within your chosen scope.
+ * Execute Tasks: Feed the relevant task files to Claude Code in the recommended sequence (as outlined in the respective Master Execution Plans for each version).
+🗂️ Project Scopes & Task Indices
+Scope 1: Full Production Version
+(Designed for a robust, scalable, and psychopath-proof backend. Follows the comprehensive Master Execution Plan.)
+Execution Guide: Refer to HIVE Backend Development - Master Execution Plan.md for the detailed execution sequence, dependencies, and parallelization opportunities.
+Task Files Index:
+Phase 0: Project Initiation & Foundation
+ * HIVE Task 0.1 Development Progress Dashboard.md
+ * HIVE Task 1.1 Project Setup.md
+ * HIVE Task 1.2 Database Models & Relationships.md
+ * HIVE Task 1.3 Authentication & Security.md
+ * HIVE Task 1.4 API Endpoints & Routing.md
+ * HIVE Task 1.5 Infrastructure & Configuration.md
+Phase 1: Core Business Logic
+ * HIVE Task 2.0 User Profile & Data Management.md (NEW Task)
+ * HIVE Task 2.1 Task Management System.md
+ * HIVE Task 2.2 Skill Matching & Recommendation Engine.md
+Phase 2: Advanced Features & Optimization
+ * HIVE Task 3.1 Real-time Collaboration System.md
+ * HIVE Task 3.2.1 Impact Tracking & Reporting Services.md (NEW Task)
+ * HIVE Task 3.3.1 Advanced Search & Geolocation Services.md (NEW Task)
+ * HIVE Task 4.0 External Integrations & File Management.md (NEW Task)
+ * HIVE Task 4.2 Performance & Caching Optimization.md (NEW Task)
+Phase 3: Production Readiness & Final Validation
+ * HIVE Task 3.2 System Integration & Validation.md
+ * HIVE Task 5.0 Comprehensive Test Suite Implementation.md (NEW Task)
+ * HIVE Task 4.1 Production Deployment & Monitoring.md
+Scope 2: Simplified Alpha Version
+(Designed for rapid internal testing and initial feature validation. Follows a streamlined execution sequence.)
+Execution Guide: The simplified execution sequence is detailed below for quick reference.
+Task Files Index:
+ * HIVE Task Alpha 0.1 Simplified Development Dashboard.md
+ * HIVE Task Alpha 1.0 Core Backend Foundation.md (Includes core setup, DB, Auth, User/Task models with dashboard fields, and basic task filtering)
+ * HIVE Task Alpha 1.1 Basic Task Workflow & Real-time.md
+ * HIVE Task Alpha 1.2 Basic Infrastructure & Testing.md
+ * HIVE Task Alpha 1.3 Basic Dashboard Analytics & Live Status.md (NEW Alpha Task)
+🚀 Simplified Alpha Version Execution Sequence
+This sequence is designed for minimal dependencies and rapid deployment for internal alpha testing.
+ * HIVE Task Alpha 0.1: Simplified Development Dashboard
+ * HIVE Task Alpha 1.0: Core Backend Foundation
+ * HIVE Task Alpha 1.1: Basic Task Workflow & Real-time
+ * HIVE Task Alpha 1.2: Basic Infrastructure & Testing
+ * HIVE Task Alpha 1.3: Basic Dashboard Analytics & Live Status
+📚 Ancillary Documents
+These documents provide essential context and guidance for both scopes.
+ * HIVE Backend Development - Master Execution Plan.md (Primarily for Full Production Version)
+ * HIVE Backend Development - Environment Setup Guide.md
+ * HIVE Backend Development - Troubleshooting Guide.md
+This manifest should be the very first file provided to Claude Code, explicitly stating which project scope is desired.

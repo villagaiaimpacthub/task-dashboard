@@ -1,0 +1,167 @@
+HIVE Task Alpha 1.2: Basic Infrastructure & Testing
+Claude Code & Cursor Implementation Guide - Alpha Version
+> Peter Mick Rule: Write code as if the maintainer is a violent psychopath who knows where you live 😈
+> 
+🎯 Objective
+Establish a basic, functional infrastructure for database migrations and a foundational testing suite for the HIVE backend alpha, focusing on getting core development tooling in place quickly.
+📋 Prerequisites
+ * [ ] HIVE Task Alpha 1.1: Basic Task Workflow & Real-time completed and verified.
+ * [ ] PostgreSQL and Redis containers running and accessible.
+ * [ ] Python 3.11+ with Poetry.
+ * [ ] Docker Desktop installed and running.
+🗂️ Exact File Structure
+hive-backend-alpha/
+├── app/
+│   ├── workers/                   # Basic Celery setup
+│   │   ├── __init__.py
+│   │   ├── celery_app.py          # Celery configuration
+│   │   └── tasks.py               # Placeholder for a simple Celery task
+│   ├── main.py                    # FastAPI application entry point (updated for Celery startup/shutdown)
+│   ├── config.py                  # Updated for Celery configuration
+│   └── database.py                # Updated for async DB connection for Alembic
+├── tests/
+│   ├── __init__.py
+│   ├── conftest.py                # Pytest fixtures (DB session, TestClient, basic auth fixture)
+│   ├── unit/                      # Unit tests
+│   │   ├── test_alpha_models.py   # Basic unit tests for User, Task models
+│   │   └── test_alpha_services.py # Basic unit tests for User, Task, Assignment services
+│   ├── integration/               # Integration tests
+│   │   └── test_alpha_api.py      # Basic API integration tests (auth, users, tasks, assignment, status)
+│   ├── performance/               # Placeholder for simple performance checks
+│   │   └── basic_api_benchmark.py # Simple script for basic API response time check
+│   ├── security/                  # Placeholder for basic security checks
+│   │   └── simple_auth_test.py    # Basic test for auth bypass
+│   └── utils/
+│       └── test_utils.py          # General test utilities
+├── migrations/                    # Alembic migration directory
+│   ├── env.py                     # Alembic environment configuration
+│   ├── script.py.mako             # Migration script template
+│   └── versions/                  # Directory for migration version files
+├── scripts/
+│   ├── init_db.py                 # Database initialization (creates tables if empty, runs migrations)
+│   ├── run_migrations.py          # Simplified migration automation script
+│   └── run_tests.py               # Basic script to run all alpha tests
+├── .env.example                   # Updated with Celery configuration
+├── .env.test                      # Basic test environment variables
+├── pyproject.toml                 # Updated with test dependencies (pytest, pytest-asyncio)
+└── README.md                      # Update README for new scripts/tools
+
+💻 Implementation Specifications
+Core Requirements
+1. Basic Database Migration System (Simplified from original Task 1.5)
+ * Ensure alembic.ini is present (copied from Task Alpha 1.0 setup).
+ * In migrations/env.py, configure Alembic for asynchronous SQLAlchemy (using run_async_migrations) and ensure it correctly imports all models from app/models/ for autogeneration.
+ * Create scripts/init_db.py: A simple script that calls alembic upgrade head.
+ * Create scripts/run_migrations.py: A very simple script for alembic upgrade head.
+2. Basic Background Job Processing (Simplified from original Task 1.5)
+ * In app/workers/celery_app.py, configure Celery to connect to Redis as both broker and backend.
+   * Load REDIS_URL from app/config.py.
+   * Keep configuration minimal for alpha (e.g., no complex retries, no separate queues initially).
+ * In app/workers/tasks.py, implement a simple test_celery_task() that prints a message.
+ * Update app/main.py with FastAPI startup and shutdown events to initialize/de-initialize Celery gracefully (e.g., check celery_app health or simply ensure app is available).
+ * Add Celery-related environment variables to .env.example and .env.
+3. Foundational Testing Suite (Simplified from original Task 5.0)
+ * Configure pytest in pyproject.toml or pytest.ini with pytest-asyncio.
+ * In tests/conftest.py, implement reusable fixtures for:
+   * Isolated asynchronous database sessions for each test.
+   * A FastAPI TestClient for API integration tests.
+   * A basic authenticated user fixture for tests requiring a logged-in user.
+ * Create placeholder test files:
+   * tests/unit/test_alpha_models.py: Basic unit tests for User and Task model fields.
+   * tests/unit/test_alpha_services.py: Basic unit tests for UserService, TaskService, AssignmentService (simple methods).
+   * tests/integration/test_alpha_api.py: Test the /health endpoint, user registration/login, user CRUD (/me), task CRUD, and task assignment/status updates via API.
+   * tests/performance/basic_api_benchmark.py: A very simple Python script (not necessarily Locust) that makes a few API calls and prints response times (e.g., using httpx).
+   * tests/security/simple_auth_test.py: A basic test to ensure an unauthorized user cannot access a protected endpoint.
+ * Create scripts/run_tests.py: A simple script that calls poetry run pytest.
+ * Add pytest, pytest-asyncio, httpx to pyproject.toml.
+Technology Stack
+ * Migrations: Alembic
+ * Background Jobs: Celery with Redis broker/backend
+ * Testing: Pytest, pytest-asyncio, httpx
+ * Core Backend: FastAPI, PostgreSQL, Redis
+✅ Acceptance Criteria
+ * [ ] alembic.ini and migrations/env.py are correctly configured for alpha-level async migrations.
+ * [ ] scripts/init_db.py successfully runs alembic upgrade head, creating/updating database tables.
+ * [ ] app/workers/celery_app.py is configured and can connect to Redis.
+ * [ ] test_celery_task() in app/workers/tasks.py can be triggered and executed by Celery.
+ * [ ] FastAPI app starts and integrates with Celery without errors.
+ * [ ] pytest can discover and run tests in tests/.
+ * [ ] tests/conftest.py provides functional, isolated database sessions and FastAPI test clients.
+ * [ ] tests/integration/test_alpha_api.py (or specific tests within it) passes for authentication, user, and task CRUD endpoints.
+ * [ ] scripts/run_tests.py successfully executes all alpha tests.
+ * [ ] basic_api_benchmark.py successfully runs and prints response times.
+ * [ ] simple_auth_test.py correctly confirms basic authentication enforcement.
+🔐 Security Requirements (Simplified for Alpha)
+ * [ ] Basic Test Isolation: Tests run on separate database sessions and don't interfere with each other.
+ * [ ] No Production Secrets in Test Config: .env.test is used for test-specific database/Redis URLs.
+ * [ ] Basic Auth Test: A test exists to verify basic authentication enforcement.
+ * [ ] Limited Celery Exposure: Celery worker is not directly exposed to the internet.
+📊 Performance Requirements (Simplified for Alpha)
+ * [ ] All unit tests complete within 2 minutes.
+ * [ ] All integration tests complete within 5 minutes.
+ * [ ] basic_api_benchmark.py shows API responses generally under 500ms.
+ * [ ] Celery test_celery_task executes in under 1 second.
+🧪 Test Requirements (Simplified for Alpha)
+ * [ ] Unit Tests: For core models and services.
+ * [ ] Integration Tests: For API endpoints, database interactions, and basic Celery task triggering.
+ * [ ] Manual Sanity Checks: Basic checks for security (e.g., trying to access protected endpoints unauthenticated) and performance (observing API response times).
+🔗 Integration Points
+ * Depends on:
+   * HIVE Task Alpha 1.1: Basic Task Workflow & Real-time (provides the core application and models to be tested).
+   * PostgreSQL, Redis (runtime dependencies).
+ * Provides to:
+   * The core team: A functional, tested backend for alpha use.
+   * Future development: A basic framework for adding more tests and infrastructure.
+🚀 Claude Code Execution Commands
+Primary Implementation
+claude-code implement-task \
+  --task-id="alpha-1.2-basic-infra-testing" \
+  --project="hive-backend-alpha" \
+  --objective="Establish basic database migrations and a foundational testing suite for alpha." \
+  --files="app/workers/__init__.py,app/workers/celery_app.py,app/workers/tasks.py,app/main.py,app/config.py,app/database.py,tests/__init__.py,tests/conftest.py,tests/unit/test_alpha_models.py,tests/unit/test_alpha_services.py,tests/integration/test_alpha_api.py,tests/performance/basic_api_benchmark.py,tests/security/simple_auth_test.py,tests/utils/test_utils.py,migrations/env.py,scripts/init_db.py,scripts/run_migrations.py,scripts/run_tests.py,pyproject.toml" \
+  --requirements="alembic-async-alpha,celery-basic-redis,pytest-foundational-fixtures,basic-unit-integration-api-tests,simple-performance-security-checks" \
+  --framework="fastapi" \
+  --database="postgresql" \
+  --security-level="basic-alpha" \
+  --test-coverage="foundational-alpha" \
+  --performance-targets="unit-2min,integration-5min,api-500ms"
+
+Validation Commands
+# Ensure Docker Compose services are running (PostgreSQL, Redis, FastAPI)
+docker-compose ps
+
+# Ensure Celery worker is running (in a separate terminal)
+# poetry run celery -A app.workers.celery_app worker --loglevel=info
+
+# Generate and apply new migrations (if any auto-generated)
+poetry run alembic revision --autogenerate -m "alpha_infra_testing_changes"
+poetry run alembic upgrade head
+
+# Run all alpha tests
+poetry run python scripts/run_tests.py
+
+# Manually trigger the simple Celery task (if you've exposed a debug endpoint or call it from main.py temporarily)
+# Example (if you add a debug endpoint in main.py temporarily):
+# @app.post("/debug/run_test_celery_task")
+# async def run_test_celery_task():
+#     app.workers.tasks.test_celery_task.delay()
+#     return {"message": "Test task queued"}
+# curl -X POST http://localhost:8000/debug/run_test_celery_task
+
+# Run basic API benchmark
+poetry run python tests/performance/basic_api_benchmark.py
+
+🎯 Cursor IDE Integration
+ * Workspace setup: Open hive-backend-alpha/ as the root workspace in Cursor.
+ * Extensions needed:
+   * Pytest Test Explorer
+ * Debug configuration: Use launch.json for debugging pytest tests.
+ * Environment setup: Ensure Poetry virtual environment is selected as the Python interpreter.
+📝 Documentation Requirements
+ * [ ] README.md: Update with instructions on running tests and Celery worker.
+ * [ ] Inline comments in app/workers/, tests/conftest.py, scripts/run_tests.py.
+ * [ ] Basic docstrings for new Celery tasks and test utilities.
+Execute After: HIVE Task Alpha 1.1: Basic Task Workflow & Real-time.
+Final Task for Alpha Version: This is the last task for the basic alpha version implementation.
+Estimated Time: 15-20 hours for Claude Code implementation.
+Complexity: 6/10 (Focuses on foundational testing and background processing setup).

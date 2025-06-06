@@ -1,0 +1,143 @@
+HIVE Task Alpha 1.0: Core Backend Foundation - ENHANCEMENT
+Claude Code & Cursor Implementation Guide - Alpha Version
+> Peter Mick Rule: Write code as if the maintainer is a violent psychopath who knows where you live 😈
+> 
+🎯 Objective
+Enhance the core Task and User models with fields directly displayed in the dashboard, and enable basic filtering for tasks, to better align the backend with the frontend's immediate display needs for the alpha version.
+📋 Prerequisites
+ * [ ] HIVE Task Alpha 1.0: Core Backend Foundation completed and verified.
+ * [ ] templatehtml.txt reviewed for dashboard data requirements.
+🗂️ Exact File Structure (Modifications)
+hive-backend-alpha/
+├── app/
+│   ├── models/
+│   │   ├── task.py                    # MODIFIED: Add category, priority, impact_points
+│   │   └── user.py                    # MODIFIED: Add impact_score, skills, role
+│   ├── schemas/
+│   │   ├── user.py                    # MODIFIED: Update UserCreate, UserResponse
+│   │   └── task.py                    # MODIFIED: Update TaskCreate, TaskUpdate, TaskResponse
+│   ├── api/api_v1/
+│   │   └── tasks.py                   # MODIFIED: Add query parameters for task listing
+│   └── services/
+│       ├── user_service.py            # MODIFIED: Handle new user fields
+│       └── task_service.py            # MODIFIED: Handle new task fields, filtering logic
+├── tests/
+│   ├── unit/
+│   │   ├── test_alpha_models.py       # MODIFIED: Add tests for new model fields
+│   │   └── test_alpha_services.py     # MODIFIED: Add tests for new service logic
+│   ├── integration/
+│   │   └── test_alpha_api.py          # MODIFIED: Add tests for task filtering
+└── README.md                          # Update README if new filtering instructions
+
+💻 Implementation Specifications
+Core Requirements
+1. Task Model Enhancement (app/models/task.py)
+ * Add category: String, nullable, corresponding to dashboard categories (e.g., "Regenerative Ag", "Clean Energy").
+ * Add priority: String, nullable, corresponding to dashboard priorities (e.g., "urgent", "high", "medium", "low").
+ * Add impact_points: Integer, default to 0, nullable (represents the individual task's impact score, as shown on task cards).
+2. User Model Enhancement (app/models/user.py)
+ * Add impact_score: Integer, default to 0 (represents the user's total impact score).
+ * Add skills: JSONB or ARRAY(String) (for PostgreSQL), nullable, default to empty list. This will store a list of strings (e.g., ["Data Analysis", "Systems Design"]).
+ * Add role: String, nullable (for team member roles like "Ecosystem Designer").
+3. Pydantic Schemas Update
+ * In app/schemas/task.py:
+   * Update TaskCreate and TaskUpdate to include category, priority, impact_points.
+   * Update TaskResponse to include category, priority, impact_points.
+ * In app/schemas/user.py:
+   * Update UserCreate (if new fields are required on creation), UserResponse to include impact_score, skills, role.
+4. API Enhancements (app/api/api_v1/tasks.py)
+ * Modify GET /api/v1/tasks/ endpoint to accept optional query parameters:
+   * category: Optional[str] = Query(None)
+   * priority: Optional[str] = Query(None)
+ * In app/services/task_service.py, update the get_all_tasks method to apply filtering based on these query parameters.
+ * Integration with Frontend (Post-Implementation Note for Developer): After these backend changes, the frontend's allTasks array and filterTasks logic should be modified to fetch data from this new backend API (GET /api/v1/tasks/?category=...&priority=...) instead of using its local hardcoded array. Similarly, createNewTask should call the backend POST /api/v1/tasks/.
+5. Service Layer Modifications (app/services/user_service.py, app/services/task_service.py)
+ * Update UserService to handle creation and retrieval of new User fields (impact_score, skills, role).
+ * Update TaskService to handle creation, update, and retrieval of new Task fields (category, priority, impact_points), and implement the filtering logic for get_all_tasks.
+Technology Stack
+ * (No new technologies, leverages existing FastAPI, SQLAlchemy, PostgreSQL)
+API Specifications
+ * GET /api/v1/tasks/?category={category}&priority={priority}:
+   * Query params: category (string, optional), priority (string, optional).
+   * Response: List[TaskResponse] (now includes category, priority, impact_points).
+ * UserResponse and TaskResponse will now include the new fields.
+✅ Acceptance Criteria
+ * [ ] Task model in app/models/task.py includes category, priority, and impact_points fields.
+ * [ ] User model in app/models/user.py includes impact_score, skills (as JSONB/ARRAY), and role fields.
+ * [ ] Pydantic TaskCreate, TaskUpdate, TaskResponse schemas are updated with the new task fields.
+ * [ ] Pydantic UserCreate, UserResponse schemas are updated with the new user fields.
+ * [ ] GET /api/v1/tasks/ endpoint correctly filters tasks by category and priority query parameters.
+ * [ ] Database migrations are generated to add these new columns to the users and tasks tables.
+ * [ ] Basic unit tests for models confirm new fields are present and typed correctly.
+ * [ ] Basic integration tests for task listing confirm filtering works.
+🔐 Security Requirements (Simplified for Alpha)
+ * [ ] Input validation for new fields (category, priority, impact_points, skills, role) is applied via Pydantic.
+ * [ ] No sensitive data is introduced or exposed via these new fields.
+📊 Performance Requirements (Simplified for Alpha)
+ * [ ] Task listing with basic filters remains under 500ms for alpha.
+ * [ ] Updates to user/task models with new fields remain under 300ms.
+🧪 Test Requirements (Simplified for Alpha)
+ * [ ] Unit Tests:
+   * New fields on User and Task models are testable.
+   * Service methods handle these new fields correctly.
+ * [ ] Integration Tests:
+   * GET /api/v1/tasks/?category=... returns correct filtered results.
+   * GET /api/v1/tasks/?priority=... returns correct filtered results.
+   * POST /api/v1/tasks/ and PUT /api/v1/tasks/{task_id} correctly store and update new fields.
+   * GET /api/v1/users/me correctly returns impact_score, skills, role.
+🔗 Integration Points
+ * Depends on:
+   * HIVE Task Alpha 1.0: Core Backend Foundation (to modify existing models and APIs).
+ * Provides to:
+   * HIVE Task Alpha 0.1: Simplified Development Dashboard: Directly provides the necessary data fields and filtering capabilities for its UI.
+   * Future alpha tasks: More complete user and task data for other features.
+🚀 Claude Code Execution Commands
+Primary Implementation
+claude-code implement-task \
+  --task-id="alpha-1.0-core-backend-foundation-enhancement" \
+  --project="hive-backend-alpha" \
+  --objective="Enhance Task/User models with dashboard fields and basic task filtering." \
+  --files="app/models/task.py,app/models/user.py,app/schemas/user.py,app/schemas/task.py,app/api/api_v1/tasks.py,app/services/user_service.py,app/services/task_service.py,tests/unit/test_alpha_models.py,tests/unit/test_alpha_services.py,tests/integration/test_alpha_api.py,migrations/" \
+  --requirements="add-task-category-priority-impact,add-user-impact-skills-role,update-pydantic-schemas,enable-get-tasks-category-priority-filter" \
+  --framework="fastapi" \
+  --database="postgresql" \
+  --security-level="basic-alpha" \
+  --test-coverage="foundational-alpha" \
+  --performance-targets="listing-500ms,updates-300ms"
+
+Validation Commands
+# Ensure Docker Compose services are running (PostgreSQL, Redis, FastAPI)
+docker-compose ps
+
+# Generate and apply new migrations for the added columns (this is CRITICAL)
+poetry run alembic revision --autogenerate -m "add_dashboard_fields_to_alpha_models"
+poetry run alembic upgrade head
+
+# Run updated tests
+poetry run pytest tests/unit/test_alpha_models.py tests/integration/test_alpha_api.py
+
+# Manually test new task creation with category/priority/impact:
+# curl -X POST -H "Authorization: Bearer <ACCESS_TOKEN>" -H "Content-Type: application/json" -d '{"title": "New Task", "description": "Desc", "category": "Restoration", "priority": "high", "impact_points": 100}' http://localhost:8000/api/v1/tasks/
+
+# Manually test task listing with filters:
+# curl -H "Authorization: Bearer <ACCESS_TOKEN>" "http://localhost:8000/api/v1/tasks/?category=Restoration"
+# curl -H "Authorization: Bearer <ACCESS_TOKEN>" "http://localhost:8000/api/v1/tasks/?priority=high"
+# curl -H "Authorization: Bearer <ACCESS_TOKEN>" "http://localhost:8000/api/v1/tasks/?category=Restoration&priority=high"
+
+# Manually test updating user profile with skills/role:
+# curl -X PUT -H "Authorization: Bearer <ACCESS_TOKEN>" -H "Content-Type: application/json" -d '{"skills": ["Gardening", "Cooking"], "role": "Volunteer"}' http://localhost:8000/api/v1/users/me
+# curl -H "Authorization: Bearer <ACCESS_TOKEN>" http://localhost:8000/api/v1/users/me
+
+🎯 Cursor IDE Integration
+ * Workspace setup: Open hive-backend-alpha/ as the root workspace in Cursor.
+ * Extensions needed: (As per previous alpha tasks)
+ * Debug configuration: (As per previous alpha tasks)
+ * Environment setup: Ensure Poetry virtual environment is selected.
+📝 Documentation Requirements
+ * [ ] README.md: Update with instructions on testing new filtering capabilities.
+ * [ ] Inline comments for new model fields, schema fields, and API query parameters.
+ * [ ] Basic docstrings for modified service methods that handle new fields/filters.
+Execute After: HIVE Task Alpha 1.0: Core Backend Foundation (This is an enhancement to that task).
+Provides Foundation For: HIVE Task Alpha 0.1: Simplified Development Dashboard (allows it to display more real data), and better alignment for subsequent alpha features.
+Estimated Time: 10-15 hours for Claude Code implementation.
+Complexity: 5/10 (Mostly schema and API parameter additions with minor service logic).

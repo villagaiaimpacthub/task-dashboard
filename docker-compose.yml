@@ -1,0 +1,103 @@
+version: '3.8'
+
+services:
+  # Database
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: hive_password
+      POSTGRES_DB: hive_alpha
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis for caching and Celery
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API
+  backend:
+    build:
+      context: ./hive-backend-alpha
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:hive_password@postgres:5432/hive_alpha
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - SECRET_KEY=hive-alpha-secret-key-for-testing-only
+      - JWT_SECRET_KEY=hive-alpha-jwt-secret-for-testing-only
+      - ENVIRONMENT=alpha
+      - DEBUG=true
+    volumes:
+      - ./hive-backend-alpha:/app
+    command: >
+      sh -c "
+        echo 'Waiting for database...' &&
+        sleep 10 &&
+        echo 'Running database migrations...' &&
+        poetry run alembic upgrade head &&
+        echo 'Starting FastAPI server...' &&
+        poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      "
+
+  # Celery Worker
+  worker:
+    build:
+      context: ./hive-backend-alpha
+      dockerfile: Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:hive_password@postgres:5432/hive_alpha
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - SECRET_KEY=hive-alpha-secret-key-for-testing-only
+      - JWT_SECRET_KEY=hive-alpha-jwt-secret-for-testing-only
+    volumes:
+      - ./hive-backend-alpha:/app
+    command: >
+      sh -c "
+        echo 'Starting Celery worker...' &&
+        poetry run celery -A app.workers.celery_app worker --loglevel=info
+      "
+
+  # Frontend
+  frontend:
+    build:
+      context: ./hive-frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    volumes:
+      - ./hive-frontend:/usr/share/nginx/html:ro
+
+volumes:
+  postgres_data:

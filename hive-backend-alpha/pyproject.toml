@@ -1,0 +1,41 @@
+[tool.poetry]
+name = "hive-backend-alpha"
+version = "0.1.0"
+description = "HIVE Backend Alpha - Streamlined task management and collaboration platform"
+authors = ["HIVE Team"]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.104.1"
+uvicorn = {extras = ["standard"], version = "^0.24.0"}
+sqlalchemy = {extras = ["asyncpg"], version = "^2.0.23"}
+pydantic-settings = "^2.0.3"
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+alembic = "^1.12.1"
+asyncpg = "^0.29.0"
+python-multipart = "^0.0.6"
+email-validator = "^2.1.0"
+websockets = "^12.0"
+celery = {extras = ["redis"], version = "^5.3.4"}
+redis = "^5.0.1"
+aiosqlite = "^0.21.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.3"
+pytest-asyncio = "^0.21.1"
+pytest-cov = "^4.1.0"
+httpx = "^0.25.2"
+factory-boy = "^3.3.0"
+faker = "^20.1.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]

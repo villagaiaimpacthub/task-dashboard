@@ -1,0 +1,184 @@
+HIVE Task Alpha 1.1: Basic Task Workflow & Real-time
+Claude Code & Cursor Implementation Guide - Alpha Version
+> Peter Mick Rule: Write code as if the maintainer is a violent psychopath who knows where you live 😈
+> 
+🎯 Objective
+Implement a simplified task workflow including basic assignment and a foundational real-time system for immediate task status updates, focusing on getting core interaction feedback for internal alpha testing.
+📋 Prerequisites
+ * [ ] HIVE Task Alpha 1.0: Core Backend Foundation completed and verified.
+ * [ ] User and Task models functional from Task Alpha 1.0.
+ * [ ] FastAPI API Endpoints and Authentication operational from Task Alpha 1.0.
+ * [ ] Redis container running and accessible (for real-time messaging).
+🗂️ Exact File Structure
+hive-backend-alpha/
+├── app/
+│   ├── models/
+│   │   ├── __init__.py                # Export all models
+│   │   ├── task.py                    # Enhanced Task model with assignment fields
+│   │   ├── user.py                    # Enhanced User model with assigned_tasks relationship
+│   │   └── user_task_association.py   # NEW: Association model for user-task assignment
+│   ├── schemas/
+│   │   ├── __init__.py                # Export all schemas
+│   │   ├── task.py                    # Enhanced TaskCreate, TaskUpdate, TaskResponse (with assignee)
+│   │   ├── user.py                    # Enhanced UserResponse (with basic assigned tasks info)
+│   │   └── websocket.py               # NEW: Basic WebSocket message schemas
+│   ├── services/
+│   │   ├── __init__.py
+│   │   ├── task_service.py            # Enhanced for task assignment, status updates, trigger real-time events
+│   │   ├── assignment_service.py      # NEW: Basic service for assignment logic
+│   ├── api/api_v1/
+│   │   ├── __init__.py
+│   │   ├── tasks.py                   # Enhanced for task assignment endpoint, status update endpoint
+│   │   └── websocket.py               # NEW: FastAPI WebSocket endpoint
+│   ├── websockets/                    # NEW: Directory for WebSocket logic
+│   │   ├── __init__.py
+│   │   └── connection_manager.py      # Manages active WebSocket connections
+│   ├── core/
+│   │   ├── __init__.py
+│   │   └── auth.py                    # JWT token logic (used by WebSocket authentication)
+│   ├── workers/                       # Basic Celery setup (if not already for Alpha 1.0)
+│   │   ├── __init__.py
+│   │   └── tasks.py                   # Placeholder for simple background task (e.g., test notification)
+│   └── main.py                        # FastAPI application entry point (add WebSocket router)
+├── tests/
+│   ├── unit/
+│   │   ├── test_task_workflow.py      # Basic unit tests for task status changes, assignment
+│   │   └── test_websocket_manager.py  # Basic unit tests for WebSocket connection manager
+│   ├── integration/
+│   │   ├── test_task_assignment_api.py # Integration tests for task assignment API
+│   │   └── test_websocket_realtime.py # Integration test for basic WebSocket messaging
+├── migrations/                        # Alembic migrations for new association model
+└── README.md                          # Update README
+
+💻 Implementation Specifications
+Core Requirements
+1. Basic Task Workflow (Simplified from original Task 2.1)
+ * Task Model Enhancement (app/models/task.py):
+   * Add assignee_id: UUID (FK to User.id), nullable.
+   * Update status field to enforce simple transitions: draft -> available -> in_progress -> completed. (No in_review, cancelled for alpha).
+ * New User-Task Association Model (app/models/user_task_association.py):
+   * Define a simple association model/table to link User and Task for assignment.
+ * Service Layer Enhancement (app/services/task_service.py, app/services/assignment_service.py):
+   * In task_service.py, add methods to update task.status. Ensure this method triggers a real-time event.
+   * Create assignment_service.py with assign_task(task_id, user_id, assignee_id):
+     * Sets task.assignee_id.
+     * Updates task status to in_progress if assignee_id is set.
+     * Triggers a real-time event when a task is assigned.
+ * API Endpoints Enhancement (app/api/api_v1/tasks.py):
+   * POST /tasks/{task_id}/assign: Assigns a user to a task.
+     * Request: {"user_id": "..."}.
+     * Security: Owner of the task can assign.
+   * PUT /tasks/{task_id}/status: Update a task's status.
+     * Request: {"status": "available"|"in_progress"|"completed"}.
+     * Security: Owner of task or assignee can update.
+2. Foundational Real-time System (Simplified from original Task 3.1)
+ * WebSocket Connection Manager (app/websockets/connection_manager.py):
+   * Implement a basic ConnectionManager class to:
+     * connect(websocket, user_id): Store active WebSocket connections (e.g., in a dictionary mapping user_id to WebSocket).
+     * disconnect(websocket, user_id): Remove disconnected WebSocket.
+     * send_personal_message(message, user_id): Send message to a specific user.
+     * broadcast(message): Send message to all connected clients (for simplicity, no rooms yet).
+   * Use an in-memory dictionary for connection management for alpha.
+ * WebSocket Endpoint (app/api/api_v1/websocket.py):
+   * Define a simple websocket /ws endpoint using FastAPI's WebSocket.
+   * On connection, perform minimal JWT authentication: Expect JWT in query param (e.g., ws?token=ABC). Use app/core/auth.py to get user_id. If invalid, close connection.
+   * Handle incoming messages:
+     * Basic "chat" functionality: Receive text message, broadcast it to all connected clients.
+   * On task status/assignment change (triggered from task_service.py), use connection_manager.broadcast to send a simple update message (e.g., {"type": "task_status_update", "task_id": "...", "new_status": "..."}).
+ * Pydantic Schemas (app/schemas/websocket.py):
+   * Define WebSocketMessage schema (e.g., type: str, payload: dict).
+   * Define TaskStatusUpdate schema for WebSocket payload.
+Technology Stack
+ * WebSockets: FastAPI built-in WebSocket support.
+ * Pub/Sub: Not implementing Redis Pub/Sub for alpha, use in-memory broadcast for simplicity.
+ * Authentication: JWT (from Task Alpha 1.0).
+ * Database: PostgreSQL.
+✅ Acceptance Criteria
+ * [ ] Task model has assignee_id field.
+ * [ ] New user_task_association model/table is created and migrated.
+ * [ ] POST /api/v1/tasks/{task_id}/assign successfully assigns a user to a task.
+ * [ ] PUT /api/v1/tasks/{task_id}/status successfully updates a task's status, enforcing draft->available->in_progress->completed transitions.
+ * [ ] FastAPI websocket /ws endpoint can establish connections.
+ * [ ] WebSocket connections are authenticated using JWT from query parameter.
+ * [ ] When a task's status is updated via REST API, a corresponding message is broadcast via WebSocket to all connected clients.
+ * [ ] Basic "chat" messages sent via WebSocket are broadcast to all connected clients.
+ * [ ] All API endpoints for tasks, assignment, and status are protected by authentication.
+ * [ ] Manual verification shows task status changes updating live in the dashboard (from Task Alpha 0.1).
+🔐 Security Requirements (Simplified for Alpha)
+ * [ ] Basic WebSocket Auth: JWT token validation for WebSocket connection.
+ * [ ] Access Control: Task assignment and status updates are restricted to the task owner (or assignee for status).
+ * [ ] Input Validation: Pydantic schemas enforce basic validation for task status updates.
+ * [ ] No Sensitive Broadcast: Ensure no sensitive data is broadcast over WebSockets.
+ * [ ] No Rate Limiting (for alpha): De-prioritized for initial dev, but noted for future.
+📊 Performance Requirements (Simplified for Alpha)
+ * [ ] WebSocket connection establishment under 500ms.
+ * [ ] WebSocket message broadcast latency under 200ms.
+ * [ ] Supports 10 concurrent WebSocket connections.
+🧪 Test Requirements (Simplified for Alpha)
+ * [ ] Unit Tests: Basic tests for assignment_service.py logic, Task model status transitions, ConnectionManager (connect/disconnect/broadcast).
+ * [ ] Integration Tests: API tests for /tasks/{task_id}/assign and /tasks/{task_id}/status. Basic WebSocket client test to connect, send/receive broadcast messages, and verify real-time updates for task status changes.
+ * [ ] Manual Testing: Confirm task status changes reflected in dashboard (from Task Alpha 0.1) and using browser developer tools for WebSocket traffic.
+🔗 Integration Points
+ * Depends on:
+   * HIVE Task Alpha 1.0: Core Backend Foundation (for User/Task models, Auth, API structure).
+   * Redis (for basic WebSocket connection management, although in-memory is used for broadcast).
+ * Provides to:
+   * HIVE Task Alpha 0.1: Simplified Development Dashboard (provides real-time task status updates).
+   * HIVE Task Alpha 1.2: Basic Infrastructure & Testing: Provides the task workflow and real-time system for basic testing.
+   * Frontend for basic task assignment and real-time feedback.
+🚀 Claude Code Execution Commands
+Primary Implementation
+claude-code implement-task \
+  --task-id="alpha-1.1-basic-task-workflow-realtime" \
+  --project="hive-backend-alpha" \
+  --objective="Implement simplified task workflow with basic assignment and foundational real-time updates." \
+  --files="app/models/task.py,app/models/user.py,app/models/user_task_association.py,app/schemas/task.py,app/schemas/user.py,app/schemas/websocket.py,app/services/task_service.py,app/services/assignment_service.py,app/api/api_v1/tasks.py,app/api/api_v1/websocket.py,app/websockets/__init__.py,app/websockets/connection_manager.py,app/main.py,tests/unit/test_task_workflow.py,tests/unit/test_websocket_manager.py,tests/integration/test_task_assignment_api.py,tests/integration/test_websocket_realtime.py,migrations/" \
+  --requirements="task-assignee-field,simple-task-status-transitions,basic-websocket-endpoint,websocket-jwt-auth-query-param,in-memory-websocket-broadcast,rest-to-websocket-sync-task-status" \
+  --framework="fastapi" \
+  --database="postgresql" \
+  --security-level="basic-alpha" \
+  --test-coverage="foundational-alpha" \
+  --performance-targets="ws-connect-500ms,ws-broadcast-200ms,10-concurrent-ws"
+
+Validation Commands
+# Ensure Docker Compose services are running (PostgreSQL, Redis, FastAPI - from Environment Setup Guide)
+docker-compose ps
+
+# Generate and apply new migrations for user_task_association model
+poetry run alembic revision --autogenerate -m "add_user_task_assignment"
+poetry run alembic upgrade head
+
+# Run basic tests (after Claude Code writes them)
+poetry run pytest tests/unit/test_task_workflow.py tests/integration/test_task_assignment_api.py
+
+# Manually test task assignment and status update via API (requires a registered user and task from Alpha 1.0):
+# Assume TASK_ID and USER_ID are known, and you have an ACCESS_TOKEN
+# Assign user to task:
+# curl -X POST -H "Authorization: Bearer <ACCESS_TOKEN>" -H "Content-Type: application/json" -d '{"user_id": "<USER_ID_TO_ASSIGN>"}' http://localhost:8000/api/v1/tasks/<TASK_ID>/assign
+# Update task status:
+# curl -X PUT -H "Authorization: Bearer <ACCESS_TOKEN>" -H "Content-Type: application/json" -d '{"status": "completed"}' http://localhost:8000/api/v1/tasks/<TASK_ID>/status
+
+# Manually test WebSocket (requires a WebSocket client tool or simple JS in browser console):
+# 1. Get an ACCESS_TOKEN from login (from Task Alpha 1.0)
+# 2. Open WebSocket connection in browser console:
+#    let ws = new WebSocket('ws://localhost:8000/ws?token=<ACCESS_TOKEN>');
+#    ws.onmessage = (event) => console.log('Received:', event.data);
+#    ws.onopen = () => console.log('Connected!');
+#    ws.onclose = () => console.log('Disconnected!');
+# 3. Send a message from browser: `ws.send('{"type": "chat_message", "payload": {"message": "Hello from client!"}}');`
+# 4. In a separate browser tab or via curl, update a task status. Observe the WebSocket console for the real-time update.
+
+🎯 Cursor IDE Integration
+ * Workspace setup: Open hive-backend-alpha/ as the root workspace in Cursor.
+ * Extensions needed:
+   * WebSocket Client (for testing WebSocket connections directly in Cursor)
+ * Debug configuration: Use launch.json for debugging FastAPI WebSocket endpoints.
+ * Environment setup: Ensure Poetry virtual environment is selected as the Python interpreter.
+📝 Documentation Requirements
+ * [ ] README.md: Update with instructions on testing new task workflow and real-time features.
+ * [ ] Inline comments in app/models/task.py (new fields), app/services/task_service.py, app/services/assignment_service.py, app/websockets/connection_manager.py, app/api/api_v1/websocket.py.
+ * [ ] Basic docstrings for new schemas and service functions.
+Execute After: HIVE Task Alpha 1.0: Core Backend Foundation.
+Provides Foundation For: HIVE Task Alpha 1.2: Basic Infrastructure & Testing.
+Estimated Time: 18-24 hours for Claude Code implementation.
+Complexity: 7/10 (Introduces real-time communication and basic workflow logic).

@@ -1,0 +1,222 @@
+HIVE Task Alpha 1.0: Core Backend Foundation
+Claude Code & Cursor Implementation Guide - Alpha Version
+> Peter Mick Rule: Write code as if the maintainer is a violent psychopath who knows where you live 😈
+> 
+🎯 Objective
+Establish the absolute minimum viable HIVE backend foundation: basic project structure, database connection, user authentication (login/register), and core API endpoints for users and tasks, focusing on internal alpha testing.
+📋 Prerequisites
+ * [ ] HIVE Backend Development - Environment Setup Guide completed.
+ * [ ] Python 3.11+ installed with Poetry.
+ * [ ] Docker Desktop installed and running.
+ * [ ] PostgreSQL and Redis containers configured in docker-compose.yml (from Environment Setup Guide).
+🗂️ Exact File Structure
+hive-backend-alpha/
+├── app/
+│   ├── __init__.py                # Package initialization
+│   ├── main.py                    # FastAPI application entry point
+│   ├── config.py                  # Environment variable loading
+│   ├── database.py                # Asynchronous database connection
+│   ├── dependencies.py            # Basic dependency injection
+│   ├── models/                    # SQLAlchemy models
+│   │   ├── __init__.py            # Export models
+│   │   ├── base.py                # BaseModel for common fields
+│   │   ├── user.py                # User model (email, hashed_password)
+│   │   └── task.py                # Task model (title, description, status, owner)
+│   ├── schemas/                   # Pydantic schemas
+│   │   ├── __init__.py            # Export schemas
+│   │   ├── user.py                # UserCreate, UserLogin, UserResponse
+│   │   ├── auth.py                # TokenResponse
+│   │   └── task.py                # TaskCreate, TaskUpdate, TaskResponse
+│   ├── api/                       # API routes
+│   │   ├── __init__.py
+│   │   ├── api_v1/                # Versioned API routes
+│   │   │   ├── __init__.py
+│   │   │   ├── api.py             # Main API router for v1
+│   │   │   ├── auth.py            # Login, Register
+│   │   │   ├── users.py           # User profile (me) CRUD
+│   │   │   └── tasks.py           # Task CRUD
+│   │   └── health.py              # Simple health check endpoint
+│   ├── core/                      # Core utilities
+│   │   ├── __init__.py
+│   │   ├── security.py            # Password hashing, JWT creation/validation
+│   │   └── auth.py                # JWT token logic
+│   └── services/                  # Business logic
+│       ├── __init__.py
+│       ├── user_service.py        # User creation, retrieval, password verification
+│       └── task_service.py        # Task creation, retrieval, update, deletion
+├── tests/                         # Basic test suite
+│   ├── __init__.py
+│   ├── conftest.py                # Pytest fixtures (DB session, client)
+│   ├── unit/
+│   │   ├── test_models.py         # Basic model tests
+│   │   └── test_services.py       # Basic service tests
+│   ├── integration/
+│   │   ├── test_api.py            # Basic API endpoint tests (health, auth, user, task)
+│   └── utils/
+│       └── test_utils.py          # Basic utility tests
+├── migrations/                    # Database migrations
+├── .env.example                   # Environment variables template
+├── .env.test                      # Test environment variables
+├── .gitignore                     # Git ignore file
+├── pyproject.toml                 # Poetry config
+└── README.md                      # Project README
+
+💻 Implementation Specifications
+Core Requirements
+1. Project Setup (Simplified from original Task 1.1)
+ * Initialize poetry project in pyproject.toml with fastapi, uvicorn, sqlalchemy[asyncpg], pydantic-settings, passlib[bcrypt], python-jose[cryptography].
+ * Create app/main.py with a basic FastAPI app.
+   * Include CORSMiddleware (allow all origins for alpha: allow_origins=["*"], allow_credentials=True).
+   * Include a simple GET /health endpoint (returns {"status": "ok"}).
+ * Create app/config.py using pydantic-settings to load DATABASE_URL, SECRET_KEY, JWT_SECRET_KEY from .env.
+ * Set up docker/Dockerfile and docker/docker-compose.yml for FastAPI, PostgreSQL, and Redis (as done in Environment Setup Guide).
+ * Create a basic README.md.
+2. Database Models & Connection (Simplified from original Task 1.2)
+ * In app/database.py, set up an asynchronous SQLAlchemy engine and session manager for PostgreSQL.
+ * In app/models/base.py, define a BaseModel with:
+   * id: UUID primary key.
+   * created_at, updated_at: DateTime with server_default=func.now().
+ * In app/models/user.py, define a User model inheriting from BaseModel with:
+   * email: String, unique=True, nullable=False.
+   * hashed_password: String, nullable=False.
+   * Implement set_password(self, password: str) using passlib.context.CryptContext with bcrypt.
+   * Implement verify_password(self, password: str).
+ * In app/models/task.py, define a Task model inheriting from BaseModel with:
+   * title: String, nullable=False.
+   * description: Text, nullable.
+   * status: String (e.g., "draft", "available", "completed"), nullable=False, default="draft".
+   * owner_id: UUID (FK to User.id).
+ * Configure alembic.ini and migrations/env.py for basic asynchronous migrations.
+3. Authentication (Simplified from original Task 1.3)
+ * In app/core/security.py, set up passlib.context.CryptContext for password hashing.
+ * Implement create_access_token(data: dict) using python-jose for JWT tokens (short expiry, no refresh tokens or blacklisting for alpha).
+ * Implement verify_access_token(token: str) to validate JWT.
+ * Implement get_current_user(token: str) FastAPI dependency for authenticated routes.
+ * In app/api/api_v1/auth.py, implement:
+   * POST /auth/register: Creates a new user.
+   * POST /auth/login: Authenticates user, returns access_token.
+ * Define UserCreate, UserLogin, UserResponse, TokenResponse Pydantic schemas in app/schemas/user.py and app/schemas/auth.py.
+4. Core API Endpoints & Routing (Simplified from original Task 1.4)
+ * In app/api/api_v1/api.py, set up a main APIRouter for /api/v1.
+ * Integrate auth.py, users.py, tasks.py, and health.py routers.
+ * In app/api/api_v1/users.py, implement:
+   * GET /users/me: Get current authenticated user's profile.
+   * PUT /users/me: Update current authenticated user's profile.
+ * In app/api/api_v1/tasks.py, implement:
+   * POST /tasks/: Create a task (authenticated user).
+   * GET /tasks/: List all tasks (no complex filtering, just basic list).
+   * GET /tasks/{task_id}: Get task details.
+   * PUT /tasks/{task_id}: Update task (owner only).
+   * DELETE /tasks/{task_id}: Delete task (owner only).
+ * Ensure basic HTTPException handling in app/main.py.
+Technology Stack
+ * Web Framework: FastAPI
+ * Database: PostgreSQL
+ * ORM: SQLAlchemy (async)
+ * Hashing: passlib[bcrypt]
+ * JWT: python-jose[cryptography]
+ * Config: pydantic-settings
+ * Containerization: Docker, Docker Compose
+API Specifications
+ * GET /health: {"status": "ok"}
+ * POST /api/v1/auth/register: {"email": "...", "password": "..."} -> {"message": "User created"}
+ * POST /api/v1/auth/login: {"email": "...", "password": "..."} -> {"access_token": "...", "token_type": "bearer"}
+ * GET /api/v1/users/me: (Auth) -> UserResponse
+ * PUT /api/v1/users/me: (Auth) UserUpdate -> UserResponse
+ * POST /api/v1/tasks/: (Auth) TaskCreate -> TaskResponse
+ * GET /api/v1/tasks/: (Auth) -> List[TaskResponse]
+ * GET /api/v1/tasks/{task_id}: (Auth) -> TaskResponse
+ * PUT /api/v1/tasks/{task_id}: (Auth, Owner) TaskUpdate -> TaskResponse
+ * DELETE /api/v1/tasks/{task_id}: (Auth, Owner) -> {"message": "Task deleted"}
+✅ Acceptance Criteria
+ * [ ] Project directory structure is created correctly, with all specified files.
+ * [ ] pyproject.toml lists required dependencies and the project runs with Poetry.
+ * [ ] docker-compose up -d successfully starts FastAPI, PostgreSQL, and Redis containers.
+ * [ ] poetry run python scripts/init_db.py creates users and tasks tables in the database.
+ * [ ] GET /health endpoint returns 200 OK and {"status": "ok"}.
+ * [ ] POST /api/v1/auth/register successfully creates a new user.
+ * [ ] POST /api/v1/auth/login returns a valid JWT access token for a registered user.
+ * [ ] GET /api/v1/users/me successfully returns the authenticated user's data.
+ * [ ] POST /api/v1/tasks/ successfully creates a task linked to the authenticated user.
+ * [ ] GET /api/v1/tasks/ returns a list of created tasks.
+ * [ ] GET /api/v1/tasks/{task_id} returns a specific task's details.
+ * [ ] PUT /api/v1/tasks/{task_id} successfully updates a task for its owner.
+ * [ ] DELETE /api/v1/tasks/{task_id} successfully deletes a task for its owner.
+ * [ ] All API endpoints for users/me and tasks are protected by JWT authentication.
+ * [ ] Passwords are hashed securely.
+ * [ ] .env variables are loaded correctly by app/config.py.
+ * [ ] CORS is configured to allow * origins for alpha testing.
+🔐 Security Requirements (Simplified for Alpha)
+ * [ ] Basic Authentication: JWT tokens are used for authentication.
+ * [ ] Password Hashing: bcrypt is used for password hashing.
+ * [ ] Secrets Management: SECRET_KEY and JWT_SECRET_KEY are loaded from environment variables (no hardcoding).
+ * [ ] Basic Access Control: users/me and task CRUD operations are restricted to the authenticated user/owner.
+ * [ ] CORS: Broadly open for alpha (* origin) but noted for future hardening.
+ * [ ] Basic Input Validation: Pydantic schemas enforce basic data types and required fields.
+📊 Performance Requirements (Simplified for Alpha)
+ * [ ] Application startup time under 5 seconds.
+ * [ ] API responses (login, register, user/task CRUD) under 300ms (most cases).
+🧪 Test Requirements (Simplified for Alpha)
+ * [ ] Unit Tests: Basic tests for models (User, Task), password hashing, JWT creation/validation.
+ * [ ] Integration Tests: API tests for /health, /auth/register, /auth/login, /users/me (GET/PUT), /tasks/ (CRUD).
+ * [ ] Manual Testing: Confirm all endpoints work with valid and invalid input manually.
+🔗 Integration Points
+ * Depends on:
+   * HIVE Backend Development - Environment Setup Guide setup.
+ * Provides to:
+   * HIVE Task Alpha 0.1 (Simplified Development Dashboard): Provides the /health endpoint for monitoring.
+   * HIVE Task Alpha 1.1 (Basic Task Workflow & Real-time): Provides core User and Task models, and the basic API/auth structure.
+   * HIVE Task Alpha 1.2 (Basic Infrastructure & Testing): Provides the core app and models for testing framework setup.
+🚀 Claude Code Execution Commands
+Primary Implementation
+claude-code implement-task \
+  --task-id="alpha-1.0-core-backend-foundation" \
+  --project="hive-backend-alpha" \
+  --objective="Establish minimum viable backend foundation: project setup, DB, auth, core APIs." \
+  --files="app/__init__.py,app/main.py,app/config.py,app/database.py,app/dependencies.py,app/models/__init__.py,app/models/base.py,app/models/user.py,app/models/task.py,app/schemas/__init__.py,app/schemas/user.py,app/schemas/auth.py,app/schemas/task.py,app/api/__init__.py,app/api/api_v1/__init__.py,app/api/api_v1/api.py,app/api/api_v1/auth.py,app/api/api_v1/users.py,app/api/api_v1/tasks.py,app/api/health.py,app/core/__init__.py,app/core/security.py,app/core/auth.py,app/services/__init__.py,app/services/user_service.py,app/services/task_service.py,tests/__init__.py,tests/conftest.py,tests/unit/,tests/integration/,tests/utils/,migrations/,pyproject.toml,README.md" \
+  --requirements="poetry-init,fastapi-app,config-loading,sqlalchemy-async-db-connect,base-uuid-model,user-task-models,bcrypt-hashing,jwt-access-token,basic-api-endpoints-crud,cors-wildcard-alpha,basic-exception-handling" \
+  --framework="fastapi" \
+  --database="postgresql" \
+  --security-level="basic-alpha" \
+  --test-coverage="foundational-alpha" \
+  --performance-targets="startup-5s,api-300ms"
+
+Validation Commands
+# Ensure Docker Compose services are running (PostgreSQL, Redis, FastAPI - initiated from Environment Setup Guide)
+docker-compose ps
+
+# Run initial database setup and migrations
+poetry run python scripts/init_db.py
+
+# Check FastAPI health endpoint
+curl -v http://localhost:8000/health
+
+# Access Swagger UI to see API documentation (if FastAPI is running)
+# Open browser to http://localhost:8000/docs
+
+# Run basic tests (after Claude Code writes them)
+poetry run pytest tests/unit/ tests/integration/
+
+# Manually test user registration and login:
+# curl -X POST -H "Content-Type: application/json" -d '{"email": "alpha@example.com", "password": "SecureAlphaPassword123!"}' http://localhost:8000/api/v1/auth/register
+# curl -X POST -H "Content-Type: application/json" -d '{"email": "alpha@example.com", "password": "SecureAlphaPassword123!"}' http://localhost:8000/api/v1/auth/login
+# (Get token from login response)
+
+🎯 Cursor IDE Integration
+ * Workspace setup: Open hive-backend-alpha/ as the root workspace in Cursor.
+ * Extensions needed:
+   * Python (Microsoft)
+   * Pylance (Microsoft)
+   * Docker (Microsoft)
+   * REST Client
+   * Pytest Test Explorer
+ * Debug configuration: Use the launch.json configured in the Environment Setup Guide for FastAPI and Pytest debugging.
+ * Environment setup: Ensure Poetry virtual environment is selected as the Python interpreter in Cursor.
+📝 Documentation Requirements
+ * [ ] README.md: Basic instructions on how to start the app and test endpoints.
+ * [ ] Inline comments in app/main.py, app/config.py, app/database.py, app/core/security.py, app/api/.
+ * [ ] Basic docstrings for models and service functions.
+Execute After: HIVE Task Alpha 0.1 (Simplified Development Dashboard).
+Provides Foundation For: HIVE Task Alpha 1.1 (Basic Task Workflow & Real-time), HIVE Task Alpha 1.2 (Basic Infrastructure & Testing).
+Estimated Time: 15-20 hours for Claude Code implementation.
+Complexity: 6/10 (Combines several basic foundational aspects).

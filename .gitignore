@@ -1,0 +1,76 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.env
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+.venv/
+.virtualenv/
+
+# Poetry
+poetry.lock
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+hive_alpha.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+frontend.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+.coverage
+.pytest_cache/
+htmlcov/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Docker
+docker-compose.override.yml
+
+# Frontend
+node_modules/
+npm-debug.log*
+
+# Temporary files
+*.tmp
+*.bak
+.cache/
+
+# Debug files
+debug-*.html
+test-*.html
+
+# Local configuration
+local_settings.py
+config.local.py
+
+# Migrations (keep structure but not the migration files for now)
+migrations/versions/*.py
+!migrations/versions/.gitkeep
