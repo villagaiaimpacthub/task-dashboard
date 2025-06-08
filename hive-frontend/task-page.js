@@ -21,6 +21,9 @@ class TaskPageManager {
             // Load milestones
             this.milestones = await this.loadTaskMilestones(taskId);
 
+            // Load existing files for all milestones
+            await this.loadExistingFiles(taskId);
+
             // Render the task page
             this.renderTaskPage();
             
@@ -304,20 +307,191 @@ class TaskPageManager {
     // Upload file for milestone
     async uploadFile(milestoneId) {
         try {
-            // TODO: Implement file upload
-            alert(`File upload for milestone ${milestoneId}. File system coming soon!`);
+            // Create file input element
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.txt,.md,.html,.pdf,.png,.jpg,.jpeg,.gif';
+            fileInput.multiple = true;
+            
+            fileInput.addEventListener('change', async (e) => {
+                const files = e.target.files;
+                if (files.length === 0) return;
+                
+                for (const file of files) {
+                    await this.uploadSingleFile(file, milestoneId);
+                }
+                
+                // Refresh the milestone files display
+                await this.refreshMilestoneFiles(milestoneId);
+            });
+            
+            fileInput.click();
         } catch (error) {
             console.error('Failed to upload file:', error);
+            this.app.showNotification('Failed to upload file', 'error');
+        }
+    }
+
+    // Upload a single file
+    async uploadSingleFile(file, milestoneId) {
+        try {
+            // Show upload progress
+            this.showUploadProgress(file.name, milestoneId);
+            
+            // Convert file to base64
+            const base64Content = await this.fileToBase64(file);
+            
+            const uploadData = {
+                name: file.name,
+                content: base64Content,
+                type: file.type,
+                size: file.size,
+                task_id: this.currentTask.id,
+                milestone_id: milestoneId,
+                uploaded_at: new Date().toISOString()
+            };
+            
+            const response = await fetch('http://localhost:8000/api/v1/files/upload', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(uploadData)
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                this.app.showNotification(`File "${file.name}" uploaded successfully!`);
+                this.hideUploadProgress(milestoneId);
+                return result;
+            } else {
+                throw new Error('Upload failed');
+            }
+        } catch (error) {
+            console.error('Failed to upload file:', error);
+            this.app.showNotification(`Failed to upload "${file.name}"`, 'error');
+            this.hideUploadProgress(milestoneId);
+            throw error;
+        }
+    }
+
+    // Convert file to base64
+    fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => {
+                // Remove the data URL prefix (e.g., "data:image/png;base64,")
+                const base64 = reader.result.split(',')[1];
+                resolve(base64);
+            };
+            reader.onerror = error => reject(error);
+        });
+    }
+
+    // Show upload progress
+    showUploadProgress(fileName, milestoneId) {
+        const filesContainer = document.getElementById(`files-${milestoneId}`);
+        if (filesContainer) {
+            const progressElement = document.createElement('div');
+            progressElement.className = 'upload-progress';
+            progressElement.id = `upload-progress-${milestoneId}`;
+            progressElement.innerHTML = `
+                <div class="uploading-file">
+                    <span class="file-icon">⏳</span>
+                    <span class="file-name">Uploading: ${fileName}</span>
+                    <div class="progress-bar">
+                        <div class="progress-fill uploading"></div>
+                    </div>
+                </div>
+            `;
+            filesContainer.appendChild(progressElement);
+        }
+    }
+
+    // Hide upload progress
+    hideUploadProgress(milestoneId) {
+        const progressElement = document.getElementById(`upload-progress-${milestoneId}`);
+        if (progressElement) {
+            progressElement.remove();
+        }
+    }
+
+    // Refresh milestone files display
+    async refreshMilestoneFiles(milestoneId) {
+        try {
+            const response = await fetch(`http://localhost:8000/api/v1/files/task/${this.currentTask.id}`);
+            if (response.ok) {
+                const files = await response.json();
+                const milestoneFiles = files.filter(file => file.milestone_id === milestoneId);
+                
+                // Find the milestone and update its files
+                const milestone = this.milestones.find(m => m.id === milestoneId);
+                if (milestone) {
+                    milestone.files = milestoneFiles;
+                    this.updateMilestoneFilesDisplay(milestoneId, milestoneFiles);
+                }
+            }
+        } catch (error) {
+            console.error('Failed to refresh files:', error);
+        }
+    }
+
+    // Update the files display for a specific milestone
+    updateMilestoneFilesDisplay(milestoneId, files) {
+        const filesContainer = document.getElementById(`files-${milestoneId}`);
+        if (filesContainer) {
+            const filesListHtml = files.length ? 
+                this.renderMilestoneFiles(files) : 
+                '<p class="no-files">No files uploaded yet.</p>';
+            filesContainer.innerHTML = filesListHtml;
+        }
+    }
+
+    // Load existing files for the task
+    async loadExistingFiles(taskId) {
+        try {
+            const response = await fetch(`http://localhost:8000/api/v1/files/task/${taskId}`);
+            if (response.ok) {
+                const files = await response.json();
+                
+                // Organize files by milestone
+                for (const milestone of this.milestones) {
+                    const milestoneFiles = files.filter(file => file.milestone_id === milestone.id);
+                    milestone.files = milestoneFiles;
+                }
+            }
+        } catch (error) {
+            console.error('Failed to load existing files:', error);
         }
     }
 
     // Download file
     async downloadFile(fileId) {
         try {
-            // TODO: Implement file download
-            alert(`Download file ${fileId}. File system coming soon!`);
+            const response = await fetch(`http://localhost:8000/api/v1/files/download/${fileId}`);
+            if (response.ok) {
+                const blob = await response.blob();
+                const filename = response.headers.get('content-disposition')?.split('filename=')[1]?.replace(/"/g, '') || 'download';
+                
+                // Create download link
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                this.app.showNotification(`File "${filename}" downloaded successfully!`);
+            } else {
+                throw new Error('Download failed');
+            }
         } catch (error) {
             console.error('Failed to download file:', error);
+            this.app.showNotification('Failed to download file', 'error');
         }
     }
 

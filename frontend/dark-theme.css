@@ -369,6 +369,52 @@ body.dark-mode {
     box-shadow: 0 8px 25px rgba(102, 187, 106, 0.5);
 }
 
+/* File Upload - Dark Mode */
+.dark-mode .uploading-file {
+    background: rgba(255, 193, 7, 0.2);
+    border-left-color: #ffeb3b;
+    color: #e8e6e3;
+}
+
+.dark-mode .upload-zone {
+    border-color: rgba(76, 175, 80, 0.4);
+    color: #e8e6e3;
+}
+
+.dark-mode .upload-zone:hover {
+    border-color: rgba(76, 175, 80, 0.6);
+    background: rgba(76, 175, 80, 0.1);
+}
+
+.dark-mode .upload-zone.dragover {
+    border-color: #66bb6a;
+    background: rgba(76, 175, 80, 0.2);
+}
+
+.dark-mode .file-card {
+    background: #252a26;
+    border-color: rgba(76, 175, 80, 0.2);
+    color: #e8e6e3;
+}
+
+.dark-mode .file-card:hover {
+    border-color: rgba(76, 175, 80, 0.4);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .file-item {
+    background: rgba(76, 175, 80, 0.1);
+    color: #e8e6e3;
+}
+
+.dark-mode .file-name {
+    color: #e8e6e3;
+}
+
+.dark-mode .file-size {
+    color: #b8b6b3;
+}
+
 /* Scrollbars */
 .dark-mode ::-webkit-scrollbar {
     width: 10px;

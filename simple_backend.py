@@ -355,8 +355,38 @@ class CORSHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             }
             chat_messages.append(message)
             self.send_json_response(message, 201)
+        elif path == '/api/v1/files/upload':
+            # General file upload endpoint
+            try:
+                file_id = str(len(file_uploads) + 1)
+                file_data = {
+                    "id": file_id,
+                    "name": data.get("name", "unknown_file"),
+                    "content": data.get("content", ""),  # Base64 encoded content
+                    "type": data.get("type", "application/octet-stream"),
+                    "size": data.get("size", 0),
+                    "task_id": data.get("task_id", ""),
+                    "milestone_id": data.get("milestone_id", ""),
+                    "uploaded_at": data.get("uploaded_at", datetime.now().isoformat() + "Z"),
+                    "uploaded_by": "user1"  # Simplified auth
+                }
+                file_uploads[file_id] = file_data
+                
+                # Return file info without content
+                response = {
+                    "id": file_id,
+                    "name": file_data["name"],
+                    "size": file_data["size"],
+                    "type": file_data["type"],
+                    "task_id": file_data["task_id"],
+                    "milestone_id": file_data["milestone_id"],
+                    "uploaded_at": file_data["uploaded_at"]
+                }
+                self.send_json_response(response, 201)
+            except Exception as e:
+                self.send_error(400, f"File upload failed: {str(e)}")
         elif path.startswith('/api/v1/files/upload/'):
-            # Upload file for a specific task
+            # Upload file for a specific task (legacy)
             task_id = path.split('/')[-1]
             try:
                 file_id = str(len(file_uploads) + 1)
@@ -367,6 +397,7 @@ class CORSHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                     "type": data.get("type", "application/octet-stream"),
                     "size": data.get("size", 0),
                     "task_id": task_id,
+                    "milestone_id": data.get("milestone_id", ""),
                     "uploaded_at": datetime.now().isoformat() + "Z",
                     "uploaded_by": "user1"  # Simplified auth
                 }
