@@ -1,11 +1,15 @@
 import json
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query, Depends
+from sqlalchemy.orm import Session
 from uuid import UUID
 from typing import Optional
 
 from app.core.auth import verify_access_token
+from app.database import get_db
 from app.websockets.connection_manager import manager
-from app.schemas.websocket import WebSocketMessage, ChatMessage
+from app.schemas.websocket import WebSocketMessage, ChatMessage, TaskChatMessage
+from app.services.chat_service import ChatService
+from app.models.task import Task
 
 router = APIRouter()
 
@@ -37,12 +41,42 @@ async def websocket_endpoint(websocket: WebSocket, token: Optional[str] = Query(
                 
                 # Handle different message types
                 if message.type == "chat_message":
-                    # Broadcast chat message to all connected clients
+                    # Broadcast general chat message to all connected clients
                     chat_message = ChatMessage(
                         message=message.payload.get("message", ""),
                         user_id=user_id
                     )
                     await manager.broadcast(chat_message.model_dump())
+                
+                elif message.type == "task_chat_message":
+                    # Handle task-specific chat messages
+                    task_id = message.payload.get("task_id")
+                    if task_id:
+                        # Get task from database to find participants
+                        from app.database import SessionLocal
+                        db = SessionLocal()
+                        try:
+                            task = db.query(Task).filter(Task.id == UUID(task_id)).first()
+                            if task:
+                                # Send message only to task owner and assignee
+                                participants = [task.owner_id]
+                                if task.assignee_id and task.assignee_id != task.owner_id:
+                                    participants.append(task.assignee_id)
+                                
+                                task_chat_msg = TaskChatMessage(
+                                    task_id=UUID(task_id),
+                                    message=message.payload.get("message", ""),
+                                    sender_id=user_id,
+                                    sender_email=message.payload.get("sender_email", ""),
+                                    sender_role=message.payload.get("sender_role")
+                                )
+                                
+                                await manager.send_to_multiple_users(
+                                    task_chat_msg.model_dump(mode='json'),
+                                    participants
+                                )
+                        finally:
+                            db.close()
                 
                 elif message.type == "ping":
                     # Respond to ping with pong

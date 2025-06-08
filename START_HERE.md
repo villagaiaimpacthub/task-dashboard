@@ -29,7 +29,7 @@ poetry run uvicorn app.main:app --reload
 ### 2. Start the Frontend
 **Terminal 3** - Frontend Server:
 ```bash
-cd hive-frontend
+cd frontend
 python server.py
 ```
 
@@ -109,7 +109,7 @@ task-dashboard/
 │   ├── tests/                   # Test suite
 │   ├── migrations/              # Database migrations
 │   └── scripts/                 # Utility scripts
-├── hive-frontend/               # Frontend interface
+├── frontend/               # Frontend interface
 │   ├── index.html               # Main interface
 │   ├── app.js                   # Application logic
 │   ├── api.js                   # Backend integration
@@ -192,7 +192,7 @@ poetry run uvicorn app.main:app --reload --host 0.0.0.0
 
 ### Frontend Development
 ```bash
-cd hive-frontend
+cd frontend
 
 # Start development server
 python server.py

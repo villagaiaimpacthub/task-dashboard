@@ -1,0 +1,25 @@
+{
+  "name": "task-dashboard",
+  "version": "1.0.0",
+  "description": "A modern task coordination platform with real-time collaboration features, built with FastAPI backend and vanilla JavaScript frontend.",
+  "main": "dev-config.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/villagaiaimpacthub/task-dashboard.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/villagaiaimpacthub/task-dashboard/issues"
+  },
+  "homepage": "https://github.com/villagaiaimpacthub/task-dashboard#readme",
+  "dependencies": {
+    "node-fetch": "^3.3.2",
+    "zod": "^3.25.56"
+  }
+}

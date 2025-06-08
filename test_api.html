@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+</head>
+<body>
+    <h1>API Connection Test</h1>
+    <button onclick="testAPI()">Test API Connection</button>
+    <div id="result"></div>
+
+    <script>
+        const WSL_IP = '172.19.58.21';
+        const API_BASE_URL = `http://${WSL_IP}:8000`;
+        
+        async function testAPI() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                // Test 1: Health check
+                console.log('Testing health endpoint...');
+                const healthResponse = await fetch(`${API_BASE_URL}/health`);
+                const healthData = await healthResponse.json();
+                console.log('Health response:', healthData);
+                
+                // Test 2: Tasks endpoint
+                console.log('Testing tasks endpoint...');
+                const tasksResponse = await fetch(`${API_BASE_URL}/api/v1/tasks/`);
+                const tasksData = await tasksResponse.json();
+                console.log('Tasks response:', tasksData);
+                
+                resultDiv.innerHTML = `
+                    <h3>✅ API Test Successful!</h3>
+                    <p><strong>Health:</strong> ${JSON.stringify(healthData)}</p>
+                    <p><strong>Tasks Count:</strong> ${tasksData.length}</p>
+                    <p><strong>First Task:</strong> ${tasksData[0]?.title || 'None'}</p>
+                `;
+                
+            } catch (error) {
+                console.error('API Test Failed:', error);
+                resultDiv.innerHTML = `
+                    <h3>❌ API Test Failed!</h3>
+                    <p><strong>Error:</strong> ${error.message}</p>
+                    <p><strong>Check console for details</strong></p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

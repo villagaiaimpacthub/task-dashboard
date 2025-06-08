@@ -36,7 +36,7 @@ poetry run uvicorn app.main:app --reload
 
 5. Start the frontend (in a new terminal):
 ```bash
-cd hive-frontend
+cd frontend
 python3 server.py
 ```
 
@@ -77,7 +77,7 @@ python3 server.py
 ```
 task-dashboard/
 ├── hive-backend-alpha/     # Backend API
-├── hive-frontend/          # Frontend application
+├── frontend/          # Frontend application
 ├── project-docs/           # Original specifications
 ├── START_HERE.md          # Getting started guide
 └── DEPLOYMENT_GUIDE.md    # Deployment instructions

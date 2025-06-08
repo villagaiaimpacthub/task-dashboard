@@ -26,3 +26,20 @@ class ChatMessage(BaseModel):
     type: str = "chat_message"
     message: str
     user_id: UUID
+
+
+class TaskChatMessage(BaseModel):
+    type: str = "task_chat_message"
+    task_id: UUID
+    message: str
+    sender_id: UUID
+    sender_email: str
+    sender_role: Optional[str] = None
+
+
+class DirectMessage(BaseModel):
+    type: str = "direct_message"
+    sender_id: UUID
+    recipient_id: UUID
+    message: str
+    sender_email: str
