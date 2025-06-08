@@ -28,6 +28,10 @@ class HIVERouter {
     // Handle current route
     handleRoute() {
         const path = window.location.pathname;
+        
+        // Clean up previous route
+        this.cleanup();
+        
         this.currentRoute = path;
 
         // Parse route parameters
@@ -40,6 +44,14 @@ class HIVERouter {
             handler(params);
         } else {
             this.handleNotFound();
+        }
+    }
+
+    // Clean up current route (called before navigation)
+    cleanup() {
+        // Clean up task page chat if we're leaving a task page
+        if (window.taskPageManager) {
+            window.taskPageManager.cleanupChat();
         }
     }
 

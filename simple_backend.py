@@ -122,6 +122,7 @@ users = [
 comments = []
 chat_messages = []
 file_uploads = {}  # {file_id: {name, content, type, size, task_id, uploaded_at}}
+help_requests = {}  # {request_id: {id, milestone_id, task_id, requester_id, reason, status, created_at}}
 
 # Create uploads directory if it doesn't exist
 UPLOAD_DIR = "uploads"
@@ -414,20 +415,33 @@ class CORSHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_json_response(response, 201)
             except Exception as e:
                 self.send_error(400, f"File upload failed: {str(e)}")
-        elif path == '/api/v1/help-requests/':
-            # Handle help request
+        elif path == '/api/v1/help-requests':
+            # Create help request
             help_request = {
-                "id": str(int(time.time())),
+                "id": data.get("id", f"help-{int(time.time())}"),
+                "milestone_id": data.get("milestone_id", ""),
                 "task_id": data.get("task_id", ""),
+                "requester_id": data.get("requester_id", "user1"),
+                "requester_name": data.get("requester_name", "Demo User"),
+                "reason": data.get("reason", ""),
+                "status": data.get("status", "open"),
                 "urgency": data.get("urgency", "medium"),
-                "description": data.get("description", ""),
-                "requester_id": "user1",  # Simplified auth
-                "requester_email": "alice@example.com",
-                "created_at": datetime.now().isoformat() + "Z",
-                "status": "open"
+                "created_at": data.get("created_at", datetime.now().isoformat())
             }
-            # In a real system, this would trigger notifications to team members
-            self.send_json_response({"message": "Help request sent to team", "request": help_request}, 201)
+            help_requests[help_request["id"]] = help_request
+            self.send_json_response({"message": "Help request created", "request": help_request}, 201)
+        elif path.startswith('/api/v1/help-requests/') and path.endswith('/respond'):
+            # Respond to help request
+            request_id = path.split('/')[4]
+            if request_id in help_requests:
+                help_requests[request_id]["status"] = "responded"
+                help_requests[request_id]["response"] = data.get("response", "")
+                help_requests[request_id]["helper_id"] = data.get("helper_id", "user1")
+                help_requests[request_id]["helper_name"] = data.get("helper_name", "Demo Helper")
+                help_requests[request_id]["responded_at"] = datetime.now().isoformat()
+                self.send_json_response({"message": "Help response sent", "request": help_requests[request_id]}, 200)
+            else:
+                self.send_error(404, "Help request not found")
         elif path.startswith('/api/v1/tasks/') and path.endswith('/dod'):
             # Update Definition of Done for a task
             task_id = path.split('/')[4]  # Extract task ID from path
@@ -530,6 +544,14 @@ class CORSHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_json_response({"message": "File deleted successfully"})
             else:
                 self.send_error(404, "File not found")
+        elif path.startswith('/api/v1/help-requests/'):
+            # Delete help request
+            request_id = path.split('/')[4]
+            if request_id in help_requests:
+                del help_requests[request_id]
+                self.send_json_response({"message": "Help request deleted successfully"})
+            else:
+                self.send_error(404, "Help request not found")
         else:
             self.send_error(404, "Endpoint not found")
 

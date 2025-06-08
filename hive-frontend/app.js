@@ -847,6 +847,11 @@ class HIVEApp {
         // Initialize page managers
         taskPageManager = new TaskPageManager(this);
         settingsPageManager = new SettingsPageManager(this);
+        
+        // Make globally accessible for cleanup
+        window.taskPageManager = taskPageManager;
+        window.settingsPageManager = settingsPageManager;
+        
         console.log('Page managers initialized');
         
         // Register routes

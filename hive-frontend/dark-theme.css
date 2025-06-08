@@ -255,6 +255,68 @@ body.dark-mode {
     border-color: rgba(76, 175, 80, 0.2);
 }
 
+.dark-mode .chat-messages {
+    background: #1a1f1c;
+    border-color: rgba(76, 175, 80, 0.2);
+}
+
+.dark-mode .no-messages {
+    color: #7a8f7d;
+}
+
+.dark-mode .chat-message.own-message {
+    background: rgba(76, 175, 80, 0.2);
+}
+
+.dark-mode .chat-message.other-message {
+    background: #202521;
+    border-color: rgba(76, 175, 80, 0.3);
+}
+
+.dark-mode .sender-name {
+    color: #81c784;
+}
+
+.dark-mode .message-time {
+    color: #b8b6b3;
+}
+
+.dark-mode .message-content {
+    color: #e8e6e3;
+}
+
+.dark-mode .message-content code {
+    background: rgba(76, 175, 80, 0.2);
+    color: #e8e6e3;
+}
+
+.dark-mode .chat-input-container {
+    border-top-color: rgba(76, 175, 80, 0.2);
+}
+
+.dark-mode #chatInput {
+    background: #1a1f1c;
+    border-color: rgba(76, 175, 80, 0.3);
+    color: #e8e6e3;
+}
+
+.dark-mode #chatInput:focus {
+    border-color: #66bb6a;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.3);
+}
+
+.dark-mode #chatInput::placeholder {
+    color: #7a8f7d;
+}
+
+.dark-mode .send-btn {
+    background: linear-gradient(135deg, #66bb6a, #4caf50);
+}
+
+.dark-mode .send-btn:hover {
+    background: linear-gradient(135deg, #81c784, #66bb6a);
+}
+
 .dark-mode .chat-placeholder,
 .dark-mode .files-placeholder {
     color: #7a8f7d;
@@ -412,6 +474,72 @@ body.dark-mode {
 }
 
 .dark-mode .file-size {
+    color: #b8b6b3;
+}
+
+/* Help Requests - Dark Mode */
+.dark-mode .help-requests-section {
+    border-top-color: rgba(76, 175, 80, 0.2);
+}
+
+.dark-mode .help-requests-section h4 {
+    color: #e8e6e3;
+}
+
+.dark-mode .help-request-item {
+    background: rgba(255, 152, 0, 0.15);
+    border-color: rgba(255, 152, 0, 0.3);
+    color: #e8e6e3;
+}
+
+.dark-mode .help-request-item.resolved {
+    background: rgba(76, 175, 80, 0.15);
+    border-color: rgba(76, 175, 80, 0.3);
+}
+
+.dark-mode .help-request-item.cancelled {
+    background: rgba(158, 158, 158, 0.15);
+    border-color: rgba(158, 158, 158, 0.3);
+}
+
+.dark-mode .help-request-status {
+    color: #b8b6b3;
+}
+
+.dark-mode .help-request-date {
+    color: #7a8f7d;
+}
+
+.dark-mode .help-request-reason {
+    color: #b8b6b3;
+}
+
+.dark-mode .help-request-requester {
+    color: #a8b5aa;
+}
+
+.dark-mode .cancel-help-btn,
+.dark-mode .respond-help-btn {
+    background: #ff9800;
+}
+
+.dark-mode .cancel-help-btn {
+    background: #f44336;
+}
+
+.dark-mode .cancel-help-btn:hover {
+    background: #d32f2f;
+}
+
+.dark-mode .respond-help-btn:hover {
+    background: #f57c00;
+}
+
+.dark-mode .help-resolved {
+    color: #81c784;
+}
+
+.dark-mode .help-cancelled {
     color: #b8b6b3;
 }
 

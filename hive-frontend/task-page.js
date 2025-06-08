@@ -4,6 +4,7 @@ class TaskPageManager {
         this.app = app;
         this.currentTask = null;
         this.milestones = [];
+        this.chatMessages = [];
     }
 
     // Show task page
@@ -23,6 +24,9 @@ class TaskPageManager {
 
             // Load existing files for all milestones
             await this.loadExistingFiles(taskId);
+
+            // Load existing chat messages
+            await this.loadChatMessages(taskId);
 
             // Render the task page
             this.renderTaskPage();
@@ -148,8 +152,18 @@ class TaskPageManager {
                         <div class="task-chat-section">
                             <h3>Team Chat</h3>
                             <div class="chat-container" id="taskChat">
-                                <!-- Chat messages will be loaded here -->
-                                <p class="chat-placeholder">Chat system coming soon...</p>
+                                <div class="chat-messages" id="chatMessages">
+                                    <!-- Chat messages will be loaded here -->
+                                </div>
+                                <div class="chat-input-container">
+                                    <div class="chat-input-wrapper">
+                                        <input type="text" id="chatInput" placeholder="Type your message..." 
+                                               onkeypress="taskPageManager.handleChatKeyPress(event)">
+                                        <button class="send-btn" onclick="taskPageManager.sendChatMessage()">
+                                            📤
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -232,6 +246,10 @@ class TaskPageManager {
                         ${milestone.files.length ? this.renderMilestoneFiles(milestone.files) : '<p class="no-files">No files uploaded yet.</p>'}
                     </div>
                 </div>
+
+                <div class="milestone-help-requests" id="help-requests-${milestone.id}">
+                    ${this.renderHelpRequests(milestone.help_requests || [])}
+                </div>
             </div>
         `).join('');
     }
@@ -276,8 +294,154 @@ class TaskPageManager {
 
     // Setup event listeners for task page
     setupTaskPageEventListeners() {
-        // Add any additional event listeners needed
+        // Load and render chat messages after page is ready
+        this.renderChatMessages();
+        
+        // Set up auto-refresh for chat (every 5 seconds)
+        if (this.chatRefreshInterval) {
+            clearInterval(this.chatRefreshInterval);
+        }
+        this.chatRefreshInterval = setInterval(() => {
+            this.loadChatMessages(this.currentTask.id);
+        }, 5000);
+        
         console.log('Task page event listeners setup');
+    }
+
+    // Load chat messages for task
+    async loadChatMessages(taskId) {
+        try {
+            const response = await fetch(`http://localhost:8000/api/v1/chat/task/${taskId}/messages`);
+            if (response.ok) {
+                this.chatMessages = await response.json();
+                this.renderChatMessages();
+            }
+        } catch (error) {
+            console.error('Failed to load chat messages:', error);
+        }
+    }
+
+    // Render chat messages
+    renderChatMessages() {
+        const chatContainer = document.getElementById('chatMessages');
+        if (!chatContainer) return;
+
+        if (this.chatMessages.length === 0) {
+            chatContainer.innerHTML = `
+                <div class="no-messages">
+                    <p>No messages yet. Start the conversation!</p>
+                </div>
+            `;
+            return;
+        }
+
+        const messagesHtml = this.chatMessages.map(message => {
+            const timestamp = new Date(message.created_at).toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            const isCurrentUser = message.sender_id === this.app.currentUser?.id;
+            
+            return `
+                <div class="chat-message ${isCurrentUser ? 'own-message' : 'other-message'}">
+                    <div class="message-header">
+                        <span class="sender-name">${message.sender_email}</span>
+                        <span class="message-time">${timestamp}</span>
+                    </div>
+                    <div class="message-content">
+                        ${this.formatMessageContent(message.content)}
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        chatContainer.innerHTML = messagesHtml;
+        
+        // Auto-scroll to bottom
+        setTimeout(() => {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }, 100);
+    }
+
+    // Format message content (simple markdown support)
+    formatMessageContent(content) {
+        return content
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/`(.*?)`/g, '<code>$1</code>')
+            .replace(/\n/g, '<br>');
+    }
+
+    // Handle enter key press in chat input
+    handleChatKeyPress(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            this.sendChatMessage();
+        }
+    }
+
+    // Send chat message
+    async sendChatMessage() {
+        const chatInput = document.getElementById('chatInput');
+        if (!chatInput) return;
+
+        const content = chatInput.value.trim();
+        if (!content) return;
+
+        try {
+            const messageData = {
+                content: content,
+                sender_id: this.app.currentUser?.id,
+                sender_email: this.app.currentUser?.email || 'unknown@example.com',
+                message_type: 'task_chat'
+            };
+
+            const response = await fetch(`http://localhost:8000/api/v1/chat/task/${this.currentTask.id}/messages`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(messageData)
+            });
+
+            if (response.ok) {
+                const newMessage = await response.json();
+                this.chatMessages.push(newMessage);
+                this.renderChatMessages();
+                chatInput.value = '';
+                
+                // Show success feedback briefly
+                this.showChatSentFeedback();
+            } else {
+                throw new Error('Failed to send message');
+            }
+        } catch (error) {
+            console.error('Failed to send chat message:', error);
+            this.app.showNotification('Failed to send message. Please try again.', 'error');
+        }
+    }
+
+    // Show brief feedback when message is sent
+    showChatSentFeedback() {
+        const sendBtn = document.querySelector('.send-btn');
+        if (sendBtn) {
+            const originalText = sendBtn.textContent;
+            sendBtn.textContent = '✅';
+            sendBtn.style.background = '#4caf50';
+            
+            setTimeout(() => {
+                sendBtn.textContent = originalText;
+                sendBtn.style.background = '';
+            }, 1000);
+        }
+    }
+
+    // Clean up chat interval when leaving page
+    cleanupChat() {
+        if (this.chatRefreshInterval) {
+            clearInterval(this.chatRefreshInterval);
+            this.chatRefreshInterval = null;
+        }
     }
 
     // Toggle milestone completion
@@ -297,10 +461,64 @@ class TaskPageManager {
     // Request help for milestone
     async requestHelp(milestoneId) {
         try {
-            // TODO: Implement help request system
-            alert(`Help requested for milestone ${milestoneId}. Notification system coming soon!`);
+            const milestone = this.milestones.find(m => m.id === milestoneId);
+            if (!milestone) {
+                this.app.showNotification('Milestone not found', 'error');
+                return;
+            }
+
+            // Show help request dialog
+            const reason = prompt(`Request help for milestone: "${milestone.title}"\n\nPlease describe what kind of help you need:`);
+            if (!reason || reason.trim() === '') {
+                return; // User cancelled or provided empty reason
+            }
+
+            // Create help request
+            const helpRequest = {
+                id: `help-${Date.now()}`,
+                milestone_id: milestoneId,
+                task_id: this.currentTask.id,
+                requester_id: this.app.currentUser?.id,
+                requester_name: this.app.currentUser?.name || 'Unknown User',
+                reason: reason.trim(),
+                status: 'open',
+                created_at: new Date().toISOString(),
+                urgency: 'medium' // Could be made configurable
+            };
+
+            // Send help request to backend
+            const response = await fetch('http://localhost:8000/api/v1/help-requests', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(helpRequest)
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                
+                // Add to milestone's help requests
+                if (!milestone.help_requests) {
+                    milestone.help_requests = [];
+                }
+                milestone.help_requests.push(helpRequest);
+                
+                // Update the milestone display to show help request
+                this.updateMilestoneHelpDisplay(milestoneId);
+                
+                // Show success notification
+                this.app.showNotification(`Help request sent! Team members will be notified.`);
+                
+                // Trigger notification system (when available)
+                this.notifyTeamOfHelpRequest(helpRequest);
+                
+            } else {
+                throw new Error('Failed to send help request');
+            }
         } catch (error) {
             console.error('Failed to request help:', error);
+            this.app.showNotification('Failed to send help request. Please try again.', 'error');
         }
     }
 
@@ -543,6 +761,164 @@ class TaskPageManager {
         `;
         taskContainer.style.display = 'block';
         document.body.style.overflow = 'auto';
+    }
+
+    // Render help requests for a milestone
+    renderHelpRequests(helpRequests) {
+        if (!helpRequests || helpRequests.length === 0) {
+            return '';
+        }
+
+        return `
+            <div class="help-requests-section">
+                <h4>Help Requests</h4>
+                <div class="help-requests-list">
+                    ${helpRequests.map(request => `
+                        <div class="help-request-item ${request.status}" data-request-id="${request.id}">
+                            <div class="help-request-header">
+                                <span class="help-request-urgency urgency-${request.urgency}">
+                                    ${request.urgency.toUpperCase()}
+                                </span>
+                                <span class="help-request-status">
+                                    ${request.status.toUpperCase()}
+                                </span>
+                                <span class="help-request-date">
+                                    ${new Date(request.created_at).toLocaleDateString()}
+                                </span>
+                            </div>
+                            <div class="help-request-content">
+                                <p class="help-request-reason">"${request.reason}"</p>
+                                <p class="help-request-requester">
+                                    Requested by: <strong>${request.requester_name}</strong>
+                                </p>
+                            </div>
+                            <div class="help-request-actions">
+                                ${this.renderHelpRequestActions(request)}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    // Render help request actions based on user role and request status
+    renderHelpRequestActions(request) {
+        const currentUserId = this.app.currentUser?.id;
+        const isRequester = request.requester_id === currentUserId;
+        
+        if (request.status === 'open') {
+            if (isRequester) {
+                return `
+                    <button class="cancel-help-btn" onclick="taskPageManager.cancelHelpRequest('${request.id}')">
+                        Cancel Request
+                    </button>
+                `;
+            } else {
+                return `
+                    <button class="respond-help-btn" onclick="taskPageManager.respondToHelpRequest('${request.id}')">
+                        Offer Help
+                    </button>
+                `;
+            }
+        } else if (request.status === 'resolved') {
+            return `<span class="help-resolved">✅ Resolved</span>`;
+        } else if (request.status === 'cancelled') {
+            return `<span class="help-cancelled">❌ Cancelled</span>`;
+        }
+        
+        return '';
+    }
+
+    // Update milestone help display
+    updateMilestoneHelpDisplay(milestoneId) {
+        const milestone = this.milestones.find(m => m.id === milestoneId);
+        if (!milestone) return;
+
+        const helpContainer = document.getElementById(`help-requests-${milestoneId}`);
+        if (helpContainer) {
+            helpContainer.innerHTML = this.renderHelpRequests(milestone.help_requests || []);
+        }
+    }
+
+    // Cancel help request
+    async cancelHelpRequest(requestId) {
+        try {
+            const response = await fetch(`http://localhost:8000/api/v1/help-requests/${requestId}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                // Remove from local state
+                for (const milestone of this.milestones) {
+                    if (milestone.help_requests) {
+                        milestone.help_requests = milestone.help_requests.filter(req => req.id !== requestId);
+                        this.updateMilestoneHelpDisplay(milestone.id);
+                    }
+                }
+                
+                this.app.showNotification('Help request cancelled');
+            } else {
+                throw new Error('Failed to cancel help request');
+            }
+        } catch (error) {
+            console.error('Failed to cancel help request:', error);
+            this.app.showNotification('Failed to cancel help request', 'error');
+        }
+    }
+
+    // Respond to help request
+    async respondToHelpRequest(requestId) {
+        try {
+            const response = prompt('Offer help for this request. Describe how you can assist:');
+            if (!response || response.trim() === '') {
+                return;
+            }
+
+            const helpResponse = {
+                request_id: requestId,
+                helper_id: this.app.currentUser?.id,
+                helper_name: this.app.currentUser?.name || 'Unknown User',
+                response: response.trim(),
+                created_at: new Date().toISOString()
+            };
+
+            const apiResponse = await fetch(`http://localhost:8000/api/v1/help-requests/${requestId}/respond`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(helpResponse)
+            });
+
+            if (apiResponse.ok) {
+                this.app.showNotification('Help offer sent! The requester will be notified.');
+                // Refresh help requests display
+                await this.loadTaskMilestones(this.currentTask.id);
+                this.renderTaskPage();
+            } else {
+                throw new Error('Failed to send help response');
+            }
+        } catch (error) {
+            console.error('Failed to respond to help request:', error);
+            this.app.showNotification('Failed to send help response', 'error');
+        }
+    }
+
+    // Notify team of help request (placeholder for real notification system)
+    notifyTeamOfHelpRequest(helpRequest) {
+        // In a real implementation, this would:
+        // 1. Find team members with relevant skills
+        // 2. Send notifications via email, push notifications, etc.
+        // 3. Update the notifications page/system
+        
+        console.log('Notifying team of help request:', helpRequest);
+        
+        // For now, just log to console - could integrate with:
+        // - Email service
+        // - Push notification service
+        // - WebSocket for real-time notifications
+        // - In-app notification system
     }
 }
 
