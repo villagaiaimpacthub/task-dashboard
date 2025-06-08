@@ -1,0 +1,389 @@
+/* Dark Theme for HIVE Task Dashboard */
+
+/* Base Colors */
+body.dark-mode {
+    background: #1a1f1c;
+    color: #e8e6e3;
+}
+
+.dark-mode .main-container {
+    background: #1a1f1c;
+}
+
+/* Header */
+.dark-mode .header-bar {
+    background: rgba(32, 37, 33, 0.95);
+    border-bottom: 1px solid rgba(76, 175, 80, 0.2);
+}
+
+.dark-mode .prime-directive {
+    background: rgba(76, 175, 80, 0.15);
+    color: #e8e6e3;
+    border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.dark-mode .settings-btn {
+    background: rgba(232, 230, 227, 0.1);
+    border: 1px solid rgba(232, 230, 227, 0.2);
+    color: #e8e6e3;
+}
+
+.dark-mode .settings-btn:hover {
+    background: rgba(232, 230, 227, 0.2);
+}
+
+/* Sidebar */
+.dark-mode .sidebar {
+    background: #202521;
+    border-right: 1px solid rgba(76, 175, 80, 0.2);
+}
+
+.dark-mode .section-header {
+    color: #a8b5aa;
+    border-bottom: 1px solid rgba(76, 175, 80, 0.2);
+}
+
+.dark-mode .filter-item {
+    color: #e8e6e3;
+}
+
+.dark-mode .filter-item:hover {
+    background: rgba(76, 175, 80, 0.1);
+}
+
+.dark-mode .filter-item.active {
+    background: rgba(76, 175, 80, 0.2);
+    color: #81c784;
+}
+
+/* Task Cards */
+.dark-mode .task-card {
+    background: #252a26;
+    border: 1px solid rgba(76, 175, 80, 0.2);
+    color: #e8e6e3;
+}
+
+.dark-mode .task-card:hover {
+    border-color: rgba(76, 175, 80, 0.4);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .task-title {
+    color: #e8e6e3;
+}
+
+.dark-mode .task-description {
+    color: #b8b6b3;
+}
+
+.dark-mode .detail-item {
+    color: #b8b6b3;
+}
+
+/* Right Panel */
+.dark-mode .right-panel {
+    background: #202521;
+    border-left: 1px solid rgba(76, 175, 80, 0.2);
+}
+
+.dark-mode .panel-title {
+    color: #e8e6e3;
+}
+
+.dark-mode .active-task {
+    background: rgba(76, 175, 80, 0.1);
+    border-left-color: #66bb6a;
+}
+
+.dark-mode .active-task:hover {
+    border-left-color: #81c784;
+}
+
+.dark-mode .active-task-title {
+    color: #e8e6e3;
+}
+
+.dark-mode .active-task-status {
+    color: #b8b6b3;
+}
+
+.dark-mode .team-member {
+    color: #e8e6e3;
+}
+
+.dark-mode .team-member:hover {
+    background: rgba(76, 175, 80, 0.1);
+}
+
+.dark-mode .member-name {
+    color: #e8e6e3;
+}
+
+.dark-mode .member-email {
+    color: #b8b6b3;
+}
+
+.dark-mode .dashboard-stats {
+    color: #b8b6b3;
+}
+
+.dark-mode .stat-value {
+    color: #e8e6e3;
+}
+
+/* Modals */
+.dark-mode .modal {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.dark-mode .modal-content {
+    background: #252a26;
+}
+
+.dark-mode .modal-header {
+    border-bottom: 1px solid rgba(76, 175, 80, 0.2);
+}
+
+.dark-mode .modal-header h2 {
+    color: #e8e6e3;
+}
+
+.dark-mode .close {
+    color: #b8b6b3;
+}
+
+.dark-mode .close:hover {
+    color: #e8e6e3;
+}
+
+.dark-mode .modal-body input[type="text"],
+.dark-mode .modal-body input[type="email"],
+.dark-mode .modal-body input[type="password"],
+.dark-mode .modal-body textarea {
+    background: #1a1f1c;
+    border: 1px solid rgba(76, 175, 80, 0.3);
+    color: #e8e6e3;
+}
+
+.dark-mode .modal-body input::placeholder,
+.dark-mode .modal-body textarea::placeholder {
+    color: #7a8f7d;
+}
+
+.dark-mode .modal-body label {
+    color: #e8e6e3;
+}
+
+.dark-mode .tab-btn {
+    color: #b8b6b3;
+}
+
+.dark-mode .tab-btn.active {
+    color: #81c784;
+    border-bottom-color: #81c784;
+}
+
+/* Task Page */
+.dark-mode #task-page-container {
+    background: #1a1f1c;
+}
+
+.dark-mode .task-page {
+    background: #1a1f1c;
+    color: #e8e6e3;
+}
+
+.dark-mode .task-header {
+    border-bottom-color: rgba(76, 175, 80, 0.2);
+}
+
+.dark-mode .back-btn {
+    background: rgba(76, 175, 80, 0.2);
+    color: #81c784;
+}
+
+.dark-mode .back-btn:hover {
+    background: rgba(76, 175, 80, 0.3);
+}
+
+.dark-mode .task-page .task-title {
+    color: #e8e6e3;
+}
+
+.dark-mode .task-description h3,
+.dark-mode .milestones-section h3,
+.dark-mode .task-chat-section h3,
+.dark-mode .task-files-section h3 {
+    color: #e8e6e3;
+    border-bottom-color: rgba(76, 175, 80, 0.2);
+}
+
+.dark-mode .task-description p {
+    color: #b8b6b3;
+}
+
+.dark-mode .milestone-item {
+    background: #252a26;
+    border-color: rgba(76, 175, 80, 0.2);
+}
+
+.dark-mode .milestone-item:hover {
+    border-color: rgba(76, 175, 80, 0.4);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .milestone-item.completed {
+    background: rgba(76, 175, 80, 0.1);
+    border-color: #66bb6a;
+}
+
+.dark-mode .milestone-title {
+    color: #e8e6e3;
+}
+
+.dark-mode .milestone-alignment {
+    background: rgba(76, 175, 80, 0.05);
+}
+
+.dark-mode .alignment-label {
+    color: #b8b6b3;
+}
+
+.dark-mode .task-chat-section,
+.dark-mode .task-files-section {
+    background: #252a26;
+    border-color: rgba(76, 175, 80, 0.2);
+}
+
+.dark-mode .chat-placeholder,
+.dark-mode .files-placeholder {
+    color: #7a8f7d;
+}
+
+/* Settings Page */
+.dark-mode #settings-page-container {
+    background: #1a1f1c;
+}
+
+.dark-mode .settings-page {
+    background: #1a1f1c;
+    color: #e8e6e3;
+}
+
+.dark-mode .settings-header {
+    border-bottom-color: rgba(76, 175, 80, 0.2);
+}
+
+.dark-mode .settings-header h1 {
+    color: #e8e6e3;
+}
+
+.dark-mode .settings-content .settings-section {
+    background: #252a26;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .settings-content input[type="text"],
+.dark-mode .settings-content input[type="email"],
+.dark-mode .settings-content textarea {
+    background: #1a1f1c;
+    border: 1px solid rgba(76, 175, 80, 0.3);
+    color: #e8e6e3;
+}
+
+.dark-mode .settings-content input[type="text"]:focus,
+.dark-mode .settings-content input[type="email"]:focus,
+.dark-mode .settings-content textarea:focus {
+    border-color: #66bb6a;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.3);
+}
+
+/* Skills */
+.dark-mode .skill-tag {
+    background: rgba(76, 175, 80, 0.2);
+    color: #81c784;
+}
+
+.dark-mode .skill-tag:hover {
+    background: rgba(76, 175, 80, 0.3);
+}
+
+.dark-mode .skill-tag.active {
+    background: #66bb6a;
+    color: #1a1f1c;
+}
+
+.dark-mode .skill-item {
+    background: rgba(76, 175, 80, 0.15);
+    color: #81c784;
+}
+
+/* Buttons */
+.dark-mode .create-btn,
+.dark-mode .submit-btn {
+    background: linear-gradient(135deg, #66bb6a, #4caf50);
+}
+
+.dark-mode .create-btn:hover,
+.dark-mode .submit-btn:hover {
+    background: linear-gradient(135deg, #81c784, #66bb6a);
+}
+
+.dark-mode .claim-btn,
+.dark-mode .assign-btn,
+.dark-mode .update-status-btn {
+    background: #3d4a3f;
+    color: #e8e6e3;
+}
+
+.dark-mode .claim-btn:hover,
+.dark-mode .assign-btn:hover,
+.dark-mode .update-status-btn:hover {
+    background: #4a5a4c;
+}
+
+/* Progress bars */
+.dark-mode .progress-bar {
+    background: rgba(76, 175, 80, 0.2);
+}
+
+/* Notifications */
+.dark-mode .notification-success {
+    background: #66bb6a;
+    color: #1a1f1c;
+}
+
+.dark-mode .notification-error {
+    background: #ef5350;
+    color: white;
+}
+
+/* Floating Action Button */
+.dark-mode .fab {
+    background: linear-gradient(135deg, #66bb6a, #4caf50);
+    box-shadow: 0 6px 20px rgba(102, 187, 106, 0.4);
+}
+
+.dark-mode .fab:hover {
+    background: linear-gradient(135deg, #81c784, #66bb6a);
+    box-shadow: 0 8px 25px rgba(102, 187, 106, 0.5);
+}
+
+/* Scrollbars */
+.dark-mode ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.dark-mode ::-webkit-scrollbar-track {
+    background: #1a1f1c;
+}
+
+.dark-mode ::-webkit-scrollbar-thumb {
+    background: #3d4a3f;
+    border-radius: 5px;
+}
+
+.dark-mode ::-webkit-scrollbar-thumb:hover {
+    background: #4a5a4c;
+}
