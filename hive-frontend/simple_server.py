@@ -5,7 +5,7 @@ import http.server
 import socketserver
 import os
 
-PORT = 3001
+PORT = 3003
 
 class CORSHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     def end_headers(self):

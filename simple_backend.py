@@ -148,6 +148,14 @@ class CORSHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.send_json_response({"status": "healthy", "message": "HIVE Backend Simple"})
         elif path == '/api/v1/tasks/':
             self.send_json_response(tasks)
+        elif path.startswith('/api/v1/tasks/') and path != '/api/v1/tasks/':
+            # Get individual task
+            task_id = path.split('/')[-1]
+            task = next((t for t in tasks if t["id"] == task_id), None)
+            if task:
+                self.send_json_response(task)
+            else:
+                self.send_error(404, "Task not found")
         elif path == '/api/v1/dashboard/summary':
             summary = {
                 "total_tasks": len(tasks),

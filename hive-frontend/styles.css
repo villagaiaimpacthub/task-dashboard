@@ -442,6 +442,9 @@ body {
     border-radius: 10px;
     border-left: 4px solid #4caf50;
     transition: all 0.2s ease;
+}
+
+.active-task[data-task-id] {
     cursor: pointer;
 }
 
@@ -961,10 +964,421 @@ input:checked + .slider:before {
     100% { transform: rotate(360deg); }
 }
 
+/* Task Page Container */
+#task-page-container {
+    width: 100%;
+    min-height: 100vh;
+    background: #faf9f7;
+    overflow-y: auto;
+    position: relative;
+}
+
+/* Task Page Styles */
+.task-page {
+    padding: 32px;
+    max-width: 1200px;
+    margin: 0 auto;
+    min-height: 100vh;
+    overflow: visible;
+}
+
+.task-header {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 2px solid rgba(76, 175, 80, 0.1);
+}
+
+.back-btn {
+    background: rgba(76, 175, 80, 0.1);
+    color: #2e7d32;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.back-btn:hover {
+    background: rgba(76, 175, 80, 0.2);
+    transform: translateX(-2px);
+}
+
+.task-title-section {
+    flex: 1;
+}
+
+.task-page .task-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #2c3e34;
+    margin-bottom: 12px;
+    line-height: 1.2;
+}
+
+.task-page .task-meta {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.task-content {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 40px;
+}
+
+.task-left-column,
+.task-right-column {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.task-description h3,
+.milestones-section h3,
+.task-chat-section h3,
+.task-files-section h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #2c3e34;
+    margin-bottom: 16px;
+    border-bottom: 1px solid rgba(76, 175, 80, 0.1);
+    padding-bottom: 8px;
+}
+
+.task-description p {
+    font-size: 16px;
+    line-height: 1.6;
+    color: #555;
+}
+
+/* Milestones */
+.milestones-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.milestone-item {
+    background: white;
+    border: 1px solid rgba(76, 175, 80, 0.1);
+    border-radius: 16px;
+    padding: 20px;
+    transition: all 0.3s ease;
+}
+
+.milestone-item:hover {
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.1);
+    border-color: rgba(76, 175, 80, 0.3);
+}
+
+.milestone-item.completed {
+    background: rgba(76, 175, 80, 0.05);
+    border-color: #4caf50;
+}
+
+.milestone-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.milestone-checkbox input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.milestone-title {
+    flex: 1;
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e34;
+}
+
+.help-btn {
+    background: #ff9800;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.help-btn:hover {
+    background: #f57c00;
+    transform: translateY(-1px);
+}
+
+.milestone-alignment {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 12px;
+    background: rgba(76, 175, 80, 0.03);
+    border-radius: 8px;
+}
+
+.alignment-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.alignment-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #666;
+    text-transform: uppercase;
+}
+
+.alignment-value {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.alignment-high { color: #2e7d32; }
+.alignment-medium { color: #ef6c00; }
+.alignment-low { color: #f44336; }
+.alignment-needs-review { color: #666; }
+
+.milestone-files {
+    border-top: 1px solid rgba(76, 175, 80, 0.1);
+    padding-top: 16px;
+}
+
+.files-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.upload-btn {
+    background: #4caf50;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.upload-btn:hover {
+    background: #45a049;
+    transform: translateY(-1px);
+}
+
+.files-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    background: rgba(76, 175, 80, 0.05);
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.file-icon {
+    font-size: 16px;
+}
+
+.file-name {
+    flex: 1;
+    font-weight: 500;
+}
+
+.file-size {
+    color: #666;
+    font-size: 12px;
+}
+
+.file-download {
+    background: transparent;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.file-download:hover {
+    background: rgba(76, 175, 80, 0.1);
+}
+
+.no-milestones,
+.no-files {
+    color: #666;
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+}
+
+/* Chat and Files Sections */
+.task-chat-section,
+.task-files-section {
+    background: white;
+    border: 1px solid rgba(76, 175, 80, 0.1);
+    border-radius: 16px;
+    padding: 20px;
+}
+
+.chat-container,
+.files-container {
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chat-placeholder,
+.files-placeholder {
+    color: #666;
+    font-style: italic;
+}
+
+/* Settings Page Container */
+#settings-page-container {
+    width: 100%;
+    min-height: 100vh;
+    background: #faf9f7;
+    overflow-y: auto;
+    position: relative;
+}
+
+/* Settings Page Styles */
+.settings-page {
+    padding: 32px;
+    max-width: 800px;
+    margin: 0 auto;
+    min-height: 100vh;
+}
+
+.settings-header {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 2px solid rgba(76, 175, 80, 0.1);
+}
+
+.settings-header h1 {
+    font-size: 32px;
+    font-weight: 700;
+    color: #2c3e34;
+}
+
+.settings-content {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.settings-content .settings-section {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.settings-content .form-group {
+    margin-bottom: 20px;
+}
+
+.settings-content input[type="text"],
+.settings-content input[type="email"],
+.settings-content textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid rgba(76, 175, 80, 0.2);
+    border-radius: 12px;
+    font-size: 16px;
+    font-family: inherit;
+    background: #faf9f7;
+    color: #2c3e34;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.settings-content input[type="text"]:focus,
+.settings-content input[type="email"]:focus,
+.settings-content textarea:focus {
+    outline: none;
+    border-color: #4caf50;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+}
+
+/* Access Denied / Not Found */
+.access-denied,
+.task-not-found {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    text-align: center;
+    gap: 20px;
+}
+
+.access-denied h2,
+.task-not-found h2 {
+    font-size: 32px;
+    color: #2c3e34;
+    margin-bottom: 16px;
+}
+
+.access-denied p,
+.task-not-found p {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 24px;
+}
+
+.access-denied button,
+.task-not-found button {
+    background: #4caf50;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.access-denied button:hover,
+.task-not-found button:hover {
+    background: #45a049;
+    transform: translateY(-1px);
+}
+
 /* Responsive */
 @media (max-width: 1200px) {
     .main-container {
         grid-template-columns: 250px 1fr 300px;
+    }
+    
+    .task-content {
+        grid-template-columns: 1fr;
+        gap: 24px;
     }
 }
 

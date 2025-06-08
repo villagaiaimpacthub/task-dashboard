@@ -15,6 +15,7 @@ class HIVEApp {
         console.log('Initializing HIVE Application...');
         
         this.setupEventListeners();
+        this.setupRouting();
         // WebSocket disabled - backend doesn't support real WebSocket
         // this.setupWebSocket();
         
@@ -50,7 +51,7 @@ class HIVEApp {
         document.getElementById('createTaskBtn').addEventListener('click', () => this.showTaskModal());
         document.getElementById('fabBtn').addEventListener('click', () => this.showTaskModal());
         document.getElementById('taskForm').addEventListener('submit', (e) => this.handleCreateTask(e));
-        document.getElementById('settingsBtn').addEventListener('click', () => this.showSettingsModal());
+        document.getElementById('settingsBtn').addEventListener('click', () => router.navigate('/settings'));
         document.getElementById('addSkillForm').addEventListener('submit', (e) => this.handleAddSkill(e));
         document.getElementById('currentSkills').addEventListener('click', (e) => this.handleRemoveSkill(e));
 
@@ -239,7 +240,7 @@ class HIVEApp {
         }
         
         container.innerHTML = activeTasks.map(task => `
-            <div class="active-task">
+            <div class="active-task" data-task-id="${task.id}">
                 <div class="active-task-title">${task.title}</div>
                 <div class="active-task-status">${task.status} • +${task.impact_points || 0} impact</div>
                 <div class="task-progress">
@@ -249,6 +250,16 @@ class HIVEApp {
                 </div>
             </div>
         `).join('');
+        
+        // Add click handlers to active tasks
+        container.querySelectorAll('.active-task[data-task-id]').forEach(taskEl => {
+            taskEl.addEventListener('click', () => {
+                const taskId = taskEl.dataset.taskId;
+                if (taskId) {
+                    router.navigate(`/task/${taskId}`);
+                }
+            });
+        });
     }
 
     filterTasks() {
@@ -409,6 +420,29 @@ class HIVEApp {
     }
 
     setupTaskEventListeners() {
+        // Task card clicks - navigate to task page
+        document.querySelectorAll('.task-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                // Don't navigate if clicking on action buttons or their children
+                if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+                    console.log('Button clicked, not navigating');
+                    return;
+                }
+                
+                const taskId = card.dataset.taskId;
+                console.log('Task card clicked, taskId:', taskId);
+                
+                if (taskId) {
+                    console.log('Navigating to task:', taskId);
+                    if (typeof router !== 'undefined' && router.navigate) {
+                        router.navigate(`/task/${taskId}`);
+                    } else {
+                        console.error('Router not available');
+                    }
+                }
+            });
+        });
+
         // Claim buttons
         document.querySelectorAll('.claim-btn').forEach(btn => {
             btn.addEventListener('click', (e) => this.handleClaimTask(e));
@@ -671,7 +705,9 @@ class HIVEApp {
         
         if (this.currentUser && this.currentUser.skills) {
             const skillsHtml = this.currentUser.skills.map(skill => `<div class="skill-tag">${skill}</div>`).join('');
-            skillsSidebar.innerHTML = skillsHtml;
+            if (skillsSidebar) {
+                skillsSidebar.innerHTML = skillsHtml;
+            }
 
             const skillsSettingsHtml = this.currentUser.skills.map(skill => `
                 <div class="skill-item">
@@ -679,10 +715,16 @@ class HIVEApp {
                     <button class="remove-skill-btn" data-skill="${skill}">&times;</button>
                 </div>
             `).join('');
-            skillsSettings.innerHTML = skillsSettingsHtml;
+            if (skillsSettings) {
+                skillsSettings.innerHTML = skillsSettingsHtml;
+            }
         } else {
-            skillsSidebar.innerHTML = '<p>No skills added yet.</p>';
-            skillsSettings.innerHTML = '';
+            if (skillsSidebar) {
+                skillsSidebar.innerHTML = '<p>No skills added yet.</p>';
+            }
+            if (skillsSettings) {
+                skillsSettings.innerHTML = '';
+            }
         }
     }
 
@@ -796,6 +838,53 @@ class HIVEApp {
 
     hideSettingsModal() {
         document.getElementById('settingsModal').classList.remove('show');
+    }
+
+    // Setup routing system
+    setupRouting() {
+        console.log('Setting up routing...');
+        
+        // Initialize page managers
+        taskPageManager = new TaskPageManager(this);
+        settingsPageManager = new SettingsPageManager(this);
+        console.log('Page managers initialized');
+        
+        // Register routes
+        router.register('/', () => {
+            console.log('Dashboard route triggered');
+            // Hide all page containers
+            const taskContainer = document.getElementById('task-page-container');
+            if (taskContainer) {
+                taskContainer.style.display = 'none';
+            }
+            const settingsContainer = document.getElementById('settings-page-container');
+            if (settingsContainer) {
+                settingsContainer.style.display = 'none';
+            }
+            // Restore body overflow to hidden for dashboard
+            document.body.style.overflow = 'hidden';
+            // Show dashboard - restore default layout
+            this.showMainInterface();
+            this.loadInitialData();
+        });
+        
+        router.register('/task/:id', (params) => {
+            console.log('Task route triggered with params:', params);
+            // Show task page
+            if (params.taskId) {
+                taskPageManager.showTaskPage(params.taskId);
+            }
+        });
+        
+        router.register('/settings', () => {
+            console.log('Settings route triggered');
+            settingsPageManager.showSettingsPage();
+        });
+        
+        console.log('Router initialized:', router);
+        
+        // Now handle the current route
+        router.handleRoute();
     }
 }
 
