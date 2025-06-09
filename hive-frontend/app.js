@@ -178,8 +178,52 @@ class HIVEApp {
             if (impactScore) {
                 impactScore.textContent = `+${this.currentUser.impact_score || 0} Impact`;
             }
+            
+            // Show/hide TaskMaster layers based on permissions
+            this.updateTaskMasterAccess();
+            
             // Render user skills
             this.renderUserSkills();
+        }
+    }
+
+    // Update TaskMaster access based on user permissions
+    updateTaskMasterAccess() {
+        const taskMasterSection = document.querySelector('.section-header:nth-of-type(3)'); // TaskMaster Layers section
+        const taskMasterGroup = taskMasterSection?.nextElementSibling;
+        
+        if (this.currentUser && this.currentUser.permissions) {
+            const hasTaskMasterAccess = this.currentUser.permissions.some(permission => 
+                ['view_protocols', 'view_implementations', 'view_projects', 'full_access'].includes(permission)
+            );
+            
+            if (hasTaskMasterAccess) {
+                // Show TaskMaster section
+                if (taskMasterSection) taskMasterSection.style.display = 'block';
+                if (taskMasterGroup) taskMasterGroup.style.display = 'block';
+                
+                // Add user role badge to show access level
+                const roleIndicator = document.createElement('div');
+                roleIndicator.className = 'role-indicator';
+                roleIndicator.innerHTML = `
+                    <div style="padding: 4px 8px; background: rgba(76, 175, 80, 0.1); color: #2e7d32; border-radius: 6px; font-size: 11px; margin-top: 8px; text-align: center;">
+                        ${this.currentUser.role}
+                    </div>
+                `;
+                
+                // Remove existing role indicator
+                const existingIndicator = document.querySelector('.role-indicator');
+                if (existingIndicator) existingIndicator.remove();
+                
+                // Add new role indicator after TaskMaster section
+                if (taskMasterGroup) {
+                    taskMasterGroup.after(roleIndicator);
+                }
+            } else {
+                // Hide TaskMaster section for regular users
+                if (taskMasterSection) taskMasterSection.style.display = 'none';
+                if (taskMasterGroup) taskMasterGroup.style.display = 'none';
+            }
         }
     }
 
@@ -925,6 +969,36 @@ class HIVEApp {
         router.register('/settings', () => {
             console.log('Settings route triggered');
             settingsPageManager.showSettingsPage();
+        });
+
+        router.register('/protocols', () => {
+            console.log('Protocols route triggered');
+            protocolsPageManager.render();
+        });
+
+        router.register('/protocol/:id', (params) => {
+            console.log('Protocol detail route triggered with params:', params);
+            // TODO: Implement protocol detail page
+        });
+
+        router.register('/implementations', () => {
+            console.log('Implementations route triggered');
+            implementationsPageManager.render();
+        });
+
+        router.register('/implementation/:id', (params) => {
+            console.log('Implementation detail route triggered with params:', params);
+            // TODO: Implement implementation detail page
+        });
+
+        router.register('/projects', () => {
+            console.log('Projects route triggered');
+            projectsPageManager.render();
+        });
+
+        router.register('/project/:id', (params) => {
+            console.log('Project detail route triggered with params:', params);
+            // TODO: Implement project detail page
         });
         
         console.log('Router initialized:', router);

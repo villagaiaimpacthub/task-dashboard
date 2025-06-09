@@ -73,6 +73,20 @@ class HIVERouter {
             params.type = 'project';
         }
 
+        // Handle /protocol/{id} pattern
+        const protocolMatch = path.match(/^\/protocol\/(.+)$/);
+        if (protocolMatch) {
+            params.protocolId = protocolMatch[1];
+            params.type = 'protocol';
+        }
+
+        // Handle /implementation/{id} pattern
+        const implementationMatch = path.match(/^\/implementation\/(.+)$/);
+        if (implementationMatch) {
+            params.implementationId = implementationMatch[1];
+            params.type = 'implementation';
+        }
+
         return params;
     }
 
@@ -90,6 +104,14 @@ class HIVERouter {
         
         if (path.startsWith('/project/')) {
             return this.routes['/project/:id'];
+        }
+
+        if (path.startsWith('/protocol/')) {
+            return this.routes['/protocol/:id'];
+        }
+
+        if (path.startsWith('/implementation/')) {
+            return this.routes['/implementation/:id'];
         }
 
         return null;

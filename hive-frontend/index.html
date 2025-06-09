@@ -78,31 +78,47 @@
                 </div>
             </div>
 
+            <div class="section-header">TaskMaster Layers</div>
+            <div class="filter-group">
+                <div class="filter-item" data-filter="protocols" onclick="router.navigate('/protocols')">
+                    <div class="filter-icon" style="background: #e8f5e9; color: #2e7d32;">🔧</div>
+                    <span>Protocol Development</span>
+                </div>
+                <div class="filter-item" data-filter="implementations" onclick="router.navigate('/implementations')">
+                    <div class="filter-icon" style="background: #e3f2fd; color: #1976d2;">🚀</div>
+                    <span>Client Implementations</span>
+                </div>
+                <div class="filter-item" data-filter="projects" onclick="router.navigate('/projects')">
+                    <div class="filter-icon" style="background: #f3e5f5; color: #7b1fa2;">📂</div>
+                    <span>Client Projects</span>
+                </div>
+            </div>
+
             <div class="section-header">Category</div>
             <div class="filter-group">
+                <div class="filter-item" data-filter="protocol_core">
+                    <div class="filter-icon" style="background: #e8f5e9; color: #2e7d32;">🌱</div>
+                    <span>Protocol Core</span>
+                </div>
+                <div class="filter-item" data-filter="client_project">
+                    <div class="filter-icon" style="background: #e3f2fd; color: #1976d2;">🤝</div>
+                    <span>Client Projects</span>
+                </div>
+                <div class="filter-item" data-filter="infrastructure">
+                    <div class="filter-icon" style="background: #fff3e0; color: #f57c00;">⚡</div>
+                    <span>Infrastructure</span>
+                </div>
                 <div class="filter-item" data-filter="regenerative-ag">
-                    <div class="filter-icon" style="background: #e8f5e9; color: #2e7d32;">🌾</div>
+                    <div class="filter-icon" style="background: #f1f8e9; color: #558b2f;">🌾</div>
                     <span>Regenerative Ag</span>
-                </div>
-                <div class="filter-item" data-filter="clean-energy">
-                    <div class="filter-icon" style="background: #e3f2fd; color: #1565c0;">⚡</div>
-                    <span>Clean Energy</span>
-                </div>
-                <div class="filter-item" data-filter="circular-economy">
-                    <div class="filter-icon" style="background: #fff3e0; color: #ef6c00;">♻️</div>
-                    <span>Circular Economy</span>
-                </div>
-                <div class="filter-item" data-filter="restoration">
-                    <div class="filter-icon" style="background: #f1f8e9; color: #558b2f;">🌳</div>
-                    <span>Restoration</span>
                 </div>
                 <div class="filter-item" data-filter="community">
                     <div class="filter-icon" style="background: #e8eaf6; color: #3f51b5;">🤝</div>
                     <span>Community</span>
                 </div>
-                <div class="filter-item" data-filter="ocean-health">
-                    <div class="filter-icon" style="background: #e0f2f1; color: #00695c;">🌊</div>
-                    <span>Ocean Health</span>
+                <div class="filter-item" data-filter="restoration">
+                    <div class="filter-icon" style="background: #e0f2f1; color: #00695c;">🌳</div>
+                    <span>Restoration</span>
                 </div>
             </div>
 
@@ -426,6 +442,7 @@
     <script src="router.js"></script>
     <script src="task-page.js"></script>
     <script src="settings-page.js"></script>
+    <script src="hierarchy-pages.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
