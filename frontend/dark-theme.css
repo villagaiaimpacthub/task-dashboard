@@ -3,7 +3,7 @@
 /* Base Colors */
 body.dark-mode {
     background: #1a1f1c;
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode .main-container {
@@ -18,14 +18,14 @@ body.dark-mode {
 
 .dark-mode .prime-directive {
     background: rgba(76, 175, 80, 0.15);
-    color: #e8e6e3;
+    color: #f0f0f0;
     border: 1px solid rgba(76, 175, 80, 0.3);
 }
 
 .dark-mode .settings-btn {
     background: rgba(232, 230, 227, 0.1);
     border: 1px solid rgba(232, 230, 227, 0.2);
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode .settings-btn:hover {
@@ -39,12 +39,12 @@ body.dark-mode {
 }
 
 .dark-mode .section-header {
-    color: #a8b5aa;
+    color: #c0c8c2;
     border-bottom: 1px solid rgba(76, 175, 80, 0.2);
 }
 
 .dark-mode .filter-item {
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode .filter-item:hover {
@@ -60,7 +60,7 @@ body.dark-mode {
 .dark-mode .task-card {
     background: #252a26;
     border: 1px solid rgba(76, 175, 80, 0.2);
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode .task-card:hover {
@@ -69,15 +69,15 @@ body.dark-mode {
 }
 
 .dark-mode .task-title {
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode .task-description {
-    color: #b8b6b3;
+    color: #d0d0d0;
 }
 
 .dark-mode .detail-item {
-    color: #b8b6b3;
+    color: #d0d0d0;
 }
 
 /* Right Panel */
@@ -87,7 +87,7 @@ body.dark-mode {
 }
 
 .dark-mode .panel-title {
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode .active-task {
@@ -100,15 +100,15 @@ body.dark-mode {
 }
 
 .dark-mode .active-task-title {
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode .active-task-status {
-    color: #b8b6b3;
+    color: #d0d0d0;
 }
 
 .dark-mode .team-member {
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode .team-member:hover {
@@ -116,19 +116,19 @@ body.dark-mode {
 }
 
 .dark-mode .member-name {
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode .member-email {
-    color: #b8b6b3;
+    color: #d0d0d0;
 }
 
 .dark-mode .dashboard-stats {
-    color: #b8b6b3;
+    color: #d0d0d0;
 }
 
 .dark-mode .stat-value {
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 /* Modals */
@@ -145,15 +145,15 @@ body.dark-mode {
 }
 
 .dark-mode .modal-header h2 {
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode .close {
-    color: #b8b6b3;
+    color: #d0d0d0;
 }
 
 .dark-mode .close:hover {
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode .modal-body input[type="text"],
@@ -165,20 +165,20 @@ body.dark-mode {
 .dark-mode .modal-body textarea {
     background: #1a1f1c;
     border: 1px solid rgba(76, 175, 80, 0.3);
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode .modal-body input::placeholder,
 .dark-mode .modal-body textarea::placeholder {
-    color: #7a8f7d;
+    color: #a0a0a0;
 }
 
 .dark-mode .modal-body label {
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode .tab-btn {
-    color: #b8b6b3;
+    color: #d0d0d0;
 }
 
 .dark-mode .tab-btn.active {
@@ -192,17 +192,17 @@ body.dark-mode {
 }
 
 .dark-mode .form-section h4 {
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode .form-help {
-    color: #7a8f7d;
+    color: #a0a0a0;
 }
 
 .dark-mode .dependency-selector {
     background: #1a1f1c;
     border-color: rgba(76, 175, 80, 0.3);
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode .modal-body select:focus,
@@ -219,7 +219,7 @@ body.dark-mode {
 
 .dark-mode .task-page {
     background: #1a1f1c;
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode .task-header {
@@ -236,19 +236,19 @@ body.dark-mode {
 }
 
 .dark-mode .task-page .task-title {
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode .task-description h3,
 .dark-mode .milestones-section h3,
 .dark-mode .task-chat-section h3,
 .dark-mode .task-files-section h3 {
-    color: #e8e6e3;
+    color: #f0f0f0;
     border-bottom-color: rgba(76, 175, 80, 0.2);
 }
 
 .dark-mode .task-description p {
-    color: #b8b6b3;
+    color: #d0d0d0;
 }
 
 /* Task Metadata Section - Dark Mode */
@@ -258,28 +258,28 @@ body.dark-mode {
 }
 
 .dark-mode .task-metadata-section h3 {
-    color: #e8e6e3;
+    color: #f0f0f0;
     border-bottom-color: rgba(76, 175, 80, 0.2);
 }
 
 .dark-mode .metadata-label {
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode .metadata-value {
     background: rgba(76, 175, 80, 0.05);
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode .timeline-label,
 .dark-mode .team-label,
 .dark-mode .scope-label,
 .dark-mode .effort-label {
-    color: #b8b6b3;
+    color: #d0d0d0;
 }
 
 .dark-mode .due-date {
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode .time-remaining {
@@ -310,14 +310,14 @@ body.dark-mode {
 
 .dark-mode .metrics-list li,
 .dark-mode .deliverables-list li {
-    color: #b8b6b3;
+    color: #d0d0d0;
 }
 
 .dark-mode .no-dependencies,
 .dark-mode .no-skills,
 .dark-mode .no-metrics,
 .dark-mode .no-deliverables {
-    color: #7a8f7d;
+    color: #a0a0a0;
 }
 
 .dark-mode .milestone-item {
@@ -336,7 +336,7 @@ body.dark-mode {
 }
 
 .dark-mode .milestone-title {
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 /* Milestone Creation - Dark Mode */
@@ -355,7 +355,7 @@ body.dark-mode {
 }
 
 .dark-mode .milestone-creation-form h4 {
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode .alignment-section {
@@ -364,12 +364,12 @@ body.dark-mode {
 }
 
 .dark-mode .alignment-section h5 {
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode .cancel-btn {
     background: #4a5a4c;
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode .cancel-btn:hover {
@@ -381,7 +381,7 @@ body.dark-mode {
 }
 
 .dark-mode .alignment-label {
-    color: #b8b6b3;
+    color: #d0d0d0;
 }
 
 /* Public Comments Section - Dark Mode */
@@ -396,7 +396,7 @@ body.dark-mode {
 }
 
 .dark-mode .no-comments {
-    color: #7a8f7d;
+    color: #a0a0a0;
 }
 
 .dark-mode .public-comment {
@@ -414,24 +414,24 @@ body.dark-mode {
 }
 
 .dark-mode .author-name {
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode .author-role {
-    color: #b8b6b3;
+    color: #d0d0d0;
 }
 
 .dark-mode .comment-time {
-    color: #7a8f7d;
+    color: #a0a0a0;
 }
 
 .dark-mode .comment-content {
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode .comment-content code {
     background: rgba(76, 175, 80, 0.2);
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode .comment-content a {
@@ -445,7 +445,7 @@ body.dark-mode {
 .dark-mode #commentInput {
     background: #1a1f1c;
     border-color: rgba(76, 175, 80, 0.3);
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode #commentInput:focus {
@@ -454,7 +454,7 @@ body.dark-mode {
 }
 
 .dark-mode #commentInput::placeholder {
-    color: #7a8f7d;
+    color: #a0a0a0;
 }
 
 .dark-mode .comment-btn {
@@ -481,7 +481,7 @@ body.dark-mode {
 }
 
 .dark-mode .no-messages {
-    color: #7a8f7d;
+    color: #a0a0a0;
 }
 
 .dark-mode .chat-message.own-message {
@@ -498,16 +498,16 @@ body.dark-mode {
 }
 
 .dark-mode .message-time {
-    color: #b8b6b3;
+    color: #d0d0d0;
 }
 
 .dark-mode .message-content {
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode .message-content code {
     background: rgba(76, 175, 80, 0.2);
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode .chat-input-container {
@@ -517,7 +517,7 @@ body.dark-mode {
 .dark-mode #chatInput {
     background: #1a1f1c;
     border-color: rgba(76, 175, 80, 0.3);
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode #chatInput:focus {
@@ -526,7 +526,7 @@ body.dark-mode {
 }
 
 .dark-mode #chatInput::placeholder {
-    color: #7a8f7d;
+    color: #a0a0a0;
 }
 
 .dark-mode .send-btn {
@@ -539,7 +539,7 @@ body.dark-mode {
 
 .dark-mode .chat-placeholder,
 .dark-mode .files-placeholder {
-    color: #7a8f7d;
+    color: #a0a0a0;
 }
 
 /* Settings Page */
@@ -549,7 +549,7 @@ body.dark-mode {
 
 .dark-mode .settings-page {
     background: #1a1f1c;
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode .settings-header {
@@ -557,7 +557,7 @@ body.dark-mode {
 }
 
 .dark-mode .settings-header h1 {
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode .settings-content .settings-section {
@@ -570,7 +570,7 @@ body.dark-mode {
 .dark-mode .settings-content textarea {
     background: #1a1f1c;
     border: 1px solid rgba(76, 175, 80, 0.3);
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode .settings-content input[type="text"]:focus,
@@ -615,7 +615,7 @@ body.dark-mode {
 .dark-mode .assign-btn,
 .dark-mode .update-status-btn {
     background: #3d4a3f;
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode .claim-btn:hover,
@@ -655,12 +655,12 @@ body.dark-mode {
 .dark-mode .uploading-file {
     background: rgba(255, 193, 7, 0.2);
     border-left-color: #ffeb3b;
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode .upload-zone {
     border-color: rgba(76, 175, 80, 0.4);
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode .upload-zone:hover {
@@ -676,7 +676,7 @@ body.dark-mode {
 .dark-mode .file-card {
     background: #252a26;
     border-color: rgba(76, 175, 80, 0.2);
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode .file-card:hover {
@@ -686,15 +686,15 @@ body.dark-mode {
 
 .dark-mode .file-item {
     background: rgba(76, 175, 80, 0.1);
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode .file-name {
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode .file-size {
-    color: #b8b6b3;
+    color: #d0d0d0;
 }
 
 /* Help Requests - Dark Mode */
@@ -703,13 +703,13 @@ body.dark-mode {
 }
 
 .dark-mode .help-requests-section h4 {
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode .help-request-item {
     background: rgba(255, 152, 0, 0.15);
     border-color: rgba(255, 152, 0, 0.3);
-    color: #e8e6e3;
+    color: #f0f0f0;
 }
 
 .dark-mode .help-request-item.resolved {
@@ -723,19 +723,19 @@ body.dark-mode {
 }
 
 .dark-mode .help-request-status {
-    color: #b8b6b3;
+    color: #d0d0d0;
 }
 
 .dark-mode .help-request-date {
-    color: #7a8f7d;
+    color: #a0a0a0;
 }
 
 .dark-mode .help-request-reason {
-    color: #b8b6b3;
+    color: #d0d0d0;
 }
 
 .dark-mode .help-request-requester {
-    color: #a8b5aa;
+    color: #c0c8c2;
 }
 
 .dark-mode .cancel-help-btn,
@@ -760,7 +760,80 @@ body.dark-mode {
 }
 
 .dark-mode .help-cancelled {
-    color: #b8b6b3;
+    color: #d0d0d0;
+}
+
+/* Framework Hierarchy - Dark Mode */
+.dark-mode .framework-hierarchy-section {
+    background: rgba(76, 175, 80, 0.1);
+    border-color: rgba(76, 175, 80, 0.2);
+}
+
+.dark-mode .framework-hierarchy-section h5 {
+    color: #f0f0f0;
+}
+
+.dark-mode .framework-description {
+    background: rgba(76, 175, 80, 0.15);
+    border-color: rgba(76, 175, 80, 0.3);
+    color: #d0d0d0;
+}
+
+.dark-mode .framework-step {
+    background: #252a26;
+    border-color: rgba(76, 175, 80, 0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .step-header {
+    border-bottom-color: rgba(76, 175, 80, 0.2);
+}
+
+.dark-mode .step-number {
+    background: linear-gradient(135deg, #66bb6a, #4caf50);
+}
+
+.dark-mode .step-title {
+    color: #f0f0f0;
+}
+
+.dark-mode .milestone-framework {
+    background: rgba(76, 175, 80, 0.05);
+    border-color: rgba(76, 175, 80, 0.2);
+}
+
+.dark-mode .framework-level {
+    background: #252a26;
+    border-color: rgba(76, 175, 80, 0.2);
+}
+
+.dark-mode .framework-level:hover {
+    border-color: rgba(76, 175, 80, 0.4);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .level-number {
+    background: linear-gradient(135deg, #66bb6a, #4caf50);
+}
+
+.dark-mode .level-title {
+    color: #f0f0f0;
+}
+
+.dark-mode .level-content {
+    color: #d0d0d0;
+}
+
+.dark-mode .okr-badge {
+    background: rgba(33, 150, 243, 0.2);
+    color: #64b5f6;
+    border-color: rgba(33, 150, 243, 0.3);
+}
+
+.dark-mode .dod-badge {
+    background: rgba(255, 152, 0, 0.2);
+    color: #ffb74d;
+    border-color: rgba(255, 152, 0, 0.3);
 }
 
 /* Scrollbars */

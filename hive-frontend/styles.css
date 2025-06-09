@@ -1429,6 +1429,159 @@ body {
     font-size: 14px;
 }
 
+/* Framework Hierarchy Section */
+.framework-hierarchy-section {
+    margin: 24px 0;
+    padding: 20px;
+    background: rgba(76, 175, 80, 0.05);
+    border-radius: 16px;
+    border: 1px solid rgba(76, 175, 80, 0.1);
+}
+
+.framework-hierarchy-section h5 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c3e34;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.framework-description {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 24px;
+    font-style: italic;
+    text-align: center;
+    padding: 12px;
+    background: rgba(76, 175, 80, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(76, 175, 80, 0.2);
+}
+
+.framework-step {
+    margin-bottom: 24px;
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid rgba(76, 175, 80, 0.2);
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.1);
+}
+
+.framework-step:last-child {
+    margin-bottom: 0;
+}
+
+.step-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(76, 175, 80, 0.1);
+}
+
+.step-number {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #4caf50, #66bb6a);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.step-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e34;
+}
+
+/* Milestone Framework Display */
+.milestone-framework {
+    margin: 16px 0;
+    padding: 16px;
+    background: rgba(76, 175, 80, 0.03);
+    border-radius: 12px;
+    border: 1px solid rgba(76, 175, 80, 0.1);
+}
+
+.framework-hierarchy {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.framework-level {
+    background: white;
+    padding: 16px;
+    border-radius: 10px;
+    border: 1px solid rgba(76, 175, 80, 0.15);
+    transition: all 0.2s ease;
+}
+
+.framework-level:hover {
+    border-color: rgba(76, 175, 80, 0.3);
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.1);
+}
+
+.level-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.level-number {
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(135deg, #4caf50, #66bb6a);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 12px;
+}
+
+.level-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #2c3e34;
+}
+
+.level-content {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #555;
+    padding-left: 34px;
+}
+
+.okr-badge, .dod-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.okr-badge {
+    background: rgba(33, 150, 243, 0.1);
+    color: #1976d2;
+    border: 1px solid rgba(33, 150, 243, 0.2);
+}
+
+.dod-badge {
+    background: rgba(255, 152, 0, 0.1);
+    color: #f57c00;
+    border: 1px solid rgba(255, 152, 0, 0.2);
+}
+
 .alignment-grid {
     display: grid;
     grid-template-columns: 1fr;

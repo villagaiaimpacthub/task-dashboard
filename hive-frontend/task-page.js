@@ -171,39 +171,53 @@ class TaskPageManager {
                                         <textarea id="milestoneDescription" placeholder="Detailed description of what needs to be accomplished" rows="2"></textarea>
                                     </div>
                                     
-                                    <div class="alignment-section">
-                                        <h5>Framework Alignment</h5>
-                                        <div class="alignment-grid">
+                                    <div class="framework-hierarchy-section">
+                                        <h5>🎯 Framework Hierarchy</h5>
+                                        <p class="framework-description">Prime Directive sets the tone → OKRs set the direction → DoD defines the scope</p>
+                                        
+                                        <div class="framework-step">
+                                            <div class="step-header">
+                                                <span class="step-number">1</span>
+                                                <span class="step-title">Prime Directive Foundation</span>
+                                            </div>
                                             <div class="form-group">
-                                                <label for="dodAlignment">Definition of Done Alignment</label>
-                                                <select id="dodAlignment" required>
-                                                    <option value="">Select alignment level...</option>
-                                                    <option value="High Alignment">High - Clear, measurable criteria</option>
-                                                    <option value="Medium Alignment">Medium - Criteria defined but could be clearer</option>
-                                                    <option value="Low Alignment">Low - Vague or unclear criteria</option>
-                                                    <option value="Needs Review">Needs Review - Requires further definition</option>
+                                                <label for="primeDirectiveContribution">How does this milestone contribute to elevating consciousness and collective wellbeing?</label>
+                                                <textarea id="primeDirectiveContribution" placeholder="Describe how this milestone directly serves the Prime Directive of elevating consciousness..." rows="2" required></textarea>
+                                            </div>
+                                        </div>
+
+                                        <div class="framework-step">
+                                            <div class="step-header">
+                                                <span class="step-number">2</span>
+                                                <span class="step-title">OKR Strategic Direction</span>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="okrConnection">Which OKR does this milestone advance?</label>
+                                                <select id="okrConnection" required>
+                                                    <option value="">Select relevant OKR...</option>
+                                                    <option value="Regenerative Systems">Regenerative Systems - Building sustainable ecosystems</option>
+                                                    <option value="Community Impact">Community Impact - Expanding positive influence</option>
+                                                    <option value="Knowledge Sharing">Knowledge Sharing - Democratizing wisdom</option>
+                                                    <option value="Consciousness Tools">Consciousness Tools - Creating awareness platforms</option>
+                                                    <option value="Collaboration Networks">Collaboration Networks - Connecting changemakers</option>
                                                 </select>
                                             </div>
-                                            
-                                            <div class="form-group">
-                                                <label for="okrAlignment">OKR Alignment</label>
-                                                <select id="okrAlignment" required>
-                                                    <option value="">Select alignment level...</option>
-                                                    <option value="High Alignment">High - Directly supports key objectives</option>
-                                                    <option value="Medium Alignment">Medium - Supports broader goals</option>
-                                                    <option value="Low Alignment">Low - Indirect contribution</option>
-                                                    <option value="Needs Review">Needs Review - OKR connection unclear</option>
-                                                </select>
+                                        </div>
+
+                                        <div class="framework-step">
+                                            <div class="step-header">
+                                                <span class="step-number">3</span>
+                                                <span class="step-title">Definition of Done (Scope)</span>
                                             </div>
-                                            
                                             <div class="form-group">
-                                                <label for="primeDirectiveAlignment">Prime Directive Alignment</label>
-                                                <select id="primeDirectiveAlignment" required>
-                                                    <option value="">Select alignment level...</option>
-                                                    <option value="High Alignment">High - Directly elevates consciousness</option>
-                                                    <option value="Medium Alignment">Medium - Contributes to collective benefit</option>
-                                                    <option value="Low Alignment">Low - Minimal direct impact</option>
-                                                    <option value="Needs Review">Needs Review - Impact assessment needed</option>
+                                                <label for="dodCategory">DoD Category</label>
+                                                <select id="dodCategory" required>
+                                                    <option value="">Select completion type...</option>
+                                                    <option value="Research Complete">Research Complete - Information gathered and analyzed</option>
+                                                    <option value="Deliverable Created">Deliverable Created - Tangible output produced</option>
+                                                    <option value="System Implemented">System Implemented - Process or tool operational</option>
+                                                    <option value="Community Engaged">Community Engaged - Stakeholders activated</option>
+                                                    <option value="Knowledge Transferred">Knowledge Transferred - Learning shared effectively</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -510,18 +524,37 @@ class TaskPageManager {
                     </div>
                 ` : ''}
                 
-                <div class="milestone-alignment">
-                    <div class="alignment-item">
-                        <span class="alignment-label">DoD:</span>
-                        <span class="alignment-value ${this.getAlignmentClass(milestone.dod_alignment)}">${milestone.dod_alignment}</span>
-                    </div>
-                    <div class="alignment-item">
-                        <span class="alignment-label">OKR:</span>
-                        <span class="alignment-value ${this.getAlignmentClass(milestone.okr_alignment)}">${milestone.okr_alignment}</span>
-                    </div>
-                    <div class="alignment-item">
-                        <span class="alignment-label">Prime Directive:</span>
-                        <span class="alignment-value ${this.getAlignmentClass(milestone.prime_directive_alignment)}">${milestone.prime_directive_alignment}</span>
+                <div class="milestone-framework">
+                    <div class="framework-hierarchy">
+                        <div class="framework-level">
+                            <div class="level-header">
+                                <span class="level-number">1</span>
+                                <span class="level-title">Prime Directive Foundation</span>
+                            </div>
+                            <div class="level-content">
+                                ${milestone.prime_directive_contribution || 'Not specified'}
+                            </div>
+                        </div>
+                        
+                        <div class="framework-level">
+                            <div class="level-header">
+                                <span class="level-number">2</span>
+                                <span class="level-title">OKR Direction</span>
+                            </div>
+                            <div class="level-content">
+                                <span class="okr-badge">${milestone.okr_connection || 'Not specified'}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="framework-level">
+                            <div class="level-header">
+                                <span class="level-number">3</span>
+                                <span class="level-title">DoD Scope</span>
+                            </div>
+                            <div class="level-content">
+                                <span class="dod-badge">${milestone.dod_category || 'Not specified'}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -1429,9 +1462,9 @@ class TaskPageManager {
                 task_id: this.currentTask.id,
                 title: document.getElementById('milestoneTitle').value,
                 description: document.getElementById('milestoneDescription').value,
-                dod_alignment: document.getElementById('dodAlignment').value,
-                okr_alignment: document.getElementById('okrAlignment').value,
-                prime_directive_alignment: document.getElementById('primeDirectiveAlignment').value,
+                prime_directive_contribution: document.getElementById('primeDirectiveContribution').value,
+                okr_connection: document.getElementById('okrConnection').value,
+                dod_category: document.getElementById('dodCategory').value,
                 deadline: document.getElementById('milestoneDeadline').value || null,
                 acceptance_criteria: document.getElementById('acceptanceCriteria').value
                     ? document.getElementById('acceptanceCriteria').value.split('\n').map(s => s.trim()).filter(s => s)

@@ -42,6 +42,39 @@ python3 server.py
 
 6. Access the application at http://localhost:3000
 
+## 🚀 Simple Backend Quick Start
+
+For development with the simplified backend:
+
+### Option 1: Use the Startup Script (Recommended)
+```bash
+./start_services.sh
+```
+
+### Option 2: Manual Start
+1. **Stop any existing services**:
+   ```bash
+   ./stop_services.sh
+   ```
+
+2. **Start the Backend**:
+   ```bash
+   python3 simple_backend.py &
+   ```
+
+3. **Start the Frontend**:
+   ```bash
+   cd hive-frontend
+   python3 simple_server.py &
+   ```
+
+**Access Points**:
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:8000
+- Health Check: http://localhost:8000/health
+
+**Note**: Always use ports 3000 (frontend) and 8000 (backend) as defined in API_CONTRACT.md
+
 ## 📚 Documentation
 
 - [START_HERE.md](./START_HERE.md) - Comprehensive overview and usage guide
