@@ -5,6 +5,7 @@ class TaskPageManager {
         this.currentTask = null;
         this.milestones = [];
         this.chatMessages = [];
+        this.publicComments = [];
     }
 
     // Show task page
@@ -27,6 +28,9 @@ class TaskPageManager {
 
             // Load existing chat messages
             await this.loadChatMessages(taskId);
+
+            // Load public comments
+            await this.loadPublicComments(taskId);
 
             // Render the task page
             this.renderTaskPage();
@@ -143,6 +147,24 @@ class TaskPageManager {
                             <h3>Milestones & Definition of Done</h3>
                             <div class="milestones-list">
                                 ${this.renderMilestones()}
+                            </div>
+                        </div>
+
+                        <div class="public-comments-section">
+                            <h3>Public Comments</h3>
+                            <div class="comments-container" id="publicComments">
+                                <div class="comments-list" id="commentsList">
+                                    <!-- Comments will be loaded here -->
+                                </div>
+                                <div class="comment-input-container">
+                                    <div class="comment-input-wrapper">
+                                        <textarea id="commentInput" placeholder="Share your thoughts, feedback, or suggestions..." 
+                                                  rows="3" onkeydown="taskPageManager.handleCommentKeyPress(event)"></textarea>
+                                        <button class="comment-btn" onclick="taskPageManager.submitComment()">
+                                            💬 Comment
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -297,6 +319,9 @@ class TaskPageManager {
         // Load and render chat messages after page is ready
         this.renderChatMessages();
         
+        // Load and render public comments after page is ready
+        this.renderPublicComments();
+        
         // Set up auto-refresh for chat (every 5 seconds)
         if (this.chatRefreshInterval) {
             clearInterval(this.chatRefreshInterval);
@@ -304,6 +329,14 @@ class TaskPageManager {
         this.chatRefreshInterval = setInterval(() => {
             this.loadChatMessages(this.currentTask.id);
         }, 5000);
+        
+        // Set up auto-refresh for comments (every 10 seconds - less frequent than chat)
+        if (this.commentsRefreshInterval) {
+            clearInterval(this.commentsRefreshInterval);
+        }
+        this.commentsRefreshInterval = setInterval(() => {
+            this.loadPublicComments(this.currentTask.id);
+        }, 10000);
         
         console.log('Task page event listeners setup');
     }
@@ -441,6 +474,157 @@ class TaskPageManager {
         if (this.chatRefreshInterval) {
             clearInterval(this.chatRefreshInterval);
             this.chatRefreshInterval = null;
+        }
+        if (this.commentsRefreshInterval) {
+            clearInterval(this.commentsRefreshInterval);
+            this.commentsRefreshInterval = null;
+        }
+    }
+
+    // Load public comments for task
+    async loadPublicComments(taskId) {
+        try {
+            const response = await fetch(`http://localhost:8000/api/v1/comments/task/${taskId}`);
+            if (response.ok) {
+                this.publicComments = await response.json();
+                this.renderPublicComments();
+            }
+        } catch (error) {
+            console.error('Failed to load public comments:', error);
+        }
+    }
+
+    // Render public comments
+    renderPublicComments() {
+        const commentsContainer = document.getElementById('commentsList');
+        if (!commentsContainer) return;
+
+        if (this.publicComments.length === 0) {
+            commentsContainer.innerHTML = `
+                <div class="no-comments">
+                    <p>No comments yet. Be the first to share your thoughts!</p>
+                </div>
+            `;
+            return;
+        }
+
+        const commentsHtml = this.publicComments.map(comment => {
+            const timestamp = new Date(comment.created_at).toLocaleDateString([], {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            return `
+                <div class="public-comment">
+                    <div class="comment-header">
+                        <div class="comment-author">
+                            <span class="author-avatar">${comment.author_email[0].toUpperCase()}</span>
+                            <div class="author-info">
+                                <span class="author-name">${comment.author_email}</span>
+                                <span class="author-role">${comment.author_role}</span>
+                            </div>
+                        </div>
+                        <span class="comment-time">${timestamp}</span>
+                    </div>
+                    <div class="comment-content">
+                        ${this.formatCommentContent(comment.content)}
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        commentsContainer.innerHTML = commentsHtml;
+    }
+
+    // Format comment content (similar to chat but with more features)
+    formatCommentContent(content) {
+        return content
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/`(.*?)`/g, '<code>$1</code>')
+            .replace(/\n/g, '<br>')
+            // Add support for simple links
+            .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+    }
+
+    // Handle Ctrl+Enter or Shift+Enter in comment textarea
+    handleCommentKeyPress(event) {
+        if ((event.ctrlKey || event.shiftKey) && event.key === 'Enter') {
+            event.preventDefault();
+            this.submitComment();
+        }
+    }
+
+    // Submit public comment
+    async submitComment() {
+        const commentInput = document.getElementById('commentInput');
+        if (!commentInput) return;
+
+        const content = commentInput.value.trim();
+        if (!content) {
+            this.app.showNotification('Please enter a comment before submitting.', 'error');
+            return;
+        }
+
+        try {
+            const commentData = {
+                content: content,
+                task_id: this.currentTask.id,
+                author_id: this.app.currentUser?.id,
+                author_email: this.app.currentUser?.email || 'unknown@example.com',
+                author_role: this.app.currentUser?.role || 'Community Member'
+            };
+
+            const response = await fetch('http://localhost:8000/api/v1/comments/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(commentData)
+            });
+
+            if (response.ok) {
+                const newComment = await response.json();
+                this.publicComments.push(newComment);
+                this.renderPublicComments();
+                commentInput.value = '';
+                
+                // Show success feedback
+                this.showCommentSubmittedFeedback();
+                
+                // Scroll to the new comment
+                setTimeout(() => {
+                    const commentsContainer = document.getElementById('commentsList');
+                    if (commentsContainer) {
+                        commentsContainer.scrollTop = commentsContainer.scrollHeight;
+                    }
+                }, 100);
+            } else {
+                throw new Error('Failed to submit comment');
+            }
+        } catch (error) {
+            console.error('Failed to submit comment:', error);
+            this.app.showNotification('Failed to submit comment. Please try again.', 'error');
+        }
+    }
+
+    // Show brief feedback when comment is submitted
+    showCommentSubmittedFeedback() {
+        const commentBtn = document.querySelector('.comment-btn');
+        if (commentBtn) {
+            const originalText = commentBtn.textContent;
+            commentBtn.textContent = '✅ Posted';
+            commentBtn.style.background = '#4caf50';
+            commentBtn.disabled = true;
+            
+            setTimeout(() => {
+                commentBtn.textContent = originalText;
+                commentBtn.style.background = '';
+                commentBtn.disabled = false;
+            }, 2000);
         }
     }
 

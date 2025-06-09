@@ -249,6 +249,91 @@ body.dark-mode {
     color: #b8b6b3;
 }
 
+/* Public Comments Section - Dark Mode */
+.dark-mode .public-comments-section {
+    background: #252a26;
+    border-color: rgba(76, 175, 80, 0.2);
+}
+
+.dark-mode .comments-list {
+    background: #1a1f1c;
+    border-color: rgba(76, 175, 80, 0.2);
+}
+
+.dark-mode .no-comments {
+    color: #7a8f7d;
+}
+
+.dark-mode .public-comment {
+    background: #202521;
+    border-color: rgba(76, 175, 80, 0.2);
+}
+
+.dark-mode .public-comment:hover {
+    border-color: rgba(76, 175, 80, 0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .author-avatar {
+    background: linear-gradient(135deg, #66bb6a, #4caf50);
+}
+
+.dark-mode .author-name {
+    color: #e8e6e3;
+}
+
+.dark-mode .author-role {
+    color: #b8b6b3;
+}
+
+.dark-mode .comment-time {
+    color: #7a8f7d;
+}
+
+.dark-mode .comment-content {
+    color: #e8e6e3;
+}
+
+.dark-mode .comment-content code {
+    background: rgba(76, 175, 80, 0.2);
+    color: #e8e6e3;
+}
+
+.dark-mode .comment-content a {
+    color: #81c784;
+}
+
+.dark-mode .comment-input-container {
+    border-top-color: rgba(76, 175, 80, 0.2);
+}
+
+.dark-mode #commentInput {
+    background: #1a1f1c;
+    border-color: rgba(76, 175, 80, 0.3);
+    color: #e8e6e3;
+}
+
+.dark-mode #commentInput:focus {
+    border-color: #66bb6a;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.3);
+}
+
+.dark-mode #commentInput::placeholder {
+    color: #7a8f7d;
+}
+
+.dark-mode .comment-btn {
+    background: linear-gradient(135deg, #66bb6a, #4caf50);
+}
+
+.dark-mode .comment-btn:hover {
+    background: linear-gradient(135deg, #81c784, #66bb6a);
+}
+
+.dark-mode .comment-btn:disabled {
+    background: #3d4a3f;
+}
+
 .dark-mode .task-chat-section,
 .dark-mode .task-files-section {
     background: #252a26;
