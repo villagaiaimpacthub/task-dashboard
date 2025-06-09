@@ -49,6 +49,89 @@ tasks = [
             {"id": 4, "text": "Cost estimate and timeline provided", "completed": False},
             {"id": 5, "text": "Sustainability impact assessment completed", "completed": False}
         ],
+        "milestones": [
+            {
+                "id": "m1",
+                "task_id": "1",
+                "title": "Site Analysis & Research",
+                "description": "Complete comprehensive site analysis including soil testing, water assessment, and microclimate evaluation",
+                "dod_alignment": "High Alignment",
+                "okr_alignment": "High Alignment", 
+                "prime_directive_alignment": "High Alignment",
+                "deadline": "2025-06-14",
+                "acceptance_criteria": [
+                    "Soil pH tested at 5+ locations across site",
+                    "Water table depth and quality assessed",
+                    "Existing vegetation cataloged with native species identified",
+                    "Sun patterns mapped for all seasons",
+                    "Slope and drainage patterns documented"
+                ],
+                "completed": True,
+                "files": [
+                    {"id": "f1", "name": "soil-analysis.pdf", "type": "application/pdf", "size": 234567},
+                    {"id": "f2", "name": "site-photos.zip", "type": "application/zip", "size": 1234567}
+                ],
+                "help_requests": [],
+                "created_at": "2025-06-07T10:00:00Z",
+                "updated_at": "2025-06-09T14:30:00Z"
+            },
+            {
+                "id": "m2", 
+                "task_id": "1",
+                "title": "Design Guild Relationships",
+                "description": "Map out plant guild relationships that support biodiversity and natural ecosystem functions",
+                "dod_alignment": "High Alignment",
+                "okr_alignment": "Medium Alignment",
+                "prime_directive_alignment": "High Alignment", 
+                "deadline": "2025-06-18",
+                "acceptance_criteria": [
+                    "Primary guilds designed around fruit trees",
+                    "Nitrogen-fixing plants integrated throughout",
+                    "Beneficial insect habitat zones planned",
+                    "Companion planting relationships documented",
+                    "Succession planning for 10+ year timeline"
+                ],
+                "completed": True,
+                "files": [
+                    {"id": "f3", "name": "guild-map.pdf", "type": "application/pdf", "size": 445678}
+                ],
+                "help_requests": [],
+                "created_at": "2025-06-07T10:00:00Z",
+                "updated_at": "2025-06-09T16:45:00Z"
+            },
+            {
+                "id": "m3",
+                "task_id": "1", 
+                "title": "CAD Design & Technical Documentation",
+                "description": "Create detailed CAD drawings with precise measurements and technical specifications",
+                "dod_alignment": "Medium Alignment",
+                "okr_alignment": "High Alignment",
+                "prime_directive_alignment": "Medium Alignment",
+                "deadline": "2025-06-21",
+                "acceptance_criteria": [
+                    "Scale drawings completed at 1:100 and 1:500",
+                    "All plantings positioned with GPS coordinates", 
+                    "Infrastructure elements (paths, water, structures) detailed",
+                    "Planting timeline and phases documented",
+                    "Material quantities and sourcing specified"
+                ],
+                "completed": False,
+                "files": [],
+                "help_requests": [
+                    {
+                        "id": "hr1",
+                        "requester_id": "user1",
+                        "requester_name": "Alice",
+                        "reason": "Need help with CAD software - looking for someone experienced with AutoCAD or similar for technical drawings",
+                        "status": "open",
+                        "urgency": "medium",
+                        "created_at": "2025-06-09T09:30:00Z"
+                    }
+                ],
+                "created_at": "2025-06-07T10:00:00Z",
+                "updated_at": "2025-06-09T09:30:00Z"
+            }
+        ],
         "owner_id": "user1",
         "assignee_id": None,
         "created_at": "2025-06-07T10:00:00Z",
@@ -310,16 +393,40 @@ class CORSHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 "id": str(len(tasks) + 1),
                 "title": data.get("title", ""),
                 "description": data.get("description", ""),
-                "status": "available",  # Changed from draft to available
+                "status": data.get("status", "available"),
                 "priority": data.get("priority", "medium"),
                 "category": data.get("category", ""),
                 "impact_points": data.get("impact_points", 100),
-                "estimated_hours": data.get("estimated_hours", ""),
+                
+                # Timeline
+                "start_date": data.get("start_date"),
+                "due_date": data.get("due_date"),
+                
+                # Team & Authority
+                "team_size": data.get("team_size", 1),
+                "authority_level": data.get("authority_level", "open"),
+                
+                # Scope & Impact
+                "scope": data.get("scope", "internal"),
                 "location": data.get("location", ""),
-                "team_size": data.get("team_size", ""),
-                "due_date": data.get("due_date", ""),
+                
+                # Effort & Resources
+                "estimated_hours": data.get("estimated_hours"),
+                "budget": data.get("budget"),
+                "resources_needed": data.get("resources_needed"),
+                
+                # Skills & Deliverables
                 "required_skills": data.get("required_skills", []),
+                "success_metrics": data.get("success_metrics", []),
+                "deliverables": data.get("deliverables", []),
+                
+                # Dependencies (empty for now, can be added later)
+                "dependencies": [],
+                
+                # Definition of Done
                 "definition_of_done": dod_criteria,
+                
+                # System fields
                 "owner_id": "user1",  # Simplified auth
                 "assignee_id": None,
                 "created_at": datetime.now().isoformat() + "Z",
@@ -327,6 +434,35 @@ class CORSHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             }
             tasks.append(new_task)
             self.send_json_response(new_task, 201)
+        elif path == '/api/v1/milestones':
+            # Create new milestone
+            new_milestone = {
+                "id": str(len(tasks) * 10 + 1),  # Simple ID generation
+                "task_id": data.get("task_id", ""),
+                "title": data.get("title", ""),
+                "description": data.get("description", ""),
+                "dod_alignment": data.get("dod_alignment", "Needs Review"),
+                "okr_alignment": data.get("okr_alignment", "Needs Review"),
+                "prime_directive_alignment": data.get("prime_directive_alignment", "Needs Review"),
+                "deadline": data.get("deadline"),
+                "acceptance_criteria": data.get("acceptance_criteria", []),
+                "completed": False,
+                "files": [],
+                "help_requests": [],
+                "created_at": datetime.now().isoformat() + "Z",
+                "updated_at": datetime.now().isoformat() + "Z"
+            }
+            
+            # Add milestone to the specific task (in a real app, this would be in database)
+            task_id = data.get("task_id")
+            task = next((t for t in tasks if t["id"] == task_id), None)
+            if task:
+                if "milestones" not in task:
+                    task["milestones"] = []
+                task["milestones"].append(new_milestone)
+                task["updated_at"] = datetime.now().isoformat() + "Z"
+            
+            self.send_json_response(new_milestone, 201)
         elif path == '/api/v1/comments/':
             # Add comment
             comment = {

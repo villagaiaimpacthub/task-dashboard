@@ -188,14 +188,156 @@
             </div>
             <div class="modal-body">
                 <form id="taskForm">
-                    <div class="form-group">
-                        <label for="taskTitle">Task Title</label>
-                        <input type="text" id="taskTitle" placeholder="e.g., Design a permaculture garden" required>
+                    <!-- Basic Information -->
+                    <div class="form-section">
+                        <h4>Basic Information</h4>
+                        <div class="form-group">
+                            <label for="taskTitle">Task Title*</label>
+                            <input type="text" id="taskTitle" placeholder="e.g., Design a permaculture garden" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="taskDescription">Task Description*</label>
+                            <textarea id="taskDescription" placeholder="Provide a detailed overview of the task and its objectives." rows="4" required></textarea>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="taskDescription">Task Description</label>
-                        <textarea id="taskDescription" placeholder="Provide a brief overview of the task and its objectives." rows="4"></textarea>
+
+                    <!-- Timeline & Priority -->
+                    <div class="form-section">
+                        <h4>Timeline & Priority</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="startDate">Start Date</label>
+                                <input type="date" id="startDate">
+                            </div>
+                            <div class="form-group">
+                                <label for="dueDate">Due Date</label>
+                                <input type="date" id="dueDate">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="priority">Priority*</label>
+                                <select id="priority" required>
+                                    <option value="low">Low</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="high">High</option>
+                                    <option value="urgent">Urgent</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="category">Category*</label>
+                                <select id="category" required>
+                                    <option value="">Select category...</option>
+                                    <option value="regenerative-ag">Regenerative Agriculture</option>
+                                    <option value="clean-energy">Clean Energy</option>
+                                    <option value="circular-economy">Circular Economy</option>
+                                    <option value="restoration">Restoration</option>
+                                    <option value="community">Community</option>
+                                    <option value="ocean-health">Ocean Health</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
+
+                    <!-- Team & Authority -->
+                    <div class="form-section">
+                        <h4>Team & Authority</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="teamSize">Team Size</label>
+                                <input type="number" id="teamSize" placeholder="Number of people needed" min="1" value="1">
+                            </div>
+                            <div class="form-group">
+                                <label for="authorityLevel">Authority Level</label>
+                                <select id="authorityLevel">
+                                    <option value="open">Open to All</option>
+                                    <option value="contributor">Contributors</option>
+                                    <option value="trusted">Trusted Members</option>
+                                    <option value="admin">Admin Only</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Scope & Impact -->
+                    <div class="form-section">
+                        <h4>Scope & Impact</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="scope">Scope</label>
+                                <select id="scope">
+                                    <option value="internal">Internal</option>
+                                    <option value="external">External</option>
+                                    <option value="global">Global</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="impactPoints">Impact Points</label>
+                                <input type="number" id="impactPoints" placeholder="Points awarded on completion" min="1" value="10">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="location">Location/Region</label>
+                            <input type="text" id="location" placeholder="e.g., Pacific Northwest, Remote, Global">
+                        </div>
+                    </div>
+
+                    <!-- Effort & Resources -->
+                    <div class="form-section">
+                        <h4>Effort & Resources</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="estimatedHours">Estimated Hours</label>
+                                <input type="number" id="estimatedHours" placeholder="Total hours needed" min="1">
+                            </div>
+                            <div class="form-group">
+                                <label for="budget">Budget</label>
+                                <input type="text" id="budget" placeholder="e.g., $500 or Volunteer">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="resourcesNeeded">Resources Needed</label>
+                            <textarea id="resourcesNeeded" placeholder="List any tools, materials, or resources required" rows="2"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Required Skills -->
+                    <div class="form-section">
+                        <h4>Required Skills</h4>
+                        <div class="form-group">
+                            <label for="requiredSkills">Skills (comma-separated)</label>
+                            <input type="text" id="requiredSkills" placeholder="e.g., Python, Data Analysis, Project Management">
+                            <small class="form-help">Enter skills separated by commas</small>
+                        </div>
+                    </div>
+
+                    <!-- Success Metrics & Deliverables -->
+                    <div class="form-section">
+                        <h4>Success Metrics & Deliverables</h4>
+                        <div class="form-group">
+                            <label for="successMetrics">Success Metrics</label>
+                            <textarea id="successMetrics" placeholder="How will success be measured? (one per line)" rows="3"></textarea>
+                            <small class="form-help">Enter each metric on a new line</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="deliverables">Deliverables</label>
+                            <textarea id="deliverables" placeholder="What are the expected outputs? (one per line)" rows="3"></textarea>
+                            <small class="form-help">Enter each deliverable on a new line</small>
+                        </div>
+                    </div>
+
+                    <!-- Dependencies -->
+                    <div class="form-section">
+                        <h4>Dependencies</h4>
+                        <div class="form-group">
+                            <label for="dependencies">Task Dependencies</label>
+                            <div id="dependencyList" class="dependency-selector">
+                                <p class="form-help">Dependencies can be added after task creation</p>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="form-actions">
                         <button type="submit" class="submit-btn">Create Task</button>
                     </div>

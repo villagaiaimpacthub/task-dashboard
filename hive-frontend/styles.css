@@ -772,6 +772,114 @@ body {
     text-align: center;
 }
 
+/* Task Creation Modal Specifics */
+#taskModal .modal-content {
+    max-width: 700px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+#taskModal .modal-body {
+    padding-top: 0;
+}
+
+.form-section {
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid rgba(76, 175, 80, 0.1);
+}
+
+.form-section:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.form-section h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e34;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-section h4:before {
+    content: '';
+    width: 4px;
+    height: 16px;
+    background: linear-gradient(135deg, #4caf50, #66bb6a);
+    border-radius: 2px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.form-group select {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid rgba(76, 175, 80, 0.2);
+    border-radius: 12px;
+    font-size: 16px;
+    font-family: inherit;
+    background: #faf9f7;
+    color: #2c3e34;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+}
+
+.form-group select:focus {
+    outline: none;
+    border-color: #4caf50;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+}
+
+.form-group input[type="date"],
+.form-group input[type="number"] {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid rgba(76, 175, 80, 0.2);
+    border-radius: 12px;
+    font-size: 16px;
+    font-family: inherit;
+    background: #faf9f7;
+    color: #2c3e34;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input[type="date"]:focus,
+.form-group input[type="number"]:focus {
+    outline: none;
+    border-color: #4caf50;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+}
+
+.form-help {
+    font-size: 12px;
+    color: #7a8f7d;
+    margin-top: 4px;
+    display: block;
+}
+
+.dependency-selector {
+    padding: 12px 16px;
+    border: 1px solid rgba(76, 175, 80, 0.2);
+    border-radius: 12px;
+    background: #faf9f7;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+}
+
+.dependency-selector .form-help {
+    margin: 0;
+    font-style: italic;
+}
+
 /* Settings Modal Specifics */
 #settingsModal .modal-content {
     max-width: 650px;
@@ -1065,7 +1173,291 @@ body {
     color: #555;
 }
 
+/* Task Metadata Section */
+.task-metadata-section {
+    background: white;
+    border: 1px solid rgba(76, 175, 80, 0.1);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 32px;
+}
+
+.task-metadata-section h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #2c3e34;
+    margin-bottom: 16px;
+    border-bottom: 1px solid rgba(76, 175, 80, 0.1);
+    padding-bottom: 8px;
+}
+
+.metadata-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.metadata-item {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.metadata-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #2c3e34;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.metadata-value {
+    padding: 12px;
+    background: rgba(76, 175, 80, 0.03);
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.timeline-item,
+.team-item,
+.scope-item,
+.effort-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.timeline-item:last-child,
+.team-item:last-child,
+.scope-item:last-child,
+.effort-item:last-child {
+    margin-bottom: 0;
+}
+
+.timeline-label,
+.team-label,
+.scope-label,
+.effort-label {
+    font-weight: 500;
+    color: #666;
+    min-width: 100px;
+}
+
+.due-date {
+    font-weight: 600;
+}
+
+.time-remaining {
+    margin-left: 8px;
+    padding: 2px 8px;
+    background: rgba(76, 175, 80, 0.1);
+    border-radius: 12px;
+    font-size: 12px;
+    color: #2e7d32;
+}
+
+.time-remaining:contains('Overdue') {
+    background: rgba(244, 67, 54, 0.1);
+    color: #c62828;
+}
+
+.user-link {
+    color: #2e7d32;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.user-link:hover {
+    text-decoration: underline;
+}
+
+.category-badge {
+    background: rgba(76, 175, 80, 0.1);
+    color: #2e7d32;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.priority-badge {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.impact-badge {
+    background: linear-gradient(135deg, #4caf50, #45a049);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.dependency-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+}
+
+.dependency-icon {
+    color: #4caf50;
+}
+
+.dependency-link {
+    color: #2e7d32;
+    cursor: pointer;
+    text-decoration: none;
+    flex: 1;
+}
+
+.dependency-link:hover {
+    text-decoration: underline;
+}
+
+.dependency-status {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 8px;
+}
+
+.skills-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.metrics-list,
+.deliverables-list {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.metrics-list li,
+.deliverables-list li {
+    margin-bottom: 6px;
+    color: #555;
+}
+
+.no-dependencies,
+.no-skills,
+.no-metrics,
+.no-deliverables {
+    color: #999;
+    font-style: italic;
+}
+
 /* Milestones */
+.milestones-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.create-milestone-btn {
+    background: #4caf50;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.create-milestone-btn:hover {
+    background: #45a049;
+    transform: translateY(-1px);
+}
+
+.milestone-creation-form {
+    background: white;
+    border: 2px solid rgba(76, 175, 80, 0.2);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.1);
+}
+
+.milestone-creation-form h4 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c3e34;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.milestone-creation-form h4:before {
+    content: '🎯';
+    font-size: 20px;
+}
+
+.alignment-section {
+    margin: 20px 0;
+    padding: 16px;
+    background: rgba(76, 175, 80, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(76, 175, 80, 0.1);
+}
+
+.alignment-section h5 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e34;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.alignment-section h5:before {
+    content: '🎯';
+    font-size: 14px;
+}
+
+.alignment-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+}
+
+@media (min-width: 768px) {
+    .alignment-grid {
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+}
+
+.cancel-btn {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-right: 12px;
+}
+
+.cancel-btn:hover {
+    background: #5a6268;
+    transform: translateY(-1px);
+}
+
 .milestones-list {
     display: flex;
     flex-direction: column;
@@ -1095,6 +1487,96 @@ body {
     align-items: center;
     gap: 16px;
     margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.milestone-deadline {
+    font-size: 12px;
+    color: #666;
+    background: rgba(76, 175, 80, 0.1);
+    padding: 4px 8px;
+    border-radius: 8px;
+    margin-left: auto;
+}
+
+.milestone-description {
+    margin-bottom: 16px;
+    padding: 12px;
+    background: rgba(76, 175, 80, 0.05);
+    border-radius: 8px;
+    border-left: 3px solid rgba(76, 175, 80, 0.3);
+}
+
+.milestone-description p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #555;
+}
+
+.acceptance-criteria {
+    margin-bottom: 16px;
+    padding: 16px;
+    background: rgba(76, 175, 80, 0.03);
+    border-radius: 12px;
+    border: 1px solid rgba(76, 175, 80, 0.1);
+}
+
+.acceptance-criteria h6 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #2c3e34;
+    margin: 0 0 12px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.acceptance-criteria h6:before {
+    content: '📋';
+    font-size: 16px;
+}
+
+.criteria-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.criteria-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 8px;
+    padding: 8px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid rgba(76, 175, 80, 0.1);
+    transition: all 0.2s ease;
+}
+
+.criteria-item:hover {
+    border-color: rgba(76, 175, 80, 0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.criteria-item:last-child {
+    margin-bottom: 0;
+}
+
+.criteria-bullet {
+    color: #4caf50;
+    font-weight: 600;
+    font-size: 14px;
+    min-width: 16px;
+    margin-top: 1px;
+}
+
+.criteria-text {
+    font-size: 14px;
+    line-height: 1.4;
+    color: #2c3e34;
+    flex: 1;
 }
 
 .milestone-checkbox input[type="checkbox"] {

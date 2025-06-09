@@ -143,8 +143,89 @@ class TaskPageManager {
                             <p>${task.description}</p>
                         </div>
 
+                        <div class="task-metadata-section">
+                            <h3>Task Details & Metadata</h3>
+                            <div class="metadata-grid">
+                                ${this.renderTaskMetadata()}
+                            </div>
+                        </div>
+
                         <div class="milestones-section">
-                            <h3>Milestones & Definition of Done</h3>
+                            <div class="milestones-header">
+                                <h3>Milestones & Definition of Done</h3>
+                                <button class="create-milestone-btn" onclick="taskPageManager.showCreateMilestoneForm()">
+                                    ➕ Add Milestone
+                                </button>
+                            </div>
+                            
+                            <div class="milestone-creation-form" id="milestoneCreationForm" style="display: none;">
+                                <h4>Create New Milestone</h4>
+                                <form id="newMilestoneForm" onsubmit="taskPageManager.handleCreateMilestone(event)">
+                                    <div class="form-group">
+                                        <label for="milestoneTitle">Milestone Title*</label>
+                                        <input type="text" id="milestoneTitle" placeholder="e.g., Complete site analysis and soil testing" required>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="milestoneDescription">Description</label>
+                                        <textarea id="milestoneDescription" placeholder="Detailed description of what needs to be accomplished" rows="2"></textarea>
+                                    </div>
+                                    
+                                    <div class="alignment-section">
+                                        <h5>Framework Alignment</h5>
+                                        <div class="alignment-grid">
+                                            <div class="form-group">
+                                                <label for="dodAlignment">Definition of Done Alignment</label>
+                                                <select id="dodAlignment" required>
+                                                    <option value="">Select alignment level...</option>
+                                                    <option value="High Alignment">High - Clear, measurable criteria</option>
+                                                    <option value="Medium Alignment">Medium - Criteria defined but could be clearer</option>
+                                                    <option value="Low Alignment">Low - Vague or unclear criteria</option>
+                                                    <option value="Needs Review">Needs Review - Requires further definition</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="form-group">
+                                                <label for="okrAlignment">OKR Alignment</label>
+                                                <select id="okrAlignment" required>
+                                                    <option value="">Select alignment level...</option>
+                                                    <option value="High Alignment">High - Directly supports key objectives</option>
+                                                    <option value="Medium Alignment">Medium - Supports broader goals</option>
+                                                    <option value="Low Alignment">Low - Indirect contribution</option>
+                                                    <option value="Needs Review">Needs Review - OKR connection unclear</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="form-group">
+                                                <label for="primeDirectiveAlignment">Prime Directive Alignment</label>
+                                                <select id="primeDirectiveAlignment" required>
+                                                    <option value="">Select alignment level...</option>
+                                                    <option value="High Alignment">High - Directly elevates consciousness</option>
+                                                    <option value="Medium Alignment">Medium - Contributes to collective benefit</option>
+                                                    <option value="Low Alignment">Low - Minimal direct impact</option>
+                                                    <option value="Needs Review">Needs Review - Impact assessment needed</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="milestoneDeadline">Target Completion Date</label>
+                                        <input type="date" id="milestoneDeadline">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="acceptanceCriteria">Acceptance Criteria (one per line)</label>
+                                        <textarea id="acceptanceCriteria" placeholder="• Soil pH tested at 5 locations&#10;• Water table depth measured&#10;• Existing vegetation cataloged" rows="3"></textarea>
+                                    </div>
+                                    
+                                    <div class="form-actions">
+                                        <button type="button" onclick="taskPageManager.cancelCreateMilestone()" class="cancel-btn">Cancel</button>
+                                        <button type="submit" class="submit-btn">Create Milestone</button>
+                                    </div>
+                                </form>
+                            </div>
+                            
                             <div class="milestones-list">
                                 ${this.renderMilestones()}
                             </div>
@@ -223,6 +304,184 @@ class TaskPageManager {
         this.setupTaskPageEventListeners();
     }
 
+    // Render task metadata
+    renderTaskMetadata() {
+        const task = this.currentTask;
+        
+        // Format dates
+        const formatDate = (dateStr) => {
+            if (!dateStr) return 'Not set';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        };
+
+        // Calculate time remaining
+        const calculateTimeRemaining = (dueDate) => {
+            if (!dueDate || dueDate === 'Not set') return 'No deadline';
+            
+            // Handle relative dates like "2 weeks", "3 days"
+            if (typeof dueDate === 'string' && !dueDate.includes('T')) {
+                return dueDate;
+            }
+            
+            const now = new Date();
+            const due = new Date(dueDate);
+            const diff = due - now;
+            
+            if (diff < 0) return 'Overdue';
+            
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            
+            if (days > 0) return `${days} days remaining`;
+            if (hours > 0) return `${hours} hours remaining`;
+            return 'Due soon';
+        };
+
+        return `
+            <div class="metadata-item">
+                <span class="metadata-label">📅 Timeline</span>
+                <div class="metadata-value">
+                    <div class="timeline-item">
+                        <span class="timeline-label">Created:</span>
+                        <span>${formatDate(task.created_at)}</span>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="timeline-label">Due:</span>
+                        <span class="due-date">${task.due_date || 'Not set'}</span>
+                        <span class="time-remaining">${calculateTimeRemaining(task.due_date)}</span>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="timeline-label">Last Updated:</span>
+                        <span>${formatDate(task.updated_at)}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metadata-item">
+                <span class="metadata-label">👥 Team & Authority</span>
+                <div class="metadata-value">
+                    <div class="team-item">
+                        <span class="team-label">Owner:</span>
+                        <span class="user-link">${task.owner_id || 'Unassigned'}</span>
+                    </div>
+                    <div class="team-item">
+                        <span class="team-label">Assignee:</span>
+                        <span class="user-link">${task.assignee_id || 'Available'}</span>
+                    </div>
+                    <div class="team-item">
+                        <span class="team-label">Team Size:</span>
+                        <span>${task.team_size || 'Not specified'}</span>
+                    </div>
+                    <div class="team-item">
+                        <span class="team-label">Authority Required:</span>
+                        <span>${task.authority_level || 'Standard'}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metadata-item">
+                <span class="metadata-label">🎯 Scope & Impact</span>
+                <div class="metadata-value">
+                    <div class="scope-item">
+                        <span class="scope-label">Category:</span>
+                        <span class="category-badge">${task.category}</span>
+                    </div>
+                    <div class="scope-item">
+                        <span class="scope-label">Priority:</span>
+                        <span class="priority-badge priority-${task.priority}">${task.priority}</span>
+                    </div>
+                    <div class="scope-item">
+                        <span class="scope-label">Impact Points:</span>
+                        <span class="impact-badge">${task.impact_points} pts</span>
+                    </div>
+                    <div class="scope-item">
+                        <span class="scope-label">Location:</span>
+                        <span>${task.location || 'Remote'}</span>
+                    </div>
+                    <div class="scope-item">
+                        <span class="scope-label">Scope:</span>
+                        <span>${task.scope || 'Project'}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metadata-item">
+                <span class="metadata-label">⏱️ Effort & Resources</span>
+                <div class="metadata-value">
+                    <div class="effort-item">
+                        <span class="effort-label">Estimated Hours:</span>
+                        <span>${task.estimated_hours || 'Not estimated'}</span>
+                    </div>
+                    <div class="effort-item">
+                        <span class="effort-label">Budget:</span>
+                        <span>${task.budget ? `$${task.budget.toLocaleString()}` : 'Not specified'}</span>
+                    </div>
+                    <div class="effort-item">
+                        <span class="effort-label">Resources Needed:</span>
+                        <span>${task.resources_needed || 'Standard tools'}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metadata-item">
+                <span class="metadata-label">🔗 Dependencies</span>
+                <div class="metadata-value">
+                    ${task.dependencies && task.dependencies.length > 0 ? 
+                        task.dependencies.map(dep => `
+                            <div class="dependency-item">
+                                <span class="dependency-icon">➔</span>
+                                <span class="dependency-link" onclick="router.navigate('/task/${dep.id}')">${dep.title}</span>
+                                <span class="dependency-status status-${dep.status}">${dep.status}</span>
+                            </div>
+                        `).join('') : 
+                        '<span class="no-dependencies">No dependencies</span>'
+                    }
+                </div>
+            </div>
+
+            <div class="metadata-item">
+                <span class="metadata-label">💼 Required Skills</span>
+                <div class="metadata-value skills-list">
+                    ${task.required_skills && task.required_skills.length > 0 ?
+                        task.required_skills.map(skill => `
+                            <span class="skill-tag">${skill}</span>
+                        `).join('') :
+                        '<span class="no-skills">No specific skills required</span>'
+                    }
+                </div>
+            </div>
+
+            <div class="metadata-item">
+                <span class="metadata-label">📊 Success Metrics</span>
+                <div class="metadata-value">
+                    ${task.success_metrics ? 
+                        `<ul class="metrics-list">
+                            ${task.success_metrics.map(metric => `<li>${metric}</li>`).join('')}
+                        </ul>` :
+                        '<span class="no-metrics">Success metrics not defined</span>'
+                    }
+                </div>
+            </div>
+
+            <div class="metadata-item">
+                <span class="metadata-label">📦 Deliverables</span>
+                <div class="metadata-value">
+                    ${task.deliverables ? 
+                        `<ul class="deliverables-list">
+                            ${task.deliverables.map(deliverable => `<li>${deliverable}</li>`).join('')}
+                        </ul>` :
+                        '<span class="no-deliverables">Deliverables not specified</span>'
+                    }
+                </div>
+            </div>
+        `;
+    }
+
     // Render milestones list
     renderMilestones() {
         if (!this.milestones.length) {
@@ -237,25 +496,48 @@ class TaskPageManager {
                                onchange="taskPageManager.toggleMilestone('${milestone.id}')">
                     </div>
                     <div class="milestone-title">${milestone.title}</div>
+                    <div class="milestone-deadline">
+                        ${milestone.deadline ? `📅 Due: ${this.formatDate(milestone.deadline)}` : ''}
+                    </div>
                     <button class="help-btn" onclick="taskPageManager.requestHelp('${milestone.id}')">
                         🆘 I Need Help
                     </button>
                 </div>
                 
+                ${milestone.description ? `
+                    <div class="milestone-description">
+                        <p>${milestone.description}</p>
+                    </div>
+                ` : ''}
+                
                 <div class="milestone-alignment">
                     <div class="alignment-item">
                         <span class="alignment-label">DoD:</span>
-                        <span class="alignment-value">${milestone.dod_alignment}</span>
+                        <span class="alignment-value ${this.getAlignmentClass(milestone.dod_alignment)}">${milestone.dod_alignment}</span>
                     </div>
                     <div class="alignment-item">
                         <span class="alignment-label">OKR:</span>
-                        <span class="alignment-value">${milestone.okr_alignment}</span>
+                        <span class="alignment-value ${this.getAlignmentClass(milestone.okr_alignment)}">${milestone.okr_alignment}</span>
                     </div>
                     <div class="alignment-item">
                         <span class="alignment-label">Prime Directive:</span>
                         <span class="alignment-value ${this.getAlignmentClass(milestone.prime_directive_alignment)}">${milestone.prime_directive_alignment}</span>
                     </div>
                 </div>
+
+                ${milestone.acceptance_criteria && milestone.acceptance_criteria.length > 0 ? `
+                    <div class="acceptance-criteria">
+                        <h6>Acceptance Criteria</h6>
+                        <ul class="criteria-list">
+                            ${milestone.acceptance_criteria.map(criteria => `
+                                <li class="criteria-item">
+                                    <span class="criteria-bullet">✓</span>
+                                    <span class="criteria-text">${criteria}</span>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                ` : ''}
 
                 <div class="milestone-files">
                     <div class="files-header">
@@ -265,7 +547,7 @@ class TaskPageManager {
                         </button>
                     </div>
                     <div class="files-list" id="files-${milestone.id}">
-                        ${milestone.files.length ? this.renderMilestoneFiles(milestone.files) : '<p class="no-files">No files uploaded yet.</p>'}
+                        ${milestone.files && milestone.files.length ? this.renderMilestoneFiles(milestone.files) : '<p class="no-files">No files uploaded yet.</p>'}
                     </div>
                 </div>
 
@@ -312,6 +594,17 @@ class TaskPageManager {
         if (bytes < 1024) return bytes + ' B';
         if (bytes < 1048576) return Math.round(bytes / 1024) + ' KB';
         return Math.round(bytes / 1048576) + ' MB';
+    }
+
+    // Format date for display
+    formatDate(dateString) {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
     }
 
     // Setup event listeners for task page
@@ -1103,6 +1396,80 @@ class TaskPageManager {
         // - Push notification service
         // - WebSocket for real-time notifications
         // - In-app notification system
+    }
+
+    // Milestone creation functions
+    showCreateMilestoneForm() {
+        const form = document.getElementById('milestoneCreationForm');
+        if (form) {
+            form.style.display = 'block';
+            form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            document.getElementById('milestoneTitle').focus();
+        }
+    }
+
+    cancelCreateMilestone() {
+        const form = document.getElementById('milestoneCreationForm');
+        const newMilestoneForm = document.getElementById('newMilestoneForm');
+        
+        if (form) {
+            form.style.display = 'none';
+        }
+        if (newMilestoneForm) {
+            newMilestoneForm.reset();
+        }
+    }
+
+    async handleCreateMilestone(event) {
+        event.preventDefault();
+        
+        try {
+            // Collect form data
+            const formData = {
+                task_id: this.currentTask.id,
+                title: document.getElementById('milestoneTitle').value,
+                description: document.getElementById('milestoneDescription').value,
+                dod_alignment: document.getElementById('dodAlignment').value,
+                okr_alignment: document.getElementById('okrAlignment').value,
+                prime_directive_alignment: document.getElementById('primeDirectiveAlignment').value,
+                deadline: document.getElementById('milestoneDeadline').value || null,
+                acceptance_criteria: document.getElementById('acceptanceCriteria').value
+                    ? document.getElementById('acceptanceCriteria').value.split('\n').map(s => s.trim()).filter(s => s)
+                    : [],
+                completed: false,
+                files: [],
+                help_requests: []
+            };
+
+            // Send to backend
+            const response = await fetch('http://localhost:8000/api/v1/milestones', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            });
+
+            if (response.ok) {
+                const newMilestone = await response.json();
+                
+                // Add to local milestones array
+                this.milestones.push(newMilestone);
+                
+                // Hide form and reset
+                this.cancelCreateMilestone();
+                
+                // Re-render milestones section
+                this.renderTaskPage();
+                
+                this.app.showNotification('Milestone created successfully!');
+            } else {
+                throw new Error('Failed to create milestone');
+            }
+        } catch (error) {
+            console.error('Failed to create milestone:', error);
+            this.app.showNotification('Failed to create milestone', 'error');
+        }
     }
 }
 

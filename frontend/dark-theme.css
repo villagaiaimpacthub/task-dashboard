@@ -159,6 +159,9 @@ body.dark-mode {
 .dark-mode .modal-body input[type="text"],
 .dark-mode .modal-body input[type="email"],
 .dark-mode .modal-body input[type="password"],
+.dark-mode .modal-body input[type="date"],
+.dark-mode .modal-body input[type="number"],
+.dark-mode .modal-body select,
 .dark-mode .modal-body textarea {
     background: #1a1f1c;
     border: 1px solid rgba(76, 175, 80, 0.3);
@@ -181,6 +184,32 @@ body.dark-mode {
 .dark-mode .tab-btn.active {
     color: #81c784;
     border-bottom-color: #81c784;
+}
+
+/* Form Sections - Dark Mode */
+.dark-mode .form-section {
+    border-bottom-color: rgba(76, 175, 80, 0.2);
+}
+
+.dark-mode .form-section h4 {
+    color: #e8e6e3;
+}
+
+.dark-mode .form-help {
+    color: #7a8f7d;
+}
+
+.dark-mode .dependency-selector {
+    background: #1a1f1c;
+    border-color: rgba(76, 175, 80, 0.3);
+    color: #e8e6e3;
+}
+
+.dark-mode .modal-body select:focus,
+.dark-mode .modal-body input[type="date"]:focus,
+.dark-mode .modal-body input[type="number"]:focus {
+    border-color: #66bb6a;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.3);
 }
 
 /* Task Page */
@@ -222,6 +251,75 @@ body.dark-mode {
     color: #b8b6b3;
 }
 
+/* Task Metadata Section - Dark Mode */
+.dark-mode .task-metadata-section {
+    background: #252a26;
+    border-color: rgba(76, 175, 80, 0.2);
+}
+
+.dark-mode .task-metadata-section h3 {
+    color: #e8e6e3;
+    border-bottom-color: rgba(76, 175, 80, 0.2);
+}
+
+.dark-mode .metadata-label {
+    color: #e8e6e3;
+}
+
+.dark-mode .metadata-value {
+    background: rgba(76, 175, 80, 0.05);
+    color: #e8e6e3;
+}
+
+.dark-mode .timeline-label,
+.dark-mode .team-label,
+.dark-mode .scope-label,
+.dark-mode .effort-label {
+    color: #b8b6b3;
+}
+
+.dark-mode .due-date {
+    color: #e8e6e3;
+}
+
+.dark-mode .time-remaining {
+    background: rgba(76, 175, 80, 0.2);
+    color: #81c784;
+}
+
+.dark-mode .user-link {
+    color: #81c784;
+}
+
+.dark-mode .category-badge {
+    background: rgba(76, 175, 80, 0.2);
+    color: #81c784;
+}
+
+.dark-mode .impact-badge {
+    background: linear-gradient(135deg, #66bb6a, #4caf50);
+}
+
+.dark-mode .dependency-icon {
+    color: #66bb6a;
+}
+
+.dark-mode .dependency-link {
+    color: #81c784;
+}
+
+.dark-mode .metrics-list li,
+.dark-mode .deliverables-list li {
+    color: #b8b6b3;
+}
+
+.dark-mode .no-dependencies,
+.dark-mode .no-skills,
+.dark-mode .no-metrics,
+.dark-mode .no-deliverables {
+    color: #7a8f7d;
+}
+
 .dark-mode .milestone-item {
     background: #252a26;
     border-color: rgba(76, 175, 80, 0.2);
@@ -239,6 +337,43 @@ body.dark-mode {
 
 .dark-mode .milestone-title {
     color: #e8e6e3;
+}
+
+/* Milestone Creation - Dark Mode */
+.dark-mode .create-milestone-btn {
+    background: linear-gradient(135deg, #66bb6a, #4caf50);
+}
+
+.dark-mode .create-milestone-btn:hover {
+    background: linear-gradient(135deg, #81c784, #66bb6a);
+}
+
+.dark-mode .milestone-creation-form {
+    background: #252a26;
+    border-color: rgba(76, 175, 80, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .milestone-creation-form h4 {
+    color: #e8e6e3;
+}
+
+.dark-mode .alignment-section {
+    background: rgba(76, 175, 80, 0.1);
+    border-color: rgba(76, 175, 80, 0.2);
+}
+
+.dark-mode .alignment-section h5 {
+    color: #e8e6e3;
+}
+
+.dark-mode .cancel-btn {
+    background: #4a5a4c;
+    color: #e8e6e3;
+}
+
+.dark-mode .cancel-btn:hover {
+    background: #5a6c5e;
 }
 
 .dark-mode .milestone-alignment {

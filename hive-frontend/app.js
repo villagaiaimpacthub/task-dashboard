@@ -559,12 +559,53 @@ class HIVEApp {
     async handleCreateTask(e) {
         e.preventDefault();
         
-        const title = document.getElementById('taskTitle').value;
-        const description = document.getElementById('taskDescription').value;
         const errorEl = document.getElementById('taskError');
 
         try {
-            await api.createTask({ title, description });
+            // Collect all form data
+            const taskData = {
+                // Basic information
+                title: document.getElementById('taskTitle').value,
+                description: document.getElementById('taskDescription').value,
+                
+                // Timeline & Priority
+                start_date: document.getElementById('startDate').value || null,
+                due_date: document.getElementById('dueDate').value || null,
+                priority: document.getElementById('priority').value,
+                category: document.getElementById('category').value,
+                
+                // Team & Authority
+                team_size: parseInt(document.getElementById('teamSize').value) || 1,
+                authority_level: document.getElementById('authorityLevel').value,
+                
+                // Scope & Impact
+                scope: document.getElementById('scope').value,
+                impact_points: parseInt(document.getElementById('impactPoints').value) || 10,
+                location: document.getElementById('location').value || null,
+                
+                // Effort & Resources
+                estimated_hours: parseInt(document.getElementById('estimatedHours').value) || null,
+                budget: document.getElementById('budget').value || null,
+                resources_needed: document.getElementById('resourcesNeeded').value || null,
+                
+                // Required Skills
+                required_skills: document.getElementById('requiredSkills').value
+                    ? document.getElementById('requiredSkills').value.split(',').map(s => s.trim()).filter(s => s)
+                    : [],
+                
+                // Success Metrics & Deliverables
+                success_metrics: document.getElementById('successMetrics').value
+                    ? document.getElementById('successMetrics').value.split('\n').map(s => s.trim()).filter(s => s)
+                    : [],
+                deliverables: document.getElementById('deliverables').value
+                    ? document.getElementById('deliverables').value.split('\n').map(s => s.trim()).filter(s => s)
+                    : [],
+                
+                // Status (default)
+                status: 'available'
+            };
+
+            await api.createTask(taskData);
             await this.loadTasks();
             this.hideTaskModal();
             this.showNotification('Task created successfully!');
