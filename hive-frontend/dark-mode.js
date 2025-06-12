@@ -6,9 +6,12 @@ class DarkModeManager {
     }
 
     init() {
-        // Check for saved preference or default to light mode
+        // Check for saved preference or default to dark mode (new beautiful theme)
         const savedMode = localStorage.getItem('darkMode');
-        if (savedMode === 'true') {
+        if (savedMode === 'false') {
+            this.disableDarkMode(false);
+        } else {
+            // Default to dark mode to show off the new beautiful theme
             this.enableDarkMode(false);
         }
 

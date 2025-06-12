@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HIVE Skill Assessment</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid #333;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #40E0D0;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin: 0;
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            min-height: calc(100vh - 80px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .welcome-title {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #40E0D0, #00CED1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .welcome-subtitle {
+            font-size: 1.2rem;
+            color: #ccc;
+            margin-bottom: 2rem;
+        }
+
+        .chat-container {
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            border: 1px solid #333;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            max-height: 60vh;
+        }
+
+        .chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+            max-height: 400px;
+        }
+
+        .message {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .message.ai {
+            justify-content: flex-start;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .ai .message-avatar {
+            background: linear-gradient(45deg, #40E0D0, #00CED1);
+            color: #000;
+        }
+
+        .user .message-avatar {
+            background: linear-gradient(45deg, #666, #888);
+            color: #fff;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 0.75rem 1rem;
+            border-radius: 15px;
+            line-height: 1.5;
+        }
+
+        .ai .message-content {
+            background: rgba(64, 224, 208, 0.1);
+            border: 1px solid rgba(64, 224, 208, 0.3);
+        }
+
+        .user .message-content {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .input-section {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .chat-input {
+            flex-grow: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #555;
+            border-radius: 25px;
+            padding: 0.75rem 1rem;
+            color: #fff;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .chat-input:focus {
+            border-color: #40E0D0;
+            box-shadow: 0 0 10px rgba(64, 224, 208, 0.3);
+        }
+
+        .send-button {
+            background: linear-gradient(45deg, #40E0D0, #00CED1);
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            color: #000;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: transform 0.2s;
+        }
+
+        .send-button:hover {
+            transform: scale(1.1);
+        }
+
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .start-button {
+            background: linear-gradient(45deg, #40E0D0, #00CED1);
+            border: none;
+            border-radius: 25px;
+            padding: 1rem 2rem;
+            color: #000;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .start-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(64, 224, 208, 0.3);
+        }
+
+        .skill-tree {
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            border: 1px solid #333;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .skill-category {
+            margin-bottom: 2rem;
+        }
+
+        .skill-category h3 {
+            color: #40E0D0;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .skill-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #555;
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .skill-item:hover {
+            border-color: #40E0D0;
+            transform: translateY(-2px);
+        }
+
+        .skill-level {
+            display: flex;
+            justify-content: center;
+            gap: 3px;
+            margin-top: 0.5rem;
+        }
+
+        .skill-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #333;
+        }
+
+        .skill-dot.filled {
+            background: #40E0D0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #40E0D0, #00CED1);
+            transition: width 0.5s ease;
+        }
+
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
+            color: #888;
+            font-style: italic;
+            margin-bottom: 1rem;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 3px;
+        }
+
+        .typing-dot {
+            width: 4px;
+            height: 4px;
+            background: #888;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% { opacity: 0.3; }
+            30% { opacity: 1; }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .export-section {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #333;
+        }
+
+        .export-button {
+            background: linear-gradient(45deg, #40E0D0, #00CED1);
+            border: none;
+            border-radius: 25px;
+            padding: 1rem 2rem;
+            color: #000;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-right: 1rem;
+        }
+
+        .export-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(64, 224, 208, 0.3);
+        }
+
+        .copy-button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #555;
+            border-radius: 25px;
+            padding: 1rem 2rem;
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .copy-button:hover {
+            border-color: #40E0D0;
+            background: rgba(64, 224, 208, 0.1);
+        }
+
+        .export-info {
+            margin-top: 1rem;
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        .success-message {
+            background: rgba(64, 224, 208, 0.2);
+            border: 1px solid rgba(64, 224, 208, 0.5);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+            color: #40E0D0;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1 class="logo">HIVE Assessment</h1>
+    </header>
+
+    <div class="main-container">
+        <div id="welcome-screen">
+            <div class="welcome-section">
+                <h1 class="welcome-title">Skill Assessment Protocol</h1>
+                <p class="welcome-subtitle">Let's discover your unique capabilities and match you with the perfect tasks</p>
+                <button class="start-button" onclick="startAssessment()">Begin Assessment</button>
+            </div>
+        </div>
+
+        <div id="chat-screen" class="hidden">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+            
+            <div class="chat-container">
+                <div class="chat-messages" id="chatMessages"></div>
+                <div class="typing-indicator" id="typingIndicator">
+                    <span>HIVE is analyzing</span>
+                    <div class="typing-dots">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+                <div class="input-section">
+                    <input type="text" class="chat-input" id="chatInput" placeholder="Share your response..." onkeypress="handleKeyPress(event)">
+                    <button class="send-button" id="sendButton" onclick="sendMessage()">➤</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="results-screen" class="hidden">
+            <div class="welcome-section">
+                <h1 class="welcome-title">Assessment Complete</h1>
+                <p class="welcome-subtitle">Your skill profile has been generated</p>
+            </div>
+            <div class="skill-tree" id="skillTree"></div>
+            <div class="export-section">
+                <button class="export-button" onclick="exportSkills()">Export to System</button>
+                <button class="copy-button" onclick="copySkillData()">Copy Data</button>
+                <div class="export-info">
+                    Export your skill profile to integrate with other HIVE systems or copy the data for manual transfer
+                </div>
+                <div class="success-message" id="successMessage"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentQuestion = 0;
+        let userResponses = [];
+        let skillProfile = {};
+
+        const questions = [
+            {
+                text: "Welcome to HIVE! I'm here to understand your unique capabilities. Let's start with the big picture - what type of work energizes you most? Are you drawn to creative problem-solving, systematic analysis, or building and creating things?",
+                category: "work_style"
+            },
+            {
+                text: "Interesting! When you tackle a complex challenge, what's your natural approach? Do you dive deep into research first, brainstorm multiple solutions, or prefer to start experimenting right away?",
+                category: "problem_solving"
+            },
+            {
+                text: "Tell me about a recent project or accomplishment you're proud of. What made it special, and what role did you play in making it successful?",
+                category: "achievements"
+            },
+            {
+                text: "How do you prefer to work with others? Are you most effective leading a team, collaborating as an equal partner, or working independently and contributing your specialized expertise?",
+                category: "collaboration"
+            },
+            {
+                text: "What tools, technologies, or methods do you find yourself naturally gravitating toward? This could be anything from software and programming languages to communication methods or analytical frameworks.",
+                category: "technical_skills"
+            },
+            {
+                text: "When learning something new, what works best for you? Do you prefer hands-on experimentation, structured courses, learning from mentors, or diving into documentation and figuring it out yourself?",
+                category: "learning_style"
+            },
+            {
+                text: "Think about your ideal work environment. Do you thrive under tight deadlines with high stakes, prefer steady progress on long-term projects, or like variety with different types of challenges?",
+                category: "work_environment"
+            },
+            {
+                text: "What kind of impact do you want your work to have? Are you motivated by solving technical challenges, helping people directly, building systems that scale, or creating something entirely new?",
+                category: "motivation"
+            },
+            {
+                text: "Finally, if you could contribute to any type of project in the HIVE ecosystem, what would excite you most? Think about where your skills and interests align with creating value for the community.",
+                category: "aspirations"
+            }
+        ];
+
+        function startAssessment() {
+            document.getElementById('welcome-screen').classList.add('hidden');
+            document.getElementById('chat-screen').classList.remove('hidden');
+            
+            setTimeout(() => {
+                askNextQuestion();
+            }, 500);
+        }
+
+        function askNextQuestion() {
+            if (currentQuestion < questions.length) {
+                showTypingIndicator();
+                
+                setTimeout(() => {
+                    hideTypingIndicator();
+                    addMessage(questions[currentQuestion].text, 'ai');
+                    updateProgress();
+                }, 1500);
+            } else {
+                completeAssessment();
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (message && currentQuestion < questions.length) {
+                addMessage(message, 'user');
+                userResponses.push({
+                    question: currentQuestion,
+                    category: questions[currentQuestion].category,
+                    response: message
+                });
+                
+                input.value = '';
+                currentQuestion++;
+                
+                setTimeout(() => {
+                    askNextQuestion();
+                }, 1000);
+            }
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function addMessage(text, sender) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = sender === 'ai' ? 'H' : 'U';
+            
+            const content = document.createElement('div');
+            content.className = 'message-content';
+            content.textContent = text;
+            
+            if (sender === 'user') {
+                messageDiv.appendChild(content);
+                messageDiv.appendChild(avatar);
+            } else {
+                messageDiv.appendChild(avatar);
+                messageDiv.appendChild(content);
+            }
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            document.getElementById('typingIndicator').style.display = 'flex';
+        }
+
+        function hideTypingIndicator() {
+            document.getElementById('typingIndicator').style.display = 'none';
+        }
+
+        function updateProgress() {
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            document.getElementById('progressFill').style.width = `${progress}%`;
+        }
+
+        function completeAssessment() {
+            showTypingIndicator();
+            
+            setTimeout(() => {
+                hideTypingIndicator();
+                addMessage("Excellent! I've analyzed your responses and built your comprehensive skill profile. Let me show you what we've discovered about your capabilities.", 'ai');
+                
+                setTimeout(() => {
+                    analyzeSkills();
+                    showResults();
+                }, 2000);
+            }, 2000);
+        }
+
+        function analyzeSkills() {
+            // Simulate AI analysis of user responses
+            skillProfile = {
+                "Technical Skills": {
+                    "Programming": Math.floor(Math.random() * 5) + 1,
+                    "Data Analysis": Math.floor(Math.random() * 5) + 1,
+                    "System Design": Math.floor(Math.random() * 5) + 1,
+                    "DevOps": Math.floor(Math.random() * 5) + 1
+                },
+                "Creative Skills": {
+                    "Problem Solving": Math.floor(Math.random() * 5) + 1,
+                    "Innovation": Math.floor(Math.random() * 5) + 1,
+                    "Design Thinking": Math.floor(Math.random() * 5) + 1,
+                    "Content Creation": Math.floor(Math.random() * 5) + 1
+                },
+                "Leadership Skills": {
+                    "Team Management": Math.floor(Math.random() * 5) + 1,
+                    "Strategic Planning": Math.floor(Math.random() * 5) + 1,
+                    "Communication": Math.floor(Math.random() * 5) + 1,
+                    "Mentoring": Math.floor(Math.random() * 5) + 1
+                },
+                "Domain Expertise": {
+                    "Research": Math.floor(Math.random() * 5) + 1,
+                    "Analytics": Math.floor(Math.random() * 5) + 1,
+                    "Process Optimization": Math.floor(Math.random() * 5) + 1,
+                    "Quality Assurance": Math.floor(Math.random() * 5) + 1
+                }
+            };
+        }
+
+        function showResults() {
+            setTimeout(() => {
+                document.getElementById('chat-screen').classList.add('hidden');
+                document.getElementById('results-screen').classList.remove('hidden');
+                renderSkillTree();
+            }, 1000);
+        }
+
+        function renderSkillTree() {
+            const skillTreeContainer = document.getElementById('skillTree');
+            
+            Object.keys(skillProfile).forEach(category => {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'skill-category';
+                
+                const categoryTitle = document.createElement('h3');
+                categoryTitle.textContent = category;
+                categoryDiv.appendChild(categoryTitle);
+                
+                const skillsGrid = document.createElement('div');
+                skillsGrid.className = 'skills-grid';
+                
+                Object.keys(skillProfile[category]).forEach(skill => {
+                    const level = skillProfile[category][skill];
+                    const skillItem = document.createElement('div');
+                    skillItem.className = 'skill-item';
+                    
+                    const skillName = document.createElement('div');
+                    skillName.textContent = skill;
+                    skillItem.appendChild(skillName);
+                    
+                    const skillLevel = document.createElement('div');
+                    skillLevel.className = 'skill-level';
+                    
+                    for (let i = 1; i <= 5; i++) {
+                        const dot = document.createElement('div');
+                        dot.className = `skill-dot ${i <= level ? 'filled' : ''}`;
+                        skillLevel.appendChild(dot);
+                    }
+                    
+                    skillItem.appendChild(skillLevel);
+                    skillsGrid.appendChild(skillItem);
+                });
+                
+                categoryDiv.appendChild(skillsGrid);
+                skillTreeContainer.appendChild(categoryDiv);
+            });
+        }
+
+        function generateExportData() {
+            // Get top skills (level 4-5) for quick integration
+            const topSkills = [];
+            const allSkills = [];
+            
+            Object.keys(skillProfile).forEach(category => {
+                Object.keys(skillProfile[category]).forEach(skill => {
+                    const level = skillProfile[category][skill];
+                    const skillData = {
+                        name: skill,
+                        category: category,
+                        level: level,
+                        proficiency: level >= 4 ? 'Expert' : level >= 3 ? 'Advanced' : level >= 2 ? 'Intermediate' : 'Beginner'
+                    };
+                    
+                    allSkills.push(skillData);
+                    
+                    if (level >= 4) {
+                        topSkills.push(skillData);
+                    }
+                });
+            });
+
+            // Sort by level (highest first)
+            topSkills.sort((a, b) => b.level - a.level);
+            allSkills.sort((a, b) => b.level - a.level);
+
+            return {
+                userId: 'user_' + Date.now(), // Generate unique ID
+                assessmentDate: new Date().toISOString(),
+                topSkills: topSkills.slice(0, 5), // Top 5 skills
+                allSkills: allSkills,
+                skillProfile: skillProfile,
+                summary: {
+                    totalSkills: allSkills.length,
+                    expertLevel: topSkills.length,
+                    strongestCategory: getStrongestCategory(),
+                    recommendedRoles: generateRoleRecommendations(topSkills)
+                }
+            };
+        }
+
+        function getStrongestCategory() {
+            let strongest = '';
+            let highestAverage = 0;
+            
+            Object.keys(skillProfile).forEach(category => {
+                const skills = skillProfile[category];
+                const average = Object.values(skills).reduce((sum, level) => sum + level, 0) / Object.keys(skills).length;
+                
+                if (average > highestAverage) {
+                    highestAverage = average;
+                    strongest = category;
+                }
+            });
+            
+            return strongest;
+        }
+
+        function generateRoleRecommendations(topSkills) {
+            const roles = [];
+            const categories = topSkills.map(skill => skill.category);
+            
+            if (categories.includes('Technical Skills')) {
+                roles.push('Technical Lead', 'Software Developer', 'Data Engineer');
+            }
+            if (categories.includes('Leadership Skills')) {
+                roles.push('Project Manager', 'Team Lead', 'Scrum Master');
+            }
+            if (categories.includes('Creative Skills')) {
+                roles.push('UX Designer', 'Innovation Specialist', 'Product Manager');
+            }
+            if (categories.includes('Domain Expertise')) {
+                roles.push('Research Analyst', 'Quality Specialist', 'Process Consultant');
+            }
+            
+            return [...new Set(roles)].slice(0, 4); // Remove duplicates and limit to 4
+        }
+
+        function exportSkills() {
+            const exportData = generateExportData();
+            
+            // Create download link
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `hive_skill_profile_${exportData.userId}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            showSuccessMessage('Skill profile exported successfully! File downloaded to your device.');
+            
+            // Also log to console for integration purposes
+            console.log('HIVE Skill Export Data:', exportData);
+        }
+
+        function copySkillData() {
+            const exportData = generateExportData();
+            const dataStr = JSON.stringify(exportData, null, 2);
+            
+            navigator.clipboard.writeText(dataStr).then(() => {
+                showSuccessMessage('Skill data copied to clipboard! Ready for integration.');
+            }).catch(err => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = dataStr;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showSuccessMessage('Skill data copied to clipboard! Ready for integration.');
+            });
+        }
+
+        function showSuccessMessage(message) {
+            const successElement = document.getElementById('successMessage');
+            successElement.textContent = message;
+            successElement.style.display = 'block';
+            
+            setTimeout(() => {
+                successElement.style.display = 'none';
+            }, 4000);
+        }
+    </script>
+</body>
+</html>

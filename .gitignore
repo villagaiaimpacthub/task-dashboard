@@ -74,3 +74,6 @@ config.local.py
 # Migrations (keep structure but not the migration files for now)
 migrations/versions/*.py
 !migrations/versions/.gitkeep
+
+# Session tracking
+.session-tracker.md

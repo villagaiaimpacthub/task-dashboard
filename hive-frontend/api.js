@@ -61,6 +61,37 @@ class APIClient {
         }
     }
 
+    // HTTP method helpers
+    async get(endpoint, options = {}) {
+        return this.request(endpoint, {
+            method: 'GET',
+            ...options,
+        });
+    }
+
+    async post(endpoint, data, options = {}) {
+        return this.request(endpoint, {
+            method: 'POST',
+            body: JSON.stringify(data),
+            ...options,
+        });
+    }
+
+    async put(endpoint, data, options = {}) {
+        return this.request(endpoint, {
+            method: 'PUT',
+            body: JSON.stringify(data),
+            ...options,
+        });
+    }
+
+    async delete(endpoint, options = {}) {
+        return this.request(endpoint, {
+            method: 'DELETE',
+            ...options,
+        });
+    }
+
     // Authentication endpoints
     async register(email, password) {
         return this.request('/auth/register', {

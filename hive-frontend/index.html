@@ -155,9 +155,11 @@
         <!-- Main Content -->
         <div class="main-content">
             <div class="content-header">
-                <h2 style="color: #2c3e34; font-size: 24px; font-weight: 600;">Available Tasks</h2>
+                <h2 class="content-title">Available Tasks</h2>
                 <div class="action-buttons">
                     <button id="createTaskBtn" class="create-btn">+ Create Task</button>
+                    <button id="importMasterPlanBtn" class="create-btn">📥 Import Master Plan</button>
+                    <a href="skills-assessment.html" class="create-btn skills-link">🎯 Skills Assessment</a>
                     <div class="view-toggle">
                         <button class="toggle-btn active">Grid View</button>
                         <button class="toggle-btn">List View</button>
@@ -427,6 +429,65 @@
                     <h3>Account</h3>
                     <button id="logoutBtnInsideModal" class="logout-btn" style="background: #e57373; width: auto;">Logout</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Master Plan Import Modal -->
+    <div id="masterPlanModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Import Master Plan</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="import-section">
+                    <h4>Upload Your Master Plan</h4>
+                    <p class="subtitle">Upload a markdown file to auto-generate projects and tasks in the HIVE hierarchy</p>
+                    
+                    <div class="upload-zone" id="uploadZone">
+                        <div class="upload-content">
+                            <svg class="upload-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                            </svg>
+                            <p>Drop your master plan here or click to browse</p>
+                            <p class="upload-formats">Supported: Markdown (.md)</p>
+                            <input type="file" id="masterPlanFileInput" accept=".md,.markdown" style="display: none;">
+                        </div>
+                    </div>
+                    
+                    <div class="manual-input-section">
+                        <h4>Or Paste Content Directly</h4>
+                        <textarea id="masterPlanContent" placeholder="# Master Plan Title
+
+## Waypoint 1: Foundation
+### Project A
+#### Task 1
+#### Task 2
+
+### Project B
+#### Task 3
+
+## Waypoint 2: Enhancement
+..." rows="10"></textarea>
+                    </div>
+                    
+                    <div class="import-actions">
+                        <button type="button" id="parseMasterPlanBtn" class="submit-btn">Parse Master Plan</button>
+                        <button type="button" id="cancelImportBtn" class="cancel-btn">Cancel</button>
+                    </div>
+                </div>
+                
+                <div class="preview-section" id="previewSection" style="display: none;">
+                    <h4>Import Preview</h4>
+                    <div id="importPreview"></div>
+                    <div class="preview-actions">
+                        <button type="button" id="confirmImportBtn" class="submit-btn">Import All Tasks</button>
+                        <button type="button" id="backToUploadBtn" class="cancel-btn">Back to Upload</button>
+                    </div>
+                </div>
+                
+                <div id="importError" class="error-message"></div>
             </div>
         </div>
     </div>

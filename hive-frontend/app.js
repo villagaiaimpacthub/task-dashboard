@@ -54,6 +54,9 @@ class HIVEApp {
         document.getElementById('settingsBtn').addEventListener('click', () => router.navigate('/settings'));
         document.getElementById('addSkillForm').addEventListener('submit', (e) => this.handleAddSkill(e));
         document.getElementById('currentSkills').addEventListener('click', (e) => this.handleRemoveSkill(e));
+        
+        // Master Plan Import
+        document.getElementById('importMasterPlanBtn').addEventListener('click', () => this.showMasterPlanModal());
 
         // Filters
         document.querySelectorAll('.filter-item').forEach(item => {
@@ -469,20 +472,12 @@ class HIVEApp {
             card.addEventListener('click', (e) => {
                 // Don't navigate if clicking on action buttons or their children
                 if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
-                    console.log('Button clicked, not navigating');
                     return;
                 }
                 
                 const taskId = card.dataset.taskId;
-                console.log('Task card clicked, taskId:', taskId);
-                
-                if (taskId) {
-                    console.log('Navigating to task:', taskId);
-                    if (typeof router !== 'undefined' && router.navigate) {
-                        router.navigate(`/task/${taskId}`);
-                    } else {
-                        console.error('Router not available');
-                    }
+                if (taskId && router && router.navigate) {
+                    router.navigate(`/task/${taskId}`);
                 }
             });
         });
@@ -925,6 +920,261 @@ class HIVEApp {
         document.getElementById('settingsModal').classList.remove('show');
     }
 
+    // Master Plan Import Modal
+    showMasterPlanModal() {
+        const modal = document.getElementById('masterPlanModal');
+        if (modal) {
+            modal.classList.add('show');
+            this.setupMasterPlanEventListeners();
+        }
+    }
+
+    hideMasterPlanModal() {
+        const modal = document.getElementById('masterPlanModal');
+        if (modal) {
+            modal.classList.remove('show');
+            this.resetMasterPlanModal();
+        }
+    }
+
+    setupMasterPlanEventListeners() {
+        // Upload zone
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('masterPlanFileInput');
+        
+        if (uploadZone && fileInput) {
+            uploadZone.addEventListener('click', () => fileInput.click());
+            
+            uploadZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadZone.classList.add('dragover');
+            });
+            
+            uploadZone.addEventListener('dragleave', () => {
+                uploadZone.classList.remove('dragover');
+            });
+            
+            uploadZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadZone.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    this.handleMasterPlanFile(files[0]);
+                }
+            });
+            
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    this.handleMasterPlanFile(e.target.files[0]);
+                }
+            });
+        }
+
+        // Parse button
+        const parseBtn = document.getElementById('parseMasterPlanBtn');
+        if (parseBtn) {
+            parseBtn.addEventListener('click', () => this.parseMasterPlan());
+        }
+
+        // Cancel button
+        const cancelBtn = document.getElementById('cancelImportBtn');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => this.hideMasterPlanModal());
+        }
+
+        // Confirm import button
+        const confirmBtn = document.getElementById('confirmImportBtn');
+        if (confirmBtn) {
+            confirmBtn.addEventListener('click', () => this.confirmMasterPlanImport());
+        }
+
+        // Back to upload button
+        const backBtn = document.getElementById('backToUploadBtn');
+        if (backBtn) {
+            backBtn.addEventListener('click', () => this.showUploadSection());
+        }
+    }
+
+    async handleMasterPlanFile(file) {
+        if (!file.name.endsWith('.md') && !file.name.endsWith('.markdown')) {
+            this.showImportError('Please select a markdown file (.md or .markdown)');
+            return;
+        }
+
+        try {
+            const content = await this.readFileContent(file);
+            document.getElementById('masterPlanContent').value = content;
+            this.showNotification('File loaded successfully!');
+        } catch (error) {
+            this.showImportError('Failed to read file: ' + error.message);
+        }
+    }
+
+    readFileContent(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.onerror = (e) => reject(new Error('Failed to read file'));
+            reader.readAsText(file);
+        });
+    }
+
+    async parseMasterPlan() {
+        const content = document.getElementById('masterPlanContent').value.trim();
+        
+        if (!content) {
+            this.showImportError('Please provide master plan content');
+            return;
+        }
+
+        try {
+            this.showImportLoading('Parsing master plan...');
+            
+            const response = await api.post('/import/master-plan', {
+                content: content,
+                format: 'markdown'
+            });
+
+            this.hideImportLoading();
+
+            if (response.status === 'success') {
+                this.previewData = response.preview;
+                this.showImportPreview(response.preview);
+            } else {
+                this.showImportError(response.message || 'Failed to parse master plan');
+            }
+        } catch (error) {
+            this.hideImportLoading();
+            this.showImportError('Error parsing master plan: ' + error.message);
+        }
+    }
+
+    showImportPreview(preview) {
+        document.querySelector('.import-section').style.display = 'none';
+        document.getElementById('previewSection').style.display = 'block';
+        
+        const previewContainer = document.getElementById('importPreview');
+        let html = '<div class="preview-summary">';
+        html += `<p><strong>Summary:</strong> ${preview.waypoints?.length || 0} waypoints, ${preview.projects?.length || 0} projects, ${preview.tasks?.length || 0} tasks</p>`;
+        html += '</div>';
+        
+        if (preview.waypoints) {
+            html += '<div class="preview-waypoints"><h5>Waypoints:</h5>';
+            preview.waypoints.forEach(wp => {
+                html += `<div class="preview-item">📍 ${wp.name}</div>`;
+            });
+            html += '</div>';
+        }
+        
+        if (preview.projects) {
+            html += '<div class="preview-projects"><h5>Projects:</h5>';
+            preview.projects.forEach(proj => {
+                html += `<div class="preview-item">📂 ${proj.name}</div>`;
+            });
+            html += '</div>';
+        }
+        
+        if (preview.tasks) {
+            html += '<div class="preview-tasks"><h5>Sample Tasks:</h5>';
+            preview.tasks.slice(0, 5).forEach(task => {
+                html += `<div class="preview-item">✓ ${task.title} (${task.priority} priority)</div>`;
+            });
+            if (preview.tasks.length > 5) {
+                html += `<div class="preview-item">... and ${preview.tasks.length - 5} more tasks</div>`;
+            }
+            html += '</div>';
+        }
+        
+        previewContainer.innerHTML = html;
+    }
+
+    async confirmMasterPlanImport() {
+        if (!this.previewData) {
+            this.showImportError('No preview data available');
+            return;
+        }
+
+        try {
+            this.showImportLoading('Importing tasks...');
+            
+            const response = await api.post('/import/confirm', {
+                preview_data: this.previewData
+            });
+
+            this.hideImportLoading();
+
+            if (response.status === 'success') {
+                this.showNotification(`Successfully imported ${response.imported_count} tasks!`);
+                this.hideMasterPlanModal();
+                await this.loadTasks(); // Refresh tasks
+            } else {
+                this.showImportError(response.message || 'Failed to import tasks');
+            }
+        } catch (error) {
+            this.hideImportLoading();
+            this.showImportError('Error importing tasks: ' + error.message);
+        }
+    }
+
+    showUploadSection() {
+        document.querySelector('.import-section').style.display = 'block';
+        document.getElementById('previewSection').style.display = 'none';
+        this.clearImportError();
+    }
+
+    resetMasterPlanModal() {
+        document.getElementById('masterPlanContent').value = '';
+        document.getElementById('masterPlanFileInput').value = '';
+        document.querySelector('.import-section').style.display = 'block';
+        document.getElementById('previewSection').style.display = 'none';
+        this.clearImportError();
+        this.previewData = null;
+    }
+
+    showImportError(message) {
+        const errorEl = document.getElementById('importError');
+        if (errorEl) {
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+        }
+    }
+
+    clearImportError() {
+        const errorEl = document.getElementById('importError');
+        if (errorEl) {
+            errorEl.style.display = 'none';
+            errorEl.textContent = '';
+        }
+    }
+
+    showImportLoading(message) {
+        const parseBtn = document.getElementById('parseMasterPlanBtn');
+        const confirmBtn = document.getElementById('confirmImportBtn');
+        
+        if (parseBtn) {
+            parseBtn.disabled = true;
+            parseBtn.textContent = message;
+        }
+        if (confirmBtn) {
+            confirmBtn.disabled = true;
+            confirmBtn.textContent = message;
+        }
+    }
+
+    hideImportLoading() {
+        const parseBtn = document.getElementById('parseMasterPlanBtn');
+        const confirmBtn = document.getElementById('confirmImportBtn');
+        
+        if (parseBtn) {
+            parseBtn.disabled = false;
+            parseBtn.textContent = 'Parse Master Plan';
+        }
+        if (confirmBtn) {
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = 'Import All Tasks';
+        }
+    }
+
     // Setup routing system
     setupRouting() {
         console.log('Setting up routing...');
@@ -942,6 +1192,10 @@ class HIVEApp {
         // Register routes
         router.register('/', () => {
             console.log('Dashboard route triggered');
+            // Show main dashboard
+            const mainContainer = document.querySelector('.main-container');
+            if (mainContainer) mainContainer.style.display = 'grid';
+            
             // Hide all page containers
             const taskContainer = document.getElementById('task-page-container');
             if (taskContainer) {
@@ -950,6 +1204,10 @@ class HIVEApp {
             const settingsContainer = document.getElementById('settings-page-container');
             if (settingsContainer) {
                 settingsContainer.style.display = 'none';
+            }
+            const importContainer = document.getElementById('import-page-container');
+            if (importContainer) {
+                importContainer.style.display = 'none';
             }
             // Restore body overflow to hidden for dashboard
             document.body.style.overflow = 'hidden';
@@ -1000,6 +1258,8 @@ class HIVEApp {
             console.log('Project detail route triggered with params:', params);
             // TODO: Implement project detail page
         });
+
+
         
         console.log('Router initialized:', router);
         

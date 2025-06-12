@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HIVE Skills Assessment</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="dark-theme.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            overflow: auto;
+        }
+
+        .assessment-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(78, 205, 196, 0.3);
+            text-align: center;
+        }
+
+        .assessment-header h1 {
+            color: #4ecdc4;
+            margin: 0;
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .assessment-header p {
+            color: #d0d0d0;
+            margin: 10px 0 0 0;
+            font-size: 16px;
+        }
+
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #4ecdc4;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 10px 20px;
+            border: 1px solid rgba(78, 205, 196, 0.3);
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            background: rgba(78, 205, 196, 0.1);
+            border-color: #4ecdc4;
+        }
+
+        /* Skill Assessment Styles */
+        .skill-assessment-page {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .assessment-welcome-section {
+            text-align: center;
+            margin: 60px 0;
+        }
+
+        .assessment-welcome-title {
+            font-size: 48px;
+            font-weight: 700;
+            color: #4ecdc4;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #4ecdc4 0%, #00b8a9 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .assessment-welcome-subtitle {
+            font-size: 20px;
+            color: #d0d0d0;
+            margin-bottom: 40px;
+        }
+
+        .assessment-start-button {
+            background: linear-gradient(135deg, #4ecdc4 0%, #00b8a9 100%);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(78, 205, 196, 0.3);
+        }
+
+        .assessment-start-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(78, 205, 196, 0.4);
+        }
+
+        .assessment-progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(78, 205, 196, 0.2);
+            border-radius: 2px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .assessment-progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #4ecdc4 0%, #00b8a9 100%);
+            border-radius: 2px;
+            transition: width 0.5s ease;
+        }
+
+        .assessment-chat-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 16px;
+            padding: 30px;
+            min-height: 500px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .assessment-chat-messages {
+            flex: 1;
+            margin-bottom: 30px;
+            min-height: 400px;
+            overflow-y: auto;
+        }
+
+        .assessment-message {
+            margin-bottom: 20px;
+            padding: 16px 20px;
+            border-radius: 12px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .assessment-message.hive {
+            background: rgba(78, 205, 196, 0.15);
+            border: 1px solid rgba(78, 205, 196, 0.3);
+            color: #ffffff;
+            margin-right: auto;
+        }
+
+        .assessment-message.user {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            margin-left: auto;
+        }
+
+        .assessment-typing-indicator {
+            display: none;
+            padding: 16px 20px;
+            background: rgba(78, 205, 196, 0.15);
+            border: 1px solid rgba(78, 205, 196, 0.3);
+            border-radius: 12px;
+            max-width: 80%;
+            margin-right: auto;
+            margin-bottom: 20px;
+        }
+
+        .assessment-typing-indicator span {
+            color: #4ecdc4;
+            font-weight: 600;
+        }
+
+        .assessment-typing-dots {
+            display: inline-flex;
+            margin-left: 10px;
+        }
+
+        .assessment-typing-dot {
+            width: 6px;
+            height: 6px;
+            background: #4ecdc4;
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .assessment-typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .assessment-typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(1); opacity: 0.5; }
+            40% { transform: scale(1.2); opacity: 1; }
+        }
+
+        .assessment-input-section {
+            display: flex;
+            gap: 12px;
+        }
+
+        .assessment-chat-input {
+            flex: 1;
+            padding: 16px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .assessment-chat-input:focus {
+            border-color: #4ecdc4;
+            box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.2);
+        }
+
+        .assessment-chat-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .assessment-send-button {
+            padding: 16px 20px;
+            background: linear-gradient(135deg, #4ecdc4 0%, #00b8a9 100%);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 60px;
+        }
+
+        .assessment-send-button:hover {
+            background: linear-gradient(135deg, #5dd4cd 0%, #00c4b3 100%);
+        }
+
+        .assessment-skill-tree {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 16px;
+            padding: 30px;
+            margin: 30px 0;
+        }
+
+        .assessment-skill-category {
+            margin-bottom: 30px;
+        }
+
+        .assessment-skill-category h3 {
+            color: #4ecdc4;
+            font-size: 20px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .assessment-skill-bar {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            height: 12px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        .assessment-skill-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #4ecdc4 0%, #00b8a9 100%);
+            border-radius: 10px;
+            transition: width 1s ease;
+        }
+
+        .assessment-skill-label {
+            color: #d0d0d0;
+            font-size: 14px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .assessment-export-section {
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .assessment-export-button,
+        .assessment-copy-button,
+        .assessment-back-button {
+            background: linear-gradient(135deg, #4ecdc4 0%, #00b8a9 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 0 10px 10px 0;
+            transition: all 0.3s ease;
+        }
+
+        .assessment-back-button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .assessment-export-button:hover,
+        .assessment-copy-button:hover {
+            background: linear-gradient(135deg, #5dd4cd 0%, #00c4b3 100%);
+        }
+
+        .assessment-back-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .assessment-export-info {
+            color: #d0d0d0;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+
+        .assessment-success-message {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            color: #81c784;
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back to Dashboard</a>
+    
+    <div class="assessment-header">
+        <h1>HIVE Skills Assessment</h1>
+        <p>Discover your unique capabilities and match with perfect tasks</p>
+    </div>
+
+    <div class="skill-assessment-page">
+        <div id="welcome-screen">
+            <div class="assessment-welcome-section">
+                <h1 class="assessment-welcome-title">Skill Assessment Protocol</h1>
+                <p class="assessment-welcome-subtitle">Let's discover your unique capabilities and match you with the perfect tasks</p>
+                <button class="assessment-start-button" id="startAssessmentBtn">Begin Assessment</button>
+            </div>
+        </div>
+
+        <div id="chat-screen" class="hidden">
+            <div class="assessment-progress-bar">
+                <div class="assessment-progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+            
+            <div class="assessment-chat-container">
+                <div class="assessment-chat-messages" id="chatMessages"></div>
+                <div class="assessment-typing-indicator" id="typingIndicator">
+                    <span>HIVE is analyzing</span>
+                    <div class="assessment-typing-dots">
+                        <div class="assessment-typing-dot"></div>
+                        <div class="assessment-typing-dot"></div>
+                        <div class="assessment-typing-dot"></div>
+                    </div>
+                </div>
+                <div class="assessment-input-section">
+                    <input type="text" class="assessment-chat-input" id="chatInput" placeholder="Share your response...">
+                    <button class="assessment-send-button" id="sendButton">➤</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="results-screen" class="hidden">
+            <div class="assessment-welcome-section">
+                <h1 class="assessment-welcome-title">Assessment Complete</h1>
+                <p class="assessment-welcome-subtitle">Your skill profile has been generated</p>
+            </div>
+            <div class="assessment-skill-tree" id="skillTree"></div>
+            <div class="assessment-export-section">
+                <button class="assessment-export-button" id="exportToSystemBtn">Save to Profile</button>
+                <button class="assessment-copy-button" id="copyDataBtn">Copy Data</button>
+                <button class="assessment-back-button" onclick="window.location.href='index.html'">Back to Dashboard</button>
+                <div class="assessment-export-info">
+                    Save your skill profile to your HIVE account or copy the data for external use
+                </div>
+                <div class="assessment-success-message" id="successMessage"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="skill-assessment-standalone.js"></script>
+</body>
+</html>

@@ -137,3 +137,6 @@ class HIVERouter {
 
 // Global router instance
 const router = new HIVERouter();
+
+// Make router available globally
+window.router = router;

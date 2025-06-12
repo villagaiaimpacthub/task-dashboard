@@ -43,18 +43,14 @@ class TaskPageManager {
 
     // Check if current user has access to task
     hasTaskAccess(task) {
-        const userId = this.app.currentUser?.id;
+        // For now, make all tasks public
+        return true;
         
-        // Owner has access
-        if (task.owner_id === userId) return true;
-        
-        // Assignee has access
-        if (task.assignee_id === userId) return true;
-        
-        // Team members have access (when we implement projects)
-        // TODO: Check project team membership
-        
-        return false;
+        // Future implementation for restricted access:
+        // const userId = this.app.currentUser?.id;
+        // if (task.owner_id === userId) return true;
+        // if (task.assignee_id === userId) return true;
+        // return false;
     }
 
     // Load task milestones

@@ -561,157 +561,6 @@ baselines = [
     }
 ]
 tasks = [
-    {
-        "id": "1",
-        "title": "Design Permaculture Garden",
-        "description": "Create a comprehensive design for a 2-acre permaculture garden focusing on food forest principles",
-        "status": "available",
-        "priority": "high",
-        "category": "Regenerative Ag",
-        "impact_points": 150,
-        "estimated_hours": "8-12 hours",
-        "location": "North America",
-        "team_size": "3-5",
-        "due_date": "2 weeks",
-        "required_skills": ["Permaculture Design", "Ecological Systems", "CAD"],
-        # TaskMaster enhanced fields
-        "type": "protocol_core",
-        "protocol_id": "protocol-2",  # HIVE protocol
-        "client_id": "client-1",     # EcoVillage Network
-        "sprint_goal": "Establish regenerative agriculture foundations for Q2",
-        "okr_alignment_score": 0.85,  # High alignment with Regenerative Systems OKR
-        "estimated_hours_numeric": 10,  # For capacity calculations
-        "definition_of_done": [
-            {"id": 1, "text": "Site analysis completed with soil and water assessments", "completed": True},
-            {"id": 2, "text": "Plant guild relationships mapped out", "completed": True}, 
-            {"id": 3, "text": "CAD drawings finalized with measurements", "completed": False},
-            {"id": 4, "text": "Cost estimate and timeline provided", "completed": False},
-            {"id": 5, "text": "Sustainability impact assessment completed", "completed": False}
-        ],
-        "milestones": [
-            {
-                "id": "m1",
-                "task_id": "1",
-                "title": "Site Analysis & Research",
-                "description": "Complete comprehensive site analysis including soil testing, water assessment, and microclimate evaluation",
-                "dod_alignment": "High Alignment",
-                "okr_alignment": "High Alignment", 
-                "prime_directive_alignment": "High Alignment",
-                "deadline": "2025-06-14",
-                "acceptance_criteria": [
-                    "Soil pH tested at 5+ locations across site",
-                    "Water table depth and quality assessed",
-                    "Existing vegetation cataloged with native species identified",
-                    "Sun patterns mapped for all seasons",
-                    "Slope and drainage patterns documented"
-                ],
-                "completed": True,
-                "files": [
-                    {"id": "f1", "name": "soil-analysis.pdf", "type": "application/pdf", "size": 234567},
-                    {"id": "f2", "name": "site-photos.zip", "type": "application/zip", "size": 1234567}
-                ],
-                "help_requests": [],
-                "created_at": "2025-06-07T10:00:00Z",
-                "updated_at": "2025-06-09T14:30:00Z"
-            },
-            {
-                "id": "m2", 
-                "task_id": "1",
-                "title": "Design Guild Relationships",
-                "description": "Map out plant guild relationships that support biodiversity and natural ecosystem functions",
-                "dod_alignment": "High Alignment",
-                "okr_alignment": "Medium Alignment",
-                "prime_directive_alignment": "High Alignment", 
-                "deadline": "2025-06-18",
-                "acceptance_criteria": [
-                    "Primary guilds designed around fruit trees",
-                    "Nitrogen-fixing plants integrated throughout",
-                    "Beneficial insect habitat zones planned",
-                    "Companion planting relationships documented",
-                    "Succession planning for 10+ year timeline"
-                ],
-                "completed": True,
-                "files": [
-                    {"id": "f3", "name": "guild-map.pdf", "type": "application/pdf", "size": 445678}
-                ],
-                "help_requests": [],
-                "created_at": "2025-06-07T10:00:00Z",
-                "updated_at": "2025-06-09T16:45:00Z"
-            },
-            {
-                "id": "m3",
-                "task_id": "1", 
-                "title": "CAD Design & Technical Documentation",
-                "description": "Create detailed CAD drawings with precise measurements and technical specifications",
-                "dod_alignment": "Medium Alignment",
-                "okr_alignment": "High Alignment",
-                "prime_directive_alignment": "Medium Alignment",
-                "deadline": "2025-06-21",
-                "acceptance_criteria": [
-                    "Scale drawings completed at 1:100 and 1:500",
-                    "All plantings positioned with GPS coordinates", 
-                    "Infrastructure elements (paths, water, structures) detailed",
-                    "Planting timeline and phases documented",
-                    "Material quantities and sourcing specified"
-                ],
-                "completed": False,
-                "files": [],
-                "help_requests": [
-                    {
-                        "id": "hr1",
-                        "requester_id": "user1",
-                        "requester_name": "Alice",
-                        "reason": "Need help with CAD software - looking for someone experienced with AutoCAD or similar for technical drawings",
-                        "status": "open",
-                        "urgency": "medium",
-                        "created_at": "2025-06-09T09:30:00Z"
-                    }
-                ],
-                "created_at": "2025-06-07T10:00:00Z",
-                "updated_at": "2025-06-09T09:30:00Z"
-            }
-        ],
-        "owner_id": "user1",
-        "assignee_id": None,
-        "created_at": "2025-06-07T10:00:00Z",
-        "updated_at": "2025-06-07T10:00:00Z"
-    },
-    {
-        "id": "2", 
-        "title": "Solar Panel Efficiency Analysis",
-        "description": "Analyze efficiency data from 50 solar installations to identify optimization opportunities",
-        "status": "in_progress",
-        "priority": "urgent",
-        "category": "Clean Energy",
-        "impact_points": 200,
-        "estimated_hours": "4-6 hours",
-        "location": "Global",
-        "team_size": "2-3",
-        "due_date": "3 days",
-        "required_skills": ["Data Analysis", "Solar Technology", "Python"],
-        "owner_id": "user2",
-        "assignee_id": "user1",
-        "created_at": "2025-06-06T14:30:00Z",
-        "updated_at": "2025-06-07T09:15:00Z"
-    },
-    {
-        "id": "3",
-        "title": "Ocean Plastic Cleanup Strategy",
-        "description": "Develop a community-based strategy for coastal plastic cleanup and prevention",
-        "status": "available",
-        "priority": "medium",
-        "category": "Ocean Health",
-        "impact_points": 120,
-        "estimated_hours": "6-8 hours",
-        "location": "Coastal Regions",
-        "team_size": "4-6",
-        "due_date": "1 week",
-        "required_skills": ["Environmental Science", "Community Organizing", "Project Management"],
-        "owner_id": "user3",
-        "assignee_id": None,
-        "created_at": "2025-06-05T16:45:00Z",
-        "updated_at": "2025-06-05T16:45:00Z"
-    }
 ]
 
 users = [
@@ -787,7 +636,7 @@ class CORSHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 "completed_tasks": len([t for t in tasks if t["status"] == "completed"]),
                 "total_users": len(users),
                 "online_users": len([u for u in users if u["is_online"]]),
-                "total_impact_points": sum(t["impact_points"] for t in tasks)
+                "total_impact_points": sum(t.get("impact_points", 0) for t in tasks)
             }
             self.send_json_response(summary)
         elif path == '/api/v1/users/online':
@@ -1984,6 +1833,12 @@ class CORSHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 },
                 "analysis_date": datetime.now().isoformat() + "Z"
             })
+        elif path == '/api/v1/waypoints':
+            # Get all waypoints
+            if 'waypoints' in globals():
+                self.send_json_response(waypoints)
+            else:
+                self.send_json_response([])
         else:
             self.send_error(404, "Endpoint not found")
 
@@ -2416,6 +2271,265 @@ class CORSHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                     })
             
             self.send_json_response(capacity_summary)
+        elif path == '/api/v1/import/master-plan':
+            # Import master plan from uploaded file
+            try:
+                # Import the parser module
+                from master_plan_parser import MasterPlanParser, validate_master_plan
+                
+                # Get the content and format
+                content = data.get("content", "")
+                file_format = data.get("format", "markdown")
+                
+                # Validate content
+                errors = validate_master_plan(content)
+                if errors:
+                    self.send_json_response({
+                        "status": "error",
+                        "errors": errors
+                    }, 400)
+                    return
+                
+                # Parse the master plan
+                parser = MasterPlanParser()
+                
+                if file_format == "markdown":
+                    result = parser.parse_markdown(content)
+                else:
+                    self.send_json_response({
+                        "status": "error",
+                        "message": f"Unsupported format: {file_format}"
+                    }, 400)
+                    return
+                
+                # Store the parsed data in session for preview
+                global master_plan_preview
+                master_plan_preview = result
+                
+                self.send_json_response({
+                    "status": "success",
+                    "preview": result,
+                    "message": "Master plan parsed successfully"
+                })
+                
+            except ImportError:
+                self.send_json_response({
+                    "status": "error",
+                    "message": "Master plan parser module not found. Please ensure master_plan_parser.py is installed."
+                }, 500)
+            except Exception as e:
+                self.send_json_response({
+                    "status": "error",
+                    "message": f"Error parsing master plan: {str(e)}"
+                }, 500)
+                
+        elif path == '/api/v1/import/confirm':
+            # Confirm and execute the master plan import
+            try:
+                if 'master_plan_preview' not in globals() or not master_plan_preview:
+                    self.send_json_response({
+                        "status": "error",
+                        "message": "No master plan preview available. Please parse a master plan first."
+                    }, 400)
+                    return
+                
+                # Import the parsed data
+                imported_counts = {
+                    "waypoints": 0,
+                    "projects": 0,
+                    "tasks": 0,
+                    "subtasks": 0,
+                    "milestones": 0
+                }
+                
+                # Process waypoints (store them in a global variable for now)
+                global waypoints
+                if 'waypoints' not in globals():
+                    waypoints = []
+                    
+                for wp in master_plan_preview.get("waypoints", []):
+                    waypoints.append(wp)
+                    imported_counts["waypoints"] += 1
+                
+                # Process projects (convert to client_projects format)
+                for proj in master_plan_preview.get("projects", []):
+                    new_project = {
+                        "id": proj["id"],
+                        "name": proj["name"],
+                        "description": proj["description"],
+                        "type": "masterplan_project",
+                        "status": "planning",
+                        "waypoint_id": proj.get("waypoint_id"),
+                        "definition_of_done": proj["definition_of_done"],
+                        "suggested_okrs": proj.get("suggested_okrs", []),
+                        "created_at": datetime.now().isoformat() + "Z",
+                        "updated_at": datetime.now().isoformat() + "Z"
+                    }
+                    client_projects.append(new_project)
+                    imported_counts["projects"] += 1
+                
+                # Process tasks
+                for parsed_task in master_plan_preview.get("tasks", []):
+                    # Find any subtasks for this task
+                    task_subtasks = [st for st in master_plan_preview.get("subtasks", []) 
+                                   if st["parent_task_id"] == parsed_task["id"]]
+                    
+                    # If task has subtasks, create parent task with subtasks
+                    if task_subtasks:
+                        # Create parent task
+                        parent_task = {
+                            "id": parsed_task["id"],
+                            "title": parsed_task["title"],
+                            "description": parsed_task["description"],
+                            "status": "available",
+                            "priority": "medium",
+                            "category": "Masterplan Import",
+                            "type": "protocol_core",
+                            "project_id": parsed_task["project_id"],
+                            "complexity_score": parsed_task.get("complexity_score", 5),
+                            "estimated_hours": parsed_task.get("estimated_hours", ""),
+                            "dependencies": parsed_task.get("dependencies", []),
+                            "impact_points": 100,  # Default impact points for imported tasks
+                            "has_subtasks": True,
+                            "subtask_ids": [st["id"] for st in task_subtasks],
+                            "milestones": [],
+                            "definition_of_done": [],
+                            "owner_id": None,
+                            "assignee_id": None,
+                            "created_at": datetime.now().isoformat() + "Z",
+                            "updated_at": datetime.now().isoformat() + "Z"
+                        }
+                        tasks.append(parent_task)
+                        imported_counts["tasks"] += 1
+                        
+                        # Create subtasks
+                        for subtask in task_subtasks:
+                            sub = {
+                                "id": subtask["id"],
+                                "title": subtask["title"],
+                                "description": subtask["description"],
+                                "status": "available",
+                                "priority": "medium",
+                                "category": "Masterplan Import",
+                                "type": "protocol_core",
+                                "project_id": parsed_task["project_id"],
+                                "parent_task_id": subtask["parent_task_id"],
+                                "order": subtask["order"],
+                                "complexity_score": 3,  # Subtasks should be simpler
+                                "impact_points": 50,  # Lower impact points for subtasks
+                                "milestones": [],
+                                "definition_of_done": [],
+                                "owner_id": None,
+                                "assignee_id": None,
+                                "created_at": datetime.now().isoformat() + "Z",
+                                "updated_at": datetime.now().isoformat() + "Z"
+                            }
+                            tasks.append(sub)
+                            imported_counts["subtasks"] += 1
+                    else:
+                        # Create regular task
+                        new_task = {
+                            "id": parsed_task["id"],
+                            "title": parsed_task["title"],
+                            "description": parsed_task["description"],
+                            "status": "available",
+                            "priority": "medium",
+                            "category": "Masterplan Import",
+                            "type": "protocol_core",
+                            "project_id": parsed_task["project_id"],
+                            "complexity_score": parsed_task.get("complexity_score", 5),
+                            "estimated_hours": parsed_task.get("estimated_hours", ""),
+                            "dependencies": parsed_task.get("dependencies", []),
+                            "impact_points": 100,  # Default impact points for imported tasks
+                            "milestones": [],
+                            "definition_of_done": [],
+                            "owner_id": None,
+                            "assignee_id": None,
+                            "created_at": datetime.now().isoformat() + "Z",
+                            "updated_at": datetime.now().isoformat() + "Z"
+                        }
+                        tasks.append(new_task)
+                        imported_counts["tasks"] += 1
+                
+                # Process milestones and add to tasks
+                for milestone in master_plan_preview.get("milestones", []):
+                    task = next((t for t in tasks if t["id"] == milestone["task_id"]), None)
+                    if task:
+                        new_milestone = {
+                            "id": milestone["id"],
+                            "task_id": milestone["task_id"],
+                            "title": milestone["title"],
+                            "description": milestone["description"],
+                            "order": milestone["order"],
+                            "acceptance_criteria": milestone["acceptance_criteria"],
+                            "completed": False,
+                            "files": [],
+                            "help_requests": [],
+                            "created_at": datetime.now().isoformat() + "Z",
+                            "updated_at": datetime.now().isoformat() + "Z"
+                        }
+                        if "milestones" not in task:
+                            task["milestones"] = []
+                        task["milestones"].append(new_milestone)
+                        imported_counts["milestones"] += 1
+                
+                # Clear the preview
+                master_plan_preview = None
+                
+                self.send_json_response({
+                    "status": "success",
+                    "message": "Master plan imported successfully",
+                    "imported": imported_counts
+                })
+                
+            except Exception as e:
+                self.send_json_response({
+                    "status": "error",
+                    "message": f"Error importing master plan: {str(e)}"
+                }, 500)
+                
+        elif path == '/api/v1/users/skills':
+            # Save user skill assessment data
+            try:
+                # For now, store in users_database
+                user_id = data.get('userId') or 'user1'  # Default user for demo
+                user = next((u for u in users_database if u["id"] == user_id), None)
+                
+                if not user:
+                    # Create user if doesn't exist
+                    user = {
+                        "id": user_id,
+                        "email": f"{user_id}@hive.com",
+                        "role": "Community Member",
+                        "permissions": ["task.view", "comment.create"],
+                        "status": "active",
+                        "created_at": datetime.now().isoformat() + "Z"
+                    }
+                    users_database.append(user)
+                
+                # Update user with skill data
+                user["skills"] = data.get("skills", [])
+                user["skillProfile"] = data.get("skillProfile", {})
+                user["lastAssessment"] = data.get("assessmentData", {})
+                user["updated_at"] = datetime.now().isoformat() + "Z"
+                
+                self.send_json_response({
+                    "success": True,
+                    "message": "Skills saved successfully",
+                    "user": user
+                })
+                
+            except Exception as e:
+                self.send_json_response({
+                    "success": False,
+                    "message": f"Error saving skills: {str(e)}"
+                }, 500)
+        elif path == '/api/v1/waypoints':
+            # Get all waypoints
+            if 'waypoints' in globals():
+                self.send_json_response(waypoints)
+            else:
+                self.send_json_response([])
         else:
             self.send_error(404, "Endpoint not found")
 
@@ -2517,6 +2631,9 @@ def run_server():
         print(f"   GET  /api/v1/files/download/{{file_id}}")
         print(f"   DELETE /api/v1/files/{{file_id}}")
         print(f"   POST /api/v1/help-requests/")
+        print(f"   POST /api/v1/import/master-plan")
+        print(f"   POST /api/v1/import/confirm")
+        print(f"   GET  /api/v1/waypoints")
         print(f"")
         print(f"💡 Note: This is a simplified backend using only Python stdlib")
         print(f"   Real-time WebSocket features are not available")
