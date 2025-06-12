@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional, List, Union
 
 
 class TaskCreate(BaseModel):
@@ -15,6 +15,10 @@ class TaskCreate(BaseModel):
     team_size: Optional[str] = None
     due_date: Optional[str] = None
     required_skills: Optional[List[str]] = []
+    dependencies: Optional[List[str]] = []
+    definition_of_done: Optional[str] = None
+    success_metrics: Optional[Union[str, List[str]]] = None
+    deliverables: Optional[Union[str, List[str]]] = None
 
 
 class TaskUpdate(BaseModel):
@@ -29,6 +33,10 @@ class TaskUpdate(BaseModel):
     team_size: Optional[str] = None
     due_date: Optional[str] = None
     required_skills: Optional[List[str]] = None
+    dependencies: Optional[List[str]] = None
+    definition_of_done: Optional[str] = None
+    success_metrics: Optional[Union[str, List[str]]] = None
+    deliverables: Optional[Union[str, List[str]]] = None
 
 
 class TaskAssign(BaseModel):
@@ -52,6 +60,10 @@ class TaskResponse(BaseModel):
     team_size: Optional[str]
     due_date: Optional[str]
     required_skills: List[str]
+    dependencies: List[str]
+    definition_of_done: Optional[str]
+    success_metrics: Optional[Union[str, List[str]]]
+    deliverables: Optional[Union[str, List[str]]]
     owner_id: UUID
     assignee_id: Optional[UUID]
     created_at: datetime

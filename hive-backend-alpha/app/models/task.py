@@ -18,6 +18,10 @@ class Task(BaseModel):
     team_size = Column(String, nullable=True)  # e.g., "3-5"
     due_date = Column(String, nullable=True)  # e.g., "3 days", "1 week"
     required_skills = Column(JSON, default=list)  # List of skill strings
+    dependencies = Column(JSON, default=list)  # List of dependency strings
+    definition_of_done = Column(Text, nullable=True)  # Definition of done criteria
+    success_metrics = Column(JSON, nullable=True)  # Success metrics (string or list)
+    deliverables = Column(JSON, nullable=True)  # Deliverables (string or list)
     owner_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     assignee_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     

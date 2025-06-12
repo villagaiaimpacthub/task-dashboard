@@ -14,6 +14,18 @@ async def create_task(db: AsyncSession, task_create: TaskCreate, owner: User) ->
     task = Task(
         title=task_create.title,
         description=task_create.description,
+        priority=task_create.priority,
+        category=task_create.category,
+        impact_points=task_create.impact_points,
+        estimated_hours=task_create.estimated_hours,
+        location=task_create.location,
+        team_size=task_create.team_size,
+        due_date=task_create.due_date,
+        required_skills=task_create.required_skills,
+        dependencies=task_create.dependencies,
+        definition_of_done=task_create.definition_of_done,
+        success_metrics=task_create.success_metrics,
+        deliverables=task_create.deliverables,
         owner_id=owner.id
     )
     db.add(task)
