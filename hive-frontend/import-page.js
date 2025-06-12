@@ -171,9 +171,9 @@ Task details..." rows="10"></textarea>
         }
 
         // Preview actions
-        const backBtn = document.getElementById('back-to-upload');
-        if (backBtn) {
-            backBtn.addEventListener('click', () => {
+        const backToUploadBtn = document.getElementById('back-to-upload');
+        if (backToUploadBtn) {
+            backToUploadBtn.addEventListener('click', () => {
                 this.showStep('upload-step');
                 this.previewData = null;
             });
@@ -332,6 +332,12 @@ Task details..." rows="10"></textarea>
                                 </span>
                             ` : ''}
                             <div class="preview-description">${this.truncate(task.description, 100)}</div>
+                            <div class="preview-metadata">
+                                ${task.category ? `<span class="preview-tag">Category: ${task.category}</span>` : ''}
+                                ${task.required_skills && task.required_skills.length > 0 ? `<span class="preview-tag">Skills: ${task.required_skills.length} required</span>` : ''}
+                                ${task.dependencies && task.dependencies.length > 0 ? `<span class="preview-tag">Dependencies: ${task.dependencies.length}</span>` : ''}
+                                ${task.definition_of_done ? `<span class="preview-tag">DoD: Defined</span>` : ''}
+                            </div>
                             ${subtasks && subtasks.filter(st => st.parent_task_id === task.id).length > 0 ? `
                                 <span class="preview-meta">
                                     ${subtasks.filter(st => st.parent_task_id === task.id).length} subtasks
@@ -360,10 +366,13 @@ Task details..." rows="10"></textarea>
         try {
             this.showLoading('Importing master plan...');
             
-            const response = await api.post('/import/confirm', {});
+            // Send the preview data to the backend
+            const response = await api.post('/import/confirm', {
+                preview_data: this.previewData
+            });
 
             if (response.status === 'success') {
-                this.showImportSuccess(response.imported);
+                this.showImportSuccess(response.imported_count || 0);
                 this.showStep('success-step');
             } else {
                 this.showError(response.message || 'Failed to import master plan');
@@ -375,18 +384,27 @@ Task details..." rows="10"></textarea>
         }
     }
 
-    showImportSuccess(imported) {
+    showImportSuccess(importedCount) {
         const summaryEl = document.getElementById('import-summary');
         if (!summaryEl) return;
+
+        // Calculate counts from preview data if available
+        const counts = {
+            waypoints: this.previewData?.waypoints?.length || 0,
+            projects: this.previewData?.projects?.length || 0,
+            tasks: importedCount || 0,
+            subtasks: this.previewData?.subtasks?.length || 0,
+            milestones: this.previewData?.milestones?.length || 0
+        };
 
         summaryEl.innerHTML = `
             <h3>Successfully Imported:</h3>
             <ul class="import-results">
-                ${imported.waypoints > 0 ? `<li>${imported.waypoints} waypoints</li>` : ''}
-                ${imported.projects > 0 ? `<li>${imported.projects} projects</li>` : ''}
-                ${imported.tasks > 0 ? `<li>${imported.tasks} tasks</li>` : ''}
-                ${imported.subtasks > 0 ? `<li>${imported.subtasks} subtasks</li>` : ''}
-                ${imported.milestones > 0 ? `<li>${imported.milestones} milestones</li>` : ''}
+                ${counts.waypoints > 0 ? `<li>${counts.waypoints} waypoints</li>` : ''}
+                ${counts.projects > 0 ? `<li>${counts.projects} projects</li>` : ''}
+                ${counts.tasks > 0 ? `<li>${counts.tasks} tasks</li>` : ''}
+                ${counts.subtasks > 0 ? `<li>${counts.subtasks} subtasks</li>` : ''}
+                ${counts.milestones > 0 ? `<li>${counts.milestones} milestones</li>` : ''}
             </ul>
         `;
     }

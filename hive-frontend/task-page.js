@@ -470,9 +470,12 @@ class TaskPageManager {
                 <span class="metadata-label">📊 Success Metrics</span>
                 <div class="metadata-value">
                     ${task.success_metrics ? 
-                        `<ul class="metrics-list">
-                            ${task.success_metrics.map(metric => `<li>${metric}</li>`).join('')}
-                        </ul>` :
+                        (Array.isArray(task.success_metrics) ? 
+                            `<ul class="metrics-list">
+                                ${task.success_metrics.map(metric => `<li>${metric}</li>`).join('')}
+                            </ul>` :
+                            `<div class="metrics-text">${task.success_metrics}</div>`
+                        ) :
                         '<span class="no-metrics">Success metrics not defined</span>'
                     }
                 </div>
@@ -482,10 +485,23 @@ class TaskPageManager {
                 <span class="metadata-label">📦 Deliverables</span>
                 <div class="metadata-value">
                     ${task.deliverables ? 
-                        `<ul class="deliverables-list">
-                            ${task.deliverables.map(deliverable => `<li>${deliverable}</li>`).join('')}
-                        </ul>` :
+                        (Array.isArray(task.deliverables) ? 
+                            `<ul class="deliverables-list">
+                                ${task.deliverables.map(deliverable => `<li>${deliverable}</li>`).join('')}
+                            </ul>` :
+                            `<div class="deliverables-text">${task.deliverables}</div>`
+                        ) :
                         '<span class="no-deliverables">Deliverables not specified</span>'
+                    }
+                </div>
+            </div>
+
+            <div class="metadata-item">
+                <span class="metadata-label">✅ Definition of Done</span>
+                <div class="metadata-value">
+                    ${task.definition_of_done ? 
+                        `<div class="dod-text">${task.definition_of_done}</div>` :
+                        '<span class="no-dod">Definition of done not specified</span>'
                     }
                 </div>
             </div>
