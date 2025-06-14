@@ -1,4 +1,5 @@
 from sqlalchemy import Column, String, Boolean, Integer, JSON
+from sqlalchemy.orm import relationship
 from passlib.context import CryptContext
 from .base import BaseModel
 
@@ -16,6 +17,10 @@ class User(BaseModel):
     skills = Column(JSON, default=list)  # List of user's skills
     role = Column(String, nullable=True)  # e.g., "Ecosystem Designer", "Data Analyst"
     status = Column(String, default="available")  # available, busy
+    
+    # Relationships
+    owned_projects = relationship("Project", foreign_keys="Project.owner_id", back_populates="owner")
+    assigned_projects = relationship("Project", foreign_keys="Project.assignee_id", back_populates="assignee")
     
     def set_password(self, password: str):
         self.hashed_password = pwd_context.hash(password)

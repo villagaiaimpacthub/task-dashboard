@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Milestones & Definition of Done</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            background: linear-gradient(45deg, #4ade80, #22d3ee);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #22c55e, #16a34a);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(34, 197, 94, 0.3);
+        }
+
+        .progress-section {
+            margin-bottom: 40px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .progress-header h2 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+
+        .progress-stats {
+            display: flex;
+            gap: 24px;
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .stat-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .completed { background: #22c55e; }
+        .pending { background: #f59e0b; }
+
+        .milestone-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .milestone-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(34, 197, 94, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .milestone-card.completed {
+            border-left: 4px solid #22c55e;
+            background: rgba(34, 197, 94, 0.08);
+        }
+
+        .milestone-card.completed::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #22c55e, #16a34a);
+        }
+
+        .milestone-header {
+            display: flex;
+            justify-content: between;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+
+        .milestone-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .milestone-icon.completed {
+            background: #22c55e;
+            color: white;
+        }
+
+        .milestone-icon.pending {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .milestone-content {
+            flex: 1;
+        }
+
+        .milestone-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+
+        .milestone-description {
+            font-size: 14px;
+            color: #94a3b8;
+            line-height: 1.5;
+        }
+
+        .milestone-actions {
+            display: flex;
+            gap: 8px;
+            margin-left: auto;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #e2e8f0;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-help {
+            background: linear-gradient(45deg, #f59e0b, #d97706);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-help:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+
+        .definition-section {
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #e2e8f0;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-icon {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(45deg, #22c55e, #16a34a);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .definition-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .definition-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .definition-card:hover {
+            border-color: rgba(34, 197, 94, 0.3);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .definition-card.empty {
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 120px;
+            cursor: pointer;
+        }
+
+        .definition-card.empty:hover {
+            border-color: #22c55e;
+            background: rgba(34, 197, 94, 0.05);
+        }
+
+        .definition-number {
+            font-size: 12px;
+            font-weight: 600;
+            color: #22c55e;
+            background: rgba(34, 197, 94, 0.1);
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+
+        .definition-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+
+        .empty-state {
+            color: #64748b;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .add-icon {
+            color: #22c55e;
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .files-section {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        .files-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .upload-area {
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: #22c55e;
+            background: rgba(34, 197, 94, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: #64748b;
+            margin-bottom: 16px;
+        }
+
+        .upload-text {
+            color: #94a3b8;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .upload-subtext {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 16px;
+                align-items: stretch;
+            }
+            
+            .progress-stats {
+                justify-content: center;
+            }
+            
+            .definition-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .milestone-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .milestone-actions {
+                margin-left: 0;
+                margin-top: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Milestones & Definition of Done</h1>
+            <button class="btn-primary" onclick="addMilestone()">
+                <span>➕</span>
+                Add Milestone
+            </button>
+        </div>
+
+        <div class="progress-section">
+            <div class="progress-header">
+                <h2>Current Progress</h2>
+                <div class="progress-stats">
+                    <div class="stat">
+                        <div class="stat-dot completed"></div>
+                        <span>1 Completed</span>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-dot pending"></div>
+                        <span>3 Pending</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="milestone-card completed">
+                <div class="milestone-header">
+                    <div class="milestone-icon completed">✓</div>
+                    <div class="milestone-content">
+                        <div class="milestone-title">Site Analysis Completed</div>
+                        <div class="milestone-description">Comprehensive soil and water assessments have been successfully completed with detailed environmental impact reports.</div>
+                    </div>
+                    <div class="milestone-actions">
+                        <button class="btn-help" onclick="requestHelp()">
+                            💬 Need Help
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="definition-section">
+            <h2 class="section-title">
+                <div class="section-icon">📋</div>
+                Definition of Done Framework
+            </h2>
+            
+            <div class="definition-grid">
+                <div class="definition-card empty" onclick="defineFoundation()">
+                    <div class="add-icon">➕</div>
+                    <div class="definition-number">STEP 1</div>
+                    <div class="definition-title">Prime Directive Foundation</div>
+                    <div class="empty-state">Click to define your project's core principles and primary objectives</div>
+                </div>
+
+                <div class="definition-card empty" onclick="defineOKR()">
+                    <div class="add-icon">➕</div>
+                    <div class="definition-number">STEP 2</div>
+                    <div class="definition-title">OKR Direction</div>
+                    <div class="empty-state">Set measurable objectives and key results for success tracking</div>
+                </div>
+
+                <div class="definition-card empty" onclick="defineScope()">
+                    <div class="add-icon">➕</div>
+                    <div class="definition-number">STEP 3</div>
+                    <div class="definition-title">DoD Scope</div>
+                    <div class="empty-state">Define specific completion criteria and acceptance standards</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="files-section">
+            <div class="files-header">
+                <h2 class="section-title">
+                    <div class="section-icon">📁</div>
+                    Proof of Work Files
+                </h2>
+                <button class="btn-primary" onclick="uploadFiles()">
+                    <span>📤</span>
+                    Upload Files
+                </button>
+            </div>
+            
+            <div class="upload-area" onclick="uploadFiles()">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">Drag and drop files here or click to browse</div>
+                <div class="upload-subtext">Support for PDFs, images, documents, and spreadsheets</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function addMilestone() {
+            alert('Add Milestone functionality would open a modal or form');
+        }
+
+        function requestHelp() {
+            alert('Help system activated - connecting to support team');
+        }
+
+        function defineFoundation() {
+            alert('Prime Directive Foundation editor would open');
+        }
+
+        function defineOKR() {
+            alert('OKR Direction setup would open');
+        }
+
+        function defineScope() {
+            alert('DoD Scope definition editor would open');
+        }
+
+        function uploadFiles() {
+            alert('File upload dialog would open');
+        }
+
+        // Add hover effects and animations
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.milestone-card, .definition-card');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-4px)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

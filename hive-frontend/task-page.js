@@ -11,6 +11,53 @@ class TaskPageManager {
     // Show task page
     async showTaskPage(taskId) {
         try {
+            // Hide the dashboard layout immediately to prevent flash
+            const mainContainer = document.querySelector('.main-container');
+            if (mainContainer) {
+                mainContainer.style.display = 'none';
+            }
+            
+            // Show loading state in task container
+            let taskContainer = document.getElementById('task-page-container');
+            if (!taskContainer) {
+                taskContainer = document.createElement('div');
+                taskContainer.id = 'task-page-container';
+                document.body.appendChild(taskContainer);
+            }
+            taskContainer.style.display = 'block';
+            taskContainer.innerHTML = `
+                <div style="
+                    display: flex; 
+                    align-items: center; 
+                    justify-content: center; 
+                    height: 100vh; 
+                    color: #ffffff; 
+                    font-size: 18px;
+                    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+                    flex-direction: column;
+                    gap: 16px;
+                ">
+                    <div style="
+                        width: 40px;
+                        height: 40px;
+                        border: 3px solid rgba(78, 205, 196, 0.3);
+                        border-top: 3px solid #4ecdc4;
+                        border-radius: 50%;
+                        animation: spin 1s linear infinite;
+                    "></div>
+                    <div>Loading task...</div>
+                </div>
+                <style>
+                    @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                    }
+                </style>
+            `;
+            
+            // Enable scrolling on body when showing task page
+            document.body.style.overflow = 'auto';
+            
             // Load task data
             this.currentTask = await api.getTask(taskId);
             
@@ -115,133 +162,81 @@ class TaskPageManager {
     renderTaskPage() {
         const task = this.currentTask;
         
+        // Update page title
+        document.title = `${task.title} - HIVE Task`;
+        
         const taskPageHTML = `
             <div class="task-page">
                 <!-- Task Header -->
-                <div class="task-header">
-                    <button class="back-btn" onclick="router.navigate('/')">← Back to Dashboard</button>
-                    <div class="task-title-section">
-                        <h1 class="task-title">${task.title}</h1>
-                        <div class="task-meta">
-                            <span class="task-status status-${task.status}">${task.status}</span>
-                            <span class="task-priority priority-${task.priority}">${task.priority}</span>
-                            <span class="task-category">${task.category}</span>
+                <div class="project-header">
+                    <button onclick="router.navigate('/')" class="back-btn">← Back to Dashboard</button>
+                    <div class="project-title-section">
+                        <h1 class="editable-field" onclick="taskPageManager.makeEditable(this, 'title')" title="Click to edit title">${task.title}</h1>
+                        <div class="project-meta">
+                            <span class="priority priority-${task.priority} editable-field" onclick="taskPageManager.makeEditable(this, 'priority')" title="Click to edit priority">${task.priority}</span>
+                            <span class="status status-${task.status} editable-field" onclick="taskPageManager.makeEditable(this, 'status')" title="Click to edit status">${task.status}</span>
+                            <span class="category editable-field" onclick="taskPageManager.makeEditable(this, 'category')" title="Click to edit category">${task.category || 'General Development'}</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Task Content -->
-                <div class="task-content">
-                    <!-- Left Column: Milestones -->
-                    <div class="task-left-column">
-                        <div class="task-description">
-                            <h3>Description</h3>
-                            <p>${task.description}</p>
+                <div class="project-content" style="background: transparent !important;">
+                    <!-- Left Column: Milestones and Comments -->
+                    <div class="project-tasks">
+                        <div class="tasks-header">
+                            <h3>Milestones & Definition of Done</h3>
+                            <button class="create-btn" onclick="taskPageManager.showCreateMilestoneForm()">
+                                + Add Milestone
+                            </button>
                         </div>
-
-                        <div class="task-metadata-section">
-                            <h3>Task Details & Metadata</h3>
-                            <div class="metadata-grid">
-                                ${this.renderTaskMetadata()}
-                            </div>
-                        </div>
-
-                        <div class="milestones-section">
-                            <div class="milestones-header">
-                                <h3>Milestones & Definition of Done</h3>
-                                <button class="create-milestone-btn" onclick="taskPageManager.showCreateMilestoneForm()">
-                                    ➕ Add Milestone
-                                </button>
-                            </div>
-                            
-                            <div class="milestone-creation-form" id="milestoneCreationForm" style="display: none;">
-                                <h4>Create New Milestone</h4>
+                        
+                        <div class="milestone-creation-form" id="milestoneCreationForm" style="display: none;">
+                            <div style="background: rgba(68, 68, 68, 0.15); border-radius: 12px; padding: 24px; border: 1px solid rgba(68, 68, 68, 0.3); margin-bottom: 20px;">
+                                <h4 style="margin-bottom: 20px; color: #ffffff; font-size: 18px;">Create New Milestone</h4>
                                 <form id="newMilestoneForm" onsubmit="taskPageManager.handleCreateMilestone(event)">
-                                    <div class="form-group">
-                                        <label for="milestoneTitle">Milestone Title*</label>
-                                        <input type="text" id="milestoneTitle" placeholder="e.g., Complete site analysis and soil testing" required>
+                                    <div style="margin-bottom: 20px;">
+                                        <label for="milestoneTitle" style="display: block; margin-bottom: 8px; font-weight: 600; color: #ffffff; font-size: 14px;">Milestone Title*</label>
+                                        <input type="text" id="milestoneTitle" placeholder="e.g., Complete site analysis and soil testing" required 
+                                               style="width: 100%; padding: 12px; border: 1px solid rgba(68, 68, 68, 0.4); border-radius: 8px; font-size: 14px; background: rgba(68, 68, 68, 0.1); color: #ffffff; transition: border-color 0.2s ease; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;"
+                                               onfocus="this.style.borderColor='rgba(78, 205, 196, 0.5)'"
+                                               onblur="this.style.borderColor='rgba(68, 68, 68, 0.4)'">
                                     </div>
                                     
-                                    <div class="form-group">
-                                        <label for="milestoneDescription">Description</label>
-                                        <textarea id="milestoneDescription" placeholder="Detailed description of what needs to be accomplished" rows="2"></textarea>
+                                    <div style="margin-bottom: 20px;">
+                                        <label for="milestoneDescription" style="display: block; margin-bottom: 8px; font-weight: 600; color: #ffffff; font-size: 14px;">Description</label>
+                                        <textarea id="milestoneDescription" placeholder="Detailed description of what needs to be accomplished" rows="4"
+                                                  style="width: 100%; padding: 12px; border: 1px solid rgba(68, 68, 68, 0.4); border-radius: 8px; font-size: 14px; resize: vertical; background: rgba(68, 68, 68, 0.1); color: #ffffff; transition: border-color 0.2s ease; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;"
+                                                  onfocus="this.style.borderColor='rgba(78, 205, 196, 0.5)'"
+                                                  onblur="this.style.borderColor='rgba(68, 68, 68, 0.4)'"></textarea>
                                     </div>
                                     
-                                    <div class="framework-hierarchy-section">
-                                        <h5>🎯 Framework Hierarchy</h5>
-                                        <p class="framework-description">Prime Directive sets the tone → OKRs set the direction → DoD defines the scope</p>
-                                        
-                                        <div class="framework-step">
-                                            <div class="step-header">
-                                                <span class="step-number">1</span>
-                                                <span class="step-title">Prime Directive Foundation</span>
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="primeDirectiveContribution">How does this milestone contribute to elevating consciousness and collective wellbeing?</label>
-                                                <textarea id="primeDirectiveContribution" placeholder="Describe how this milestone directly serves the Prime Directive of elevating consciousness..." rows="2" required></textarea>
-                                            </div>
-                                        </div>
-
-                                        <div class="framework-step">
-                                            <div class="step-header">
-                                                <span class="step-number">2</span>
-                                                <span class="step-title">OKR Strategic Direction</span>
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="okrConnection">Which OKR does this milestone advance?</label>
-                                                <select id="okrConnection" required>
-                                                    <option value="">Select relevant OKR...</option>
-                                                    <option value="Regenerative Systems">Regenerative Systems - Building sustainable ecosystems</option>
-                                                    <option value="Community Impact">Community Impact - Expanding positive influence</option>
-                                                    <option value="Knowledge Sharing">Knowledge Sharing - Democratizing wisdom</option>
-                                                    <option value="Consciousness Tools">Consciousness Tools - Creating awareness platforms</option>
-                                                    <option value="Collaboration Networks">Collaboration Networks - Connecting changemakers</option>
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <div class="framework-step">
-                                            <div class="step-header">
-                                                <span class="step-number">3</span>
-                                                <span class="step-title">Definition of Done (Scope)</span>
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="dodCategory">DoD Category</label>
-                                                <select id="dodCategory" required>
-                                                    <option value="">Select completion type...</option>
-                                                    <option value="Research Complete">Research Complete - Information gathered and analyzed</option>
-                                                    <option value="Deliverable Created">Deliverable Created - Tangible output produced</option>
-                                                    <option value="System Implemented">System Implemented - Process or tool operational</option>
-                                                    <option value="Community Engaged">Community Engaged - Stakeholders activated</option>
-                                                    <option value="Knowledge Transferred">Knowledge Transferred - Learning shared effectively</option>
-                                                </select>
-                                            </div>
-                                        </div>
+                                    <div style="margin-bottom: 24px;">
+                                        <label for="milestoneDeadline" style="display: block; margin-bottom: 8px; font-weight: 600; color: #ffffff; font-size: 14px;">📅 Target Completion Date</label>
+                                        <input type="date" id="milestoneDeadline"
+                                               style="width: 100%; padding: 12px; border: 1px solid rgba(68, 68, 68, 0.4); border-radius: 8px; font-size: 14px; background: rgba(68, 68, 68, 0.1); color: #ffffff; transition: border-color 0.2s ease; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; color-scheme: dark;"
+                                               onfocus="this.style.borderColor='rgba(78, 205, 196, 0.5)'"
+                                               onblur="this.style.borderColor='rgba(68, 68, 68, 0.4)'">
                                     </div>
                                     
-                                    <div class="form-group">
-                                        <label for="milestoneDeadline">Target Completion Date</label>
-                                        <input type="date" id="milestoneDeadline">
-                                    </div>
-                                    
-                                    <div class="form-group">
-                                        <label for="acceptanceCriteria">Acceptance Criteria (one per line)</label>
-                                        <textarea id="acceptanceCriteria" placeholder="• Soil pH tested at 5 locations&#10;• Water table depth measured&#10;• Existing vegetation cataloged" rows="3"></textarea>
-                                    </div>
-                                    
-                                    <div class="form-actions">
-                                        <button type="button" onclick="taskPageManager.cancelCreateMilestone()" class="cancel-btn">Cancel</button>
-                                        <button type="submit" class="submit-btn">Create Milestone</button>
+                                    <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                                        <button type="button" onclick="taskPageManager.cancelCreateMilestone()" 
+                                                style="padding: 10px 20px; border: 1px solid rgba(68, 68, 68, 0.4); background: rgba(68, 68, 68, 0.1); color: #ffffff; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.2s;"
+                                                onmouseover="this.style.background='rgba(68, 68, 68, 0.2)'"
+                                                onmouseout="this.style.background='rgba(68, 68, 68, 0.1)'">
+                                            Cancel
+                                        </button>
+                                        <button type="submit" class="create-btn" style="padding: 10px 20px;">Create Milestone</button>
                                     </div>
                                 </form>
                             </div>
-                            
-                            <div class="milestones-list">
-                                ${this.renderMilestones()}
-                            </div>
+                        </div>
+                        
+                        <div class="milestones-list" style="margin-bottom: 24px;">
+                            ${this.renderMilestones()}
                         </div>
 
-                        <div class="public-comments-section">
+                        <div class="project-skills">
                             <h3>Public Comments</h3>
                             <div class="comments-container" id="publicComments">
                                 <div class="comments-list" id="commentsList">
@@ -250,8 +245,9 @@ class TaskPageManager {
                                 <div class="comment-input-container">
                                     <div class="comment-input-wrapper">
                                         <textarea id="commentInput" placeholder="Share your thoughts, feedback, or suggestions..." 
-                                                  rows="3" onkeydown="taskPageManager.handleCommentKeyPress(event)"></textarea>
-                                        <button class="comment-btn" onclick="taskPageManager.submitComment()">
+                                                  rows="3" onkeydown="taskPageManager.handleCommentKeyPress(event)"
+                                                  style="width: 100%; padding: 10px; border: 1px solid rgba(76, 175, 80, 0.2); border-radius: 8px; font-size: 14px; resize: vertical;"></textarea>
+                                        <button class="create-btn" onclick="taskPageManager.submitComment()" style="margin-top: 8px;">
                                             💬 Comment
                                         </button>
                                     </div>
@@ -260,31 +256,83 @@ class TaskPageManager {
                         </div>
                     </div>
 
-                    <!-- Right Column: Communication & Files -->
-                    <div class="task-right-column">
-                        <div class="task-chat-section">
-                            <h3>Team Chat</h3>
-                            <div class="chat-container" id="taskChat">
-                                <div class="chat-messages" id="chatMessages">
-                                    <!-- Chat messages will be loaded here -->
-                                </div>
-                                <div class="chat-input-container">
-                                    <div class="chat-input-wrapper">
-                                        <input type="text" id="chatInput" placeholder="Type your message..." 
-                                               onkeypress="taskPageManager.handleChatKeyPress(event)">
-                                        <button class="send-btn" onclick="taskPageManager.sendChatMessage()">
-                                            📤
+                    <!-- Right Column: Task Info and Communication -->
+                    <div class="project-overview" style="background: transparent !important;">
+                        <div class="project-description" style="margin-bottom: 24px;">
+                            <h3 style="margin-bottom: 16px;">Description</h3>
+                            <p class="editable-field" onclick="taskPageManager.makeEditable(this, 'description')" title="Click to edit description" style="line-height: 1.6; color: #666;">${task.description || 'No description provided'}</p>
+                        </div>
+
+                        <div class="project-details" style="margin-bottom: 24px;">
+                            <h3 style="margin-bottom: 16px;">Task Details</h3>
+                            <div class="details-grid" style="gap: 16px;">
+                                ${this.renderTaskMetadata()}
+                            </div>
+                        </div>
+
+                        <div class="project-skills" style="margin-bottom: 24px;">
+                            <h3 style="margin-bottom: 16px;">Required Skills</h3>
+                            <div class="skills-container" style="gap: 8px;">
+                                ${this.renderRequiredSkills()}
+                            </div>
+                        </div>
+
+                        <div class="project-skills" style="background: transparent !important;">
+                            <div class="tasks-header">
+                                <h3>Task Files</h3>
+                                <button class="create-btn" onclick="taskPageManager.showFileUpload()">
+                                    📎 Upload File
+                                </button>
+                            </div>
+                            
+                            <div class="file-upload-form" id="fileUploadForm" style="display: none; background: transparent !important;">
+                                <div style="background: rgba(68, 68, 68, 0.15) !important; border-radius: 12px; padding: 20px; border: 1px solid rgba(68, 68, 68, 0.3); margin-bottom: 16px;">
+                                    <div class="upload-area" onclick="document.getElementById('fileInput').click()" 
+                                         style="border: 2px dashed rgba(78, 205, 196, 0.4); border-radius: 12px; padding: 40px; text-align: center; cursor: pointer; transition: all 0.3s ease; background: rgba(68, 68, 68, 0.1);"
+                                         onmouseover="this.style.borderColor='rgba(78, 205, 196, 0.6)'; this.style.background='rgba(78, 205, 196, 0.1)'" 
+                                         onmouseout="this.style.borderColor='rgba(78, 205, 196, 0.4)'; this.style.background='rgba(68, 68, 68, 0.1)'">
+                                        <input type="file" id="fileInput" style="display: none;" onchange="taskPageManager.handleFileSelect(event)" multiple>
+                                        <div class="upload-text">
+                                            <i class="upload-icon" style="font-size: 48px; display: block; margin-bottom: 16px; color: #4ecdc4;">📁</i>
+                                            <p style="margin: 0 0 8px 0; font-weight: 600; color: #ffffff;">Click to select files or drag and drop</p>
+                                            <small style="color: #d0d0d0;">Maximum file size: 10MB</small>
+                                        </div>
+                                    </div>
+                                    <div class="upload-actions" style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 16px;">
+                                        <button type="button" onclick="taskPageManager.cancelFileUpload()" 
+                                                style="padding: 10px 20px; border: 1px solid rgba(68, 68, 68, 0.4); background: rgba(68, 68, 68, 0.1); color: #ffffff; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.2s;"
+                                                onmouseover="this.style.background='rgba(68, 68, 68, 0.2)'"
+                                                onmouseout="this.style.background='rgba(68, 68, 68, 0.1)'">
+                                            Cancel
+                                        </button>
+                                        <button type="button" onclick="taskPageManager.uploadSelectedFiles()" class="create-btn" style="padding: 10px 20px;">
+                                            Upload Files
                                         </button>
                                     </div>
                                 </div>
                             </div>
+                            
+                            <div class="files-list" id="taskFilesList">
+                                ${this.renderTaskFiles()}
+                            </div>
                         </div>
 
-                        <div class="task-files-section">
-                            <h3>Task Files</h3>
-                            <div class="files-container" id="taskFiles">
-                                <!-- Files will be loaded here -->
-                                <p class="files-placeholder">File system coming soon...</p>
+                        <div class="project-description">
+                            <h3>Team Chat</h3>
+                            <div class="chat-container" id="taskChat" style="background: rgba(76, 175, 80, 0.05); border-radius: 8px; padding: 16px;">
+                                <div class="chat-messages" id="chatMessages" style="max-height: 300px; overflow-y: auto; margin-bottom: 16px;">
+                                    <!-- Chat messages will be loaded here -->
+                                </div>
+                                <div class="chat-input-container">
+                                    <div class="chat-input-wrapper" style="display: flex; gap: 8px;">
+                                        <input type="text" id="chatInput" placeholder="Type your message..." 
+                                               onkeypress="taskPageManager.handleChatKeyPress(event)"
+                                               style="flex: 1; padding: 10px; border: 1px solid rgba(76, 175, 80, 0.2); border-radius: 8px;">
+                                        <button class="create-btn" onclick="taskPageManager.sendChatMessage()">
+                                            📤 Send
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -292,23 +340,9 @@ class TaskPageManager {
             </div>
         `;
 
-        // Hide the dashboard layout and show task page full screen
-        const mainContainer = document.querySelector('.main-container');
-        mainContainer.style.display = 'none';
-        
-        // Create a new container for the task page
-        let taskContainer = document.getElementById('task-page-container');
-        if (!taskContainer) {
-            taskContainer = document.createElement('div');
-            taskContainer.id = 'task-page-container';
-            document.body.appendChild(taskContainer);
-        }
-        
+        // Get the existing task container and update it with the full content
+        const taskContainer = document.getElementById('task-page-container');
         taskContainer.innerHTML = taskPageHTML;
-        taskContainer.style.display = 'block';
-        
-        // Enable scrolling on body when showing task page
-        document.body.style.overflow = 'auto';
 
         // Setup event listeners
         this.setupTaskPageEventListeners();
@@ -320,287 +354,1087 @@ class TaskPageManager {
         
         // Format dates
         const formatDate = (dateStr) => {
-            if (!dateStr) return 'Not set';
+            if (!dateStr) return 'TBD';
             const date = new Date(dateStr);
-            return date.toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'short', 
-                day: 'numeric' 
-            });
-        };
-
-        // Calculate time remaining
-        const calculateTimeRemaining = (dueDate) => {
-            if (!dueDate || dueDate === 'Not set') return 'No deadline';
-            
-            // Handle relative dates like "2 weeks", "3 days"
-            if (typeof dueDate === 'string' && !dueDate.includes('T')) {
-                return dueDate;
-            }
-            
-            const now = new Date();
-            const due = new Date(dueDate);
-            const diff = due - now;
-            
-            if (diff < 0) return 'Overdue';
-            
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            
-            if (days > 0) return `${days} days remaining`;
-            if (hours > 0) return `${hours} hours remaining`;
-            return 'Due soon';
+            return date.toLocaleDateString();
         };
 
         return `
-            <div class="metadata-item">
-                <span class="metadata-label">📅 Timeline</span>
-                <div class="metadata-value">
-                    <div class="timeline-item">
-                        <span class="timeline-label">Created:</span>
-                        <span>${formatDate(task.created_at)}</span>
-                    </div>
-                    <div class="timeline-item">
-                        <span class="timeline-label">Due:</span>
-                        <span class="due-date">${task.due_date || 'Not set'}</span>
-                        <span class="time-remaining">${calculateTimeRemaining(task.due_date)}</span>
-                    </div>
-                    <div class="timeline-item">
-                        <span class="timeline-label">Last Updated:</span>
-                        <span>${formatDate(task.updated_at)}</span>
-                    </div>
-                </div>
+            <div class="detail-item">
+                <strong>📅 Created:</strong> ${formatDate(task.created_at)}
             </div>
-
-            <div class="metadata-item">
-                <span class="metadata-label">👥 Team & Authority</span>
-                <div class="metadata-value">
-                    <div class="team-item">
-                        <span class="team-label">Owner:</span>
-                        <span class="user-link">${task.owner_id || 'Unassigned'}</span>
-                    </div>
-                    <div class="team-item">
-                        <span class="team-label">Assignee:</span>
-                        <span class="user-link">${task.assignee_id || 'Available'}</span>
-                    </div>
-                    <div class="team-item">
-                        <span class="team-label">Team Size:</span>
-                        <span>${task.team_size || 'Not specified'}</span>
-                    </div>
-                    <div class="team-item">
-                        <span class="team-label">Authority Required:</span>
-                        <span>${task.authority_level || 'Standard'}</span>
-                    </div>
-                </div>
+            <div class="detail-item">
+                <strong>⏰ Due Date:</strong> ${formatDate(task.due_date)}
             </div>
-
-            <div class="metadata-item">
-                <span class="metadata-label">🎯 Scope & Impact</span>
-                <div class="metadata-value">
-                    <div class="scope-item">
-                        <span class="scope-label">Category:</span>
-                        <span class="category-badge">${task.category}</span>
-                    </div>
-                    <div class="scope-item">
-                        <span class="scope-label">Priority:</span>
-                        <span class="priority-badge priority-${task.priority}">${task.priority}</span>
-                    </div>
-                    <div class="scope-item">
-                        <span class="scope-label">Impact Points:</span>
-                        <span class="impact-badge">${task.impact_points} pts</span>
-                    </div>
-                    <div class="scope-item">
-                        <span class="scope-label">Location:</span>
-                        <span>${task.location || 'Remote'}</span>
-                    </div>
-                    <div class="scope-item">
-                        <span class="scope-label">Scope:</span>
-                        <span>${task.scope || 'Project'}</span>
-                    </div>
-                </div>
+            <div class="detail-item">
+                <strong>👑 Owner:</strong> ${task.owner_id || 'Unassigned'}
             </div>
-
-            <div class="metadata-item">
-                <span class="metadata-label">⏱️ Effort & Resources</span>
-                <div class="metadata-value">
-                    <div class="effort-item">
-                        <span class="effort-label">Estimated Hours:</span>
-                        <span>${task.estimated_hours || 'Not estimated'}</span>
-                    </div>
-                    <div class="effort-item">
-                        <span class="effort-label">Budget:</span>
-                        <span>${task.budget ? `$${task.budget.toLocaleString()}` : 'Not specified'}</span>
-                    </div>
-                    <div class="effort-item">
-                        <span class="effort-label">Resources Needed:</span>
-                        <span>${task.resources_needed || 'Standard tools'}</span>
-                    </div>
-                </div>
+            <div class="detail-item">
+                <strong>👤 Assignee:</strong> ${task.assignee_id || 'Available'}
+                ${this.renderTaskActions(task)}
             </div>
-
-            <div class="metadata-item">
-                <span class="metadata-label">🔗 Dependencies</span>
-                <div class="metadata-value">
-                    ${task.dependencies && task.dependencies.length > 0 ? 
-                        task.dependencies.map(dep => `
-                            <div class="dependency-item">
-                                <span class="dependency-icon">➔</span>
-                                <span class="dependency-link" onclick="router.navigate('/task/${dep.id}')">${dep.title}</span>
-                                <span class="dependency-status status-${dep.status}">${dep.status}</span>
-                            </div>
-                        `).join('') : 
-                        '<span class="no-dependencies">No dependencies</span>'
-                    }
-                </div>
+            <div class="detail-item">
+                <strong>👥 Team Size:</strong> ${task.team_size || '1'} members
             </div>
-
-            <div class="metadata-item">
-                <span class="metadata-label">💼 Required Skills</span>
-                <div class="metadata-value skills-list">
-                    ${task.required_skills && task.required_skills.length > 0 ?
-                        task.required_skills.map(skill => `
-                            <span class="skill-tag">${skill}</span>
-                        `).join('') :
-                        '<span class="no-skills">No specific skills required</span>'
-                    }
-                </div>
+            <div class="detail-item">
+                <strong>🌍 Location:</strong> ${task.location || 'Global'}
             </div>
-
-            <div class="metadata-item">
-                <span class="metadata-label">📊 Success Metrics</span>
-                <div class="metadata-value">
-                    ${task.success_metrics ? 
-                        (Array.isArray(task.success_metrics) ? 
-                            `<ul class="metrics-list">
-                                ${task.success_metrics.map(metric => `<li>${metric}</li>`).join('')}
-                            </ul>` :
-                            `<div class="metrics-text">${task.success_metrics}</div>`
-                        ) :
-                        '<span class="no-metrics">Success metrics not defined</span>'
-                    }
-                </div>
+            <div class="detail-item">
+                <strong>⏱️ Estimated Hours:</strong> ${task.estimated_hours || '2-4 hours'}
             </div>
-
-            <div class="metadata-item">
-                <span class="metadata-label">📦 Deliverables</span>
-                <div class="metadata-value">
-                    ${task.deliverables ? 
-                        (Array.isArray(task.deliverables) ? 
-                            `<ul class="deliverables-list">
-                                ${task.deliverables.map(deliverable => `<li>${deliverable}</li>`).join('')}
-                            </ul>` :
-                            `<div class="deliverables-text">${task.deliverables}</div>`
-                        ) :
-                        '<span class="no-deliverables">Deliverables not specified</span>'
-                    }
-                </div>
+            <div class="detail-item">
+                <strong>💰 Budget:</strong> ${task.budget ? `$${task.budget.toLocaleString()}` : 'TBD'}
             </div>
-
-            <div class="metadata-item">
-                <span class="metadata-label">✅ Definition of Done</span>
-                <div class="metadata-value">
-                    ${task.definition_of_done ? 
-                        `<div class="dod-text">${task.definition_of_done}</div>` :
-                        '<span class="no-dod">Definition of done not specified</span>'
-                    }
-                </div>
+            <div class="detail-item">
+                <strong>⭐ Impact Points:</strong> +${task.impact_points || 100}
+            </div>
+            <div class="detail-item">
+                <strong>🏛️ Authority:</strong> ${task.authority_level || 'Standard'}
             </div>
         `;
     }
 
+    // Render task actions (claim/assign buttons)
+    renderTaskActions(task) {
+        const currentUserId = this.app?.currentUser?.id;
+        const isOwner = task.owner_id === currentUserId;
+        const isAssigned = task.assignee_id && task.assignee_id !== 'Available';
+        const isCurrentUserAssigned = task.assignee_id === currentUserId;
+        
+        let actions = '';
+        
+        if (!isAssigned && task.status === 'available') {
+            // Task is available - show claim button
+            actions += `
+                <div style="margin-top: 8px;">
+                    <button onclick="taskPageManager.claimTask()" class="claim-btn" 
+                            style="background: rgba(78, 205, 196, 0.15); color: #4ecdc4; border: 1px solid rgba(78, 205, 196, 0.3); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">
+                        🙋‍♂️ Claim Task
+                    </button>
+                </div>
+            `;
+        }
+        
+        if (isOwner && task.status !== 'completed') {
+            // Owner can assign/reassign or make available
+            if (isAssigned) {
+                actions += `
+                    <div style="margin-top: 8px;">
+                        <button onclick="taskPageManager.makeTaskAvailable()" class="make-available-btn"
+                                style="background: rgba(255, 152, 0, 0.15); color: #ff9800; border: 1px solid rgba(255, 152, 0, 0.3); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">
+                            🔄 Make Available
+                        </button>
+                        <button onclick="taskPageManager.showAssignModal()" class="assign-btn"
+                                style="background: rgba(78, 205, 196, 0.15); color: #4ecdc4; border: 1px solid rgba(78, 205, 196, 0.3); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; margin-left: 8px;">
+                            👥 Reassign
+                        </button>
+                    </div>
+                `;
+            } else {
+                actions += `
+                    <div style="margin-top: 8px;">
+                        <button onclick="taskPageManager.showAssignModal()" class="assign-btn"
+                                style="background: rgba(78, 205, 196, 0.15); color: #4ecdc4; border: 1px solid rgba(78, 205, 196, 0.3); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">
+                            👥 Assign to Team Member
+                        </button>
+                    </div>
+                `;
+            }
+        }
+        
+        if (isCurrentUserAssigned && task.status === 'in_progress') {
+            // Current user is assigned - show status update options
+            actions += `
+                <div style="margin-top: 8px;">
+                    <button onclick="taskPageManager.markTaskCompleted()" class="complete-btn"
+                            style="background: rgba(76, 175, 80, 0.15); color: #4caf50; border: 1px solid rgba(76, 175, 80, 0.3); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">
+                        ✅ Mark Complete
+                    </button>
+                </div>
+            `;
+        }
+        
+        return actions;
+    }
+
+    // Render required skills
+    renderRequiredSkills() {
+        const task = this.currentTask;
+        if (!task.required_skills || task.required_skills.length === 0) {
+            return '<div class="no-tasks">No specific skills required</div>';
+        }
+        return task.required_skills.map(skill => 
+            `<div class="skill-tag">${skill}</div>`
+        ).join('');
+    }
+
     // Render milestones list
     renderMilestones() {
-        if (!this.milestones.length) {
+        if (!this.currentTask?.milestones || !this.currentTask.milestones.length) {
             return '<p class="no-milestones">No milestones defined yet.</p>';
         }
 
-        return this.milestones.map(milestone => `
-            <div class="milestone-item ${milestone.completed ? 'completed' : ''}" data-milestone-id="${milestone.id}">
+        return this.currentTask.milestones.map(milestone => `
+            <div class="milestone-item ${milestone.is_completed ? 'completed' : ''}" data-milestone-id="${milestone.id}" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;">
                 <div class="milestone-header">
                     <div class="milestone-checkbox">
-                        <input type="checkbox" ${milestone.completed ? 'checked' : ''} 
+                        <input type="checkbox" ${milestone.is_completed ? 'checked' : ''} 
                                onchange="taskPageManager.toggleMilestone('${milestone.id}')">
                     </div>
-                    <div class="milestone-title">${milestone.title}</div>
-                    <div class="milestone-deadline">
-                        ${milestone.deadline ? `📅 Due: ${this.formatDate(milestone.deadline)}` : ''}
+                    <div class="milestone-title" style="font-family: inherit; font-weight: 600; color: #ffffff;">${milestone.title}</div>
+                    <div class="milestone-deadline" style="font-family: inherit; color: #d0d0d0;">
+                        ${milestone.due_date ? `📅 Due: ${milestone.due_date}` : ''}
                     </div>
-                    <button class="help-btn" onclick="taskPageManager.requestHelp('${milestone.id}')">
-                        🆘 I Need Help
+                    <button class="milestone-delete-btn" onclick="taskPageManager.deleteMilestone('${milestone.id}')">
+                        🗑️ Delete
                     </button>
                 </div>
                 
                 ${milestone.description ? `
                     <div class="milestone-description">
-                        <p>${milestone.description}</p>
+                        <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; line-height: 1.6; color: #d0d0d0; margin: 0;">${milestone.description}</p>
                     </div>
                 ` : ''}
                 
-                <div class="milestone-framework">
-                    <div class="framework-hierarchy">
-                        <div class="framework-level">
-                            <div class="level-header">
-                                <span class="level-number">1</span>
-                                <span class="level-title">Prime Directive Foundation</span>
-                            </div>
-                            <div class="level-content">
-                                ${milestone.prime_directive_contribution || 'Not specified'}
-                            </div>
-                        </div>
-                        
-                        <div class="framework-level">
-                            <div class="level-header">
-                                <span class="level-number">2</span>
-                                <span class="level-title">OKR Direction</span>
-                            </div>
-                            <div class="level-content">
-                                <span class="okr-badge">${milestone.okr_connection || 'Not specified'}</span>
-                            </div>
-                        </div>
-                        
-                        <div class="framework-level">
-                            <div class="level-header">
-                                <span class="level-number">3</span>
-                                <span class="level-title">DoD Scope</span>
-                            </div>
-                            <div class="level-content">
-                                <span class="dod-badge">${milestone.dod_category || 'Not specified'}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                ${milestone.acceptance_criteria && milestone.acceptance_criteria.length > 0 ? `
-                    <div class="acceptance-criteria">
-                        <h6>Acceptance Criteria</h6>
-                        <ul class="criteria-list">
-                            ${milestone.acceptance_criteria.map(criteria => `
-                                <li class="criteria-item">
-                                    <span class="criteria-bullet">✓</span>
-                                    <span class="criteria-text">${criteria}</span>
-                                </li>
-                            `).join('')}
-                        </ul>
-                    </div>
-                ` : ''}
-
-                <div class="milestone-files">
-                    <div class="files-header">
-                        <span>Proof of Work Files:</span>
-                        <button class="upload-btn" onclick="taskPageManager.uploadFile('${milestone.id}')">
-                            📎 Upload
-                        </button>
-                    </div>
-                    <div class="files-list" id="files-${milestone.id}">
-                        ${milestone.files && milestone.files.length ? this.renderMilestoneFiles(milestone.files) : '<p class="no-files">No files uploaded yet.</p>'}
-                    </div>
-                </div>
-
-                <div class="milestone-help-requests" id="help-requests-${milestone.id}">
-                    ${this.renderHelpRequests(milestone.help_requests || [])}
+                <div class="milestone-status">
+                    <span class="milestone-status-badge status-${milestone.status}">
+                        ${milestone.status.charAt(0).toUpperCase() + milestone.status.slice(1)}
+                    </span>
+                    ${milestone.completed_at ? `
+                        <span class="completion-time">
+                            Completed: ${new Date(milestone.completed_at).toLocaleDateString()}
+                        </span>
+                    ` : ''}
                 </div>
             </div>
         `).join('');
+    }
+
+    // Show create milestone form
+    showCreateMilestoneForm() {
+        const form = document.getElementById('milestoneCreationForm');
+        if (form) {
+            form.style.display = 'block';
+        }
+    }
+
+    // Cancel create milestone
+    cancelCreateMilestone() {
+        const form = document.getElementById('milestoneCreationForm');
+        if (form) {
+            form.style.display = 'none';
+            document.getElementById('newMilestoneForm').reset();
+        }
+    }
+
+    // Handle create milestone form submission
+    async handleCreateMilestone(event) {
+        event.preventDefault();
+        
+        const title = document.getElementById('milestoneTitle').value.trim();
+        const description = document.getElementById('milestoneDescription').value.trim();
+        const dueDate = document.getElementById('milestoneDeadline').value;
+        
+        if (!title) {
+            this.showError('Milestone title is required');
+            return;
+        }
+
+        try {
+            const milestoneData = {
+                title: title,
+                description: description || null,
+                due_date: dueDate || null,
+                task_id: this.currentTask.id
+            };
+
+            const response = await api.createMilestone(milestoneData);
+            
+            if (response.id) {
+                // Add the new milestone to the current task
+                if (!this.currentTask.milestones) {
+                    this.currentTask.milestones = [];
+                }
+                this.currentTask.milestones.push(response);
+                
+                // Refresh the milestones display
+                this.refreshMilestonesDisplay();
+                
+                // Hide and reset the form
+                this.cancelCreateMilestone();
+                
+                this.showSuccess('Milestone created successfully!');
+            } else {
+                this.showError('Failed to create milestone');
+            }
+        } catch (error) {
+            console.error('Error creating milestone:', error);
+            this.showError('Error creating milestone: ' + (error.message || 'Unknown error'));
+        }
+    }
+
+    // Toggle milestone completion
+    async toggleMilestone(milestoneId) {
+        try {
+            const milestone = this.currentTask.milestones.find(m => m.id === milestoneId);
+            if (!milestone) return;
+
+            const response = await api.put(`/milestones/${milestoneId}`, {
+                is_completed: !milestone.is_completed
+            });
+
+            if (response.id) {
+                // Update the milestone in our data
+                const index = this.currentTask.milestones.findIndex(m => m.id === milestoneId);
+                if (index !== -1) {
+                    this.currentTask.milestones[index] = response;
+                }
+                
+                // Refresh the display
+                this.refreshMilestonesDisplay();
+                
+                this.showSuccess(`Milestone ${response.is_completed ? 'completed' : 'reopened'}!`);
+            }
+        } catch (error) {
+            console.error('Error toggling milestone:', error);
+            this.showError('Error updating milestone');
+        }
+    }
+
+    // Delete milestone
+    async deleteMilestone(milestoneId) {
+        if (!confirm('Are you sure you want to delete this milestone?')) {
+            return;
+        }
+
+        try {
+            await api.delete(`/milestones/${milestoneId}`);
+            
+            // Remove from our data
+            this.currentTask.milestones = this.currentTask.milestones.filter(m => m.id !== milestoneId);
+            
+            // Refresh the display
+            this.refreshMilestonesDisplay();
+            
+            this.showSuccess('Milestone deleted successfully!');
+        } catch (error) {
+            console.error('Error deleting milestone:', error);
+            this.showError('Error deleting milestone');
+        }
+    }
+
+    // Refresh milestones display
+    refreshMilestonesDisplay() {
+        const milestonesList = document.querySelector('.milestones-list');
+        if (milestonesList) {
+            milestonesList.innerHTML = this.renderMilestones();
+        }
+    }
+
+    // Inline editing functionality
+    makeEditable(element, fieldName) {
+        if (!this.canEdit()) {
+            this.showError('You do not have permission to edit this task');
+            return;
+        }
+
+        // Prevent multiple edits
+        if (element.classList.contains('editing')) {
+            return;
+        }
+
+        const currentValue = element.textContent.trim();
+        element.classList.add('editing');
+
+        // Create edit interface based on field type
+        if (fieldName === 'description') {
+            this.createTextareaEditor(element, fieldName, currentValue);
+        } else if (fieldName === 'status') {
+            this.createSelectEditor(element, fieldName, currentValue, [
+                'draft', 'available', 'in_progress', 'completed'
+            ]);
+        } else if (fieldName === 'priority') {
+            this.createSelectEditor(element, fieldName, currentValue, [
+                'urgent', 'high', 'medium', 'low'
+            ]);
+        } else {
+            this.createTextEditor(element, fieldName, currentValue);
+        }
+    }
+
+    // Check if user can edit this task
+    canEdit() {
+        // For now, assume user can edit if they're the owner or assignee
+        // This could be enhanced with more complex permission logic
+        return true; // TODO: Implement proper permission checking
+    }
+
+    // Create text input editor
+    createTextEditor(element, fieldName, currentValue) {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = currentValue === 'No category' ? '' : currentValue;
+        input.className = 'inline-editor-input';
+        input.style.width = '100%';
+        input.style.background = 'rgba(76, 175, 80, 0.1)';
+        input.style.border = 'none';
+        input.style.padding = '4px 8px';
+        input.style.font = 'inherit';
+        
+        this.setupSimpleEditor(element, input, fieldName, currentValue);
+    }
+
+    // Create textarea editor
+    createTextareaEditor(element, fieldName, currentValue) {
+        const textarea = document.createElement('textarea');
+        textarea.value = currentValue === 'No description provided' ? '' : currentValue;
+        textarea.className = 'inline-editor-textarea';
+        textarea.rows = 4;
+        textarea.style.width = '100%';
+        textarea.style.background = 'rgba(76, 175, 80, 0.1)';
+        textarea.style.border = 'none';
+        textarea.style.padding = '8px';
+        textarea.style.font = 'inherit';
+        textarea.style.resize = 'vertical';
+        
+        this.setupSimpleEditor(element, textarea, fieldName, currentValue);
+    }
+
+    // Create select dropdown editor
+    createSelectEditor(element, fieldName, currentValue, options) {
+        const select = document.createElement('select');
+        select.className = 'inline-editor-select';
+        select.style.width = '100%';
+        select.style.background = 'rgba(76, 175, 80, 0.1)';
+        select.style.border = 'none';
+        select.style.padding = '4px 8px';
+        select.style.font = 'inherit';
+        
+        options.forEach(option => {
+            const optionEl = document.createElement('option');
+            optionEl.value = option;
+            optionEl.textContent = option;
+            if (option === currentValue) {
+                optionEl.selected = true;
+            }
+            select.appendChild(optionEl);
+        });
+        
+        this.setupSimpleEditor(element, select, fieldName, currentValue);
+    }
+
+    // Setup simple editor with click outside to save
+    setupSimpleEditor(element, editor, fieldName, originalValue) {
+        // Store original padding
+        const originalPadding = window.getComputedStyle(element).padding;
+        
+        // Replace element content
+        element.innerHTML = '';
+        element.appendChild(editor);
+        element.style.padding = '0';
+        
+        // Focus and select
+        editor.focus();
+        if (editor.select) {
+            editor.select();
+        }
+        
+        // Save function
+        const saveChanges = async () => {
+            const newValue = editor.value.trim();
+            
+            // No change, just restore
+            if (newValue === originalValue || (newValue === '' && originalValue.startsWith('No '))) {
+                this.cancelEdit(element, originalValue);
+                element.style.padding = originalPadding;
+                return;
+            }
+            
+            await this.saveEdit(element, editor, fieldName, originalValue);
+            element.style.padding = originalPadding;
+        };
+        
+        // Handle Enter/Escape keys
+        editor.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                // For textareas, allow Shift+Enter for new lines
+                if (editor.tagName === 'TEXTAREA' && e.shiftKey) {
+                    return; // Allow the new line
+                }
+                e.preventDefault();
+                saveChanges();
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                this.cancelEdit(element, originalValue);
+                element.style.padding = originalPadding;
+            }
+        });
+        
+        // Handle click outside
+        const handleClickOutside = (e) => {
+            if (!element.contains(e.target)) {
+                saveChanges();
+                document.removeEventListener('click', handleClickOutside);
+            }
+        };
+        
+        // Add click outside listener after a small delay to prevent immediate trigger
+        setTimeout(() => {
+            document.addEventListener('click', handleClickOutside);
+        }, 100);
+        
+        // Handle blur for select elements
+        if (editor.tagName === 'SELECT') {
+            editor.addEventListener('change', saveChanges);
+        }
+    }
+
+    // Save the edited value
+    async saveEdit(element, editor, fieldName, originalValue) {
+        const newValue = editor.value.trim();
+        
+        // No change, just cancel
+        if (newValue === originalValue || (newValue === '' && originalValue.startsWith('No '))) {
+            this.cancelEdit(element, originalValue);
+            return;
+        }
+
+        try {
+            // Update task via API
+            const updateData = {};
+            updateData[fieldName] = newValue || null;
+            
+            const response = await api.put(`/tasks/${this.currentTask.id}`, updateData);
+            
+            if (response.id) {
+                // Update local task data
+                this.currentTask[fieldName] = newValue;
+                
+                // Update display
+                element.classList.remove('editing');
+                element.innerHTML = newValue || `No ${fieldName}`;
+                
+                // Update any related UI classes
+                if (fieldName === 'status') {
+                    element.className = element.className.replace(/status-\w+/, `status-${newValue}`);
+                } else if (fieldName === 'priority') {
+                    element.className = element.className.replace(/priority-\w+/, `priority-${newValue}`);
+                }
+                
+                // Show subtle success feedback
+                element.style.transition = 'background-color 0.3s ease';
+                element.style.backgroundColor = 'rgba(76, 175, 80, 0.2)';
+                setTimeout(() => {
+                    element.style.backgroundColor = '';
+                }, 500);
+            }
+        } catch (error) {
+            console.error('Error updating task:', error);
+            this.showError('Failed to update task');
+            this.cancelEdit(element, originalValue);
+        }
+    }
+
+    // Cancel editing
+    cancelEdit(element, originalValue) {
+        element.classList.remove('editing');
+        element.innerHTML = originalValue;
+    }
+
+    // Show success message
+    showSuccess(message) {
+        this.showNotification(message, 'success');
+    }
+
+    // Show error message
+    showError(message) {
+        this.showNotification(message, 'error');
+    }
+
+    // Show notification helper
+    showNotification(message, type) {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.textContent = message;
+        
+        // Style the notification
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 4px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            ${type === 'success' ? 'background-color: #28a745;' : 
+              type === 'error' ? 'background-color: #dc3545;' : 
+              'background-color: #007bff;'}
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Fade in
+        setTimeout(() => {
+            notification.style.opacity = '1';
+        }, 10);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }, 3000);
+    }
+
+    // File management functionality
+    selectedFiles = [];
+
+    renderTaskFiles() {
+        if (!this.currentTask?.files || !this.currentTask.files.length) {
+            return '<div class="no-tasks" style="text-align: center; padding: 40px; color: #d0d0d0;">No files uploaded yet.</div>';
+        }
+
+        return this.currentTask.files.map(file => `
+            <div class="file-item" data-file-id="${file.id}" 
+                 style="background: rgba(68, 68, 68, 0.15); border-radius: 12px; padding: 16px; margin-bottom: 12px; border: 1px solid rgba(78, 205, 196, 0.2); transition: all 0.2s ease;"
+                 onmouseover="this.style.borderColor='rgba(78, 205, 196, 0.4)'; this.style.transform='translateY(-1px)'"
+                 onmouseout="this.style.borderColor='rgba(78, 205, 196, 0.2)'; this.style.transform='translateY(0)'">
+                <div class="file-info" style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                    <div class="file-icon" style="font-size: 24px; min-width: 32px; text-align: center; color: #4ecdc4;">${this.getFileIcon(file.name)}</div>
+                    <div class="file-details" style="flex: 1; min-width: 0;">
+                        <div class="file-name" style="font-weight: 600; color: #ffffff; margin-bottom: 4px; word-break: break-word;">${file.name}</div>
+                        <div class="file-meta" style="font-size: 12px; color: #d0d0d0; display: flex; gap: 12px;">
+                            <span class="file-size">${this.formatFileSize(file.size)}</span>
+                            <span class="file-date">Uploaded ${new Date(file.uploaded_at).toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="file-actions" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    ${this.canPreviewFile(file.name) ? `
+                        <button onclick="taskPageManager.previewFile('${file.id}', '${file.name}')" 
+                                style="padding: 6px 12px; border: 1px solid rgba(78, 205, 196, 0.3); background: rgba(78, 205, 196, 0.15); color: #4ecdc4; border-radius: 6px; cursor: pointer; font-size: 12px; transition: all 0.2s;"
+                                onmouseover="this.style.background='rgba(78, 205, 196, 0.25)'; this.style.color='#ffffff'"
+                                onmouseout="this.style.background='rgba(78, 205, 196, 0.15)'; this.style.color='#4ecdc4'">
+                            👁️ Preview
+                        </button>
+                    ` : ''}
+                    <button onclick="taskPageManager.downloadFile('${file.id}')" 
+                            style="padding: 6px 12px; border: 1px solid rgba(78, 205, 196, 0.3); background: rgba(78, 205, 196, 0.15); color: #4ecdc4; border-radius: 6px; cursor: pointer; font-size: 12px; transition: all 0.2s;"
+                            onmouseover="this.style.background='rgba(78, 205, 196, 0.25)'; this.style.color='#ffffff'"
+                            onmouseout="this.style.background='rgba(78, 205, 196, 0.15)'; this.style.color='#4ecdc4'">
+                        📥 Download
+                    </button>
+                    <button onclick="taskPageManager.deleteFile('${file.id}')" 
+                            style="padding: 6px 12px; border: 1px solid rgba(220, 53, 69, 0.3); background: rgba(220, 53, 69, 0.15); color: #ff6b6b; border-radius: 6px; cursor: pointer; font-size: 12px; transition: all 0.2s;"
+                            onmouseover="this.style.background='rgba(220, 53, 69, 0.25)'; this.style.color='#ffffff'"
+                            onmouseout="this.style.background='rgba(220, 53, 69, 0.15)'; this.style.color='#ff6b6b'">
+                        🗑️ Delete
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    canPreviewFile(filename) {
+        const ext = filename.split('.').pop().toLowerCase();
+        const previewableTypes = ['pdf', 'txt', 'md', 'html', 'jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'js', 'css', 'json', 'xml', 'csv', 'log'];
+        return previewableTypes.includes(ext);
+    }
+
+    async previewFile(fileId, filename) {
+        try {
+            const response = await fetch(`http://localhost:8000/api/v1/files/${fileId}/download`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                }
+            });
+
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const ext = filename.split('.').pop().toLowerCase();
+                
+                // Create modern preview modal with scrolling
+                const modal = document.createElement('div');
+                modal.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.95);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 1000;
+                    backdrop-filter: blur(4px);
+                    padding: 20px;
+                    box-sizing: border-box;
+                    overflow: auto;
+                `;
+                
+                // Create content container with modern styling
+                const container = document.createElement('div');
+                container.style.cssText = `
+                    position: relative;
+                    width: 100%;
+                    max-width: 1200px;
+                    max-height: 90vh;
+                    background: rgba(40, 44, 52, 0.98);
+                    border-radius: 16px;
+                    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+                    overflow: hidden;
+                    display: flex;
+                    flex-direction: column;
+                    border: 1px solid rgba(78, 205, 196, 0.2);
+                `;
+                
+                // Create header
+                const header = document.createElement('div');
+                header.style.cssText = `
+                    background: linear-gradient(135deg, #4ecdc4 0%, #00b8a9 100%);
+                    color: white;
+                    padding: 16px 24px;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    flex-shrink: 0;
+                `;
+                
+                header.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="font-size: 24px;">${this.getFileIcon(filename)}</span>
+                        <div>
+                            <div style="font-weight: 600; font-size: 16px;">${filename}</div>
+                            <div style="font-size: 12px; opacity: 0.9;">${this.formatFileSize(blob.size)}</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <button onclick="taskPageManager.downloadFile('${fileId}')" 
+                                style="background: rgba(255, 255, 255, 0.2); border: none; color: white; border-radius: 8px; padding: 8px 12px; cursor: pointer; font-size: 12px; transition: background 0.2s;"
+                                onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'"
+                                onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'">
+                            📥 Download
+                        </button>
+                        <button onclick="this.closest('.preview-modal').remove(); window.URL.revokeObjectURL('${url}')" 
+                                style="background: rgba(255, 255, 255, 0.2); border: none; color: white; border-radius: 8px; width: 32px; height: 32px; cursor: pointer; font-size: 16px; transition: background 0.2s;"
+                                onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'"
+                                onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'">
+                            ✕
+                        </button>
+                    </div>
+                `;
+                
+                // Create scrollable content area
+                const contentArea = document.createElement('div');
+                contentArea.style.cssText = `
+                    flex: 1;
+                    overflow: auto;
+                    background: #1a1f1c;
+                    position: relative;
+                `;
+                
+                // Generate content based on file type
+                await this.generateFilePreviewContent(contentArea, blob, url, ext, filename, fileId);
+                
+                container.appendChild(header);
+                container.appendChild(contentArea);
+                modal.appendChild(container);
+                
+                modal.className = 'preview-modal';
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.remove();
+                        window.URL.revokeObjectURL(url);
+                    }
+                });
+                
+                document.body.appendChild(modal);
+                
+                // Add ESC key handler
+                const handleEscape = (e) => {
+                    if (e.key === 'Escape') {
+                        modal.remove();
+                        window.URL.revokeObjectURL(url);
+                        document.removeEventListener('keydown', handleEscape);
+                    }
+                };
+                document.addEventListener('keydown', handleEscape);
+                
+            } else {
+                this.showError('Failed to load file preview');
+            }
+        } catch (error) {
+            console.error('Error previewing file:', error);
+            this.showError('Error previewing file');
+        }
+    }
+
+    async generateFilePreviewContent(contentArea, blob, url, ext, filename, fileId) {
+        if (['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'].includes(ext)) {
+            // Enhanced Image Viewer
+            contentArea.style.cssText += `
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 500px;
+                padding: 20px;
+                background: #1a1f1c;
+            `;
+            
+            const imageContainer = document.createElement('div');
+            imageContainer.style.cssText = `
+                max-width: 100%;
+                max-height: 100%;
+                text-align: center;
+                position: relative;
+            `;
+            
+            const img = document.createElement('img');
+            img.src = url;
+            img.style.cssText = `
+                max-width: 100%;
+                max-height: 70vh;
+                object-fit: contain;
+                border-radius: 8px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+                transition: transform 0.3s ease;
+                cursor: zoom-in;
+            `;
+            
+            // Add zoom functionality
+            let isZoomed = false;
+            img.addEventListener('click', () => {
+                if (!isZoomed) {
+                    img.style.transform = 'scale(2)';
+                    img.style.cursor = 'zoom-out';
+                    contentArea.style.overflow = 'auto';
+                    isZoomed = true;
+                } else {
+                    img.style.transform = 'scale(1)';
+                    img.style.cursor = 'zoom-in';
+                    isZoomed = false;
+                }
+            });
+            
+            imageContainer.appendChild(img);
+            contentArea.appendChild(imageContainer);
+            
+        } else if (ext === 'pdf') {
+            // Enhanced PDF Viewer
+            contentArea.style.cssText += `
+                padding: 0;
+                background: #1a1f1c;
+            `;
+            
+            const iframe = document.createElement('iframe');
+            iframe.src = url;
+            iframe.style.cssText = `
+                width: 100%;
+                height: 80vh;
+                border: none;
+                background: white;
+            `;
+            
+            contentArea.appendChild(iframe);
+            
+        } else if (ext === 'html') {
+            // Full HTML Viewer with clickable functionality
+            const text = await blob.text();
+            
+            const htmlContainer = document.createElement('div');
+            htmlContainer.style.cssText = `
+                height: 80vh;
+                border: none;
+                background: #1a1f1c;
+                position: relative;
+            `;
+            
+            const iframe = document.createElement('iframe');
+            iframe.style.cssText = `
+                width: 100%;
+                height: 100%;
+                border: none;
+            `;
+            
+            // Create a blob URL for the HTML content to make it fully functional
+            const htmlBlob = new Blob([text], { type: 'text/html' });
+            const htmlUrl = window.URL.createObjectURL(htmlBlob);
+            iframe.src = htmlUrl;
+            
+            htmlContainer.appendChild(iframe);
+            contentArea.appendChild(htmlContainer);
+            
+        } else if (['txt', 'md', 'js', 'css', 'json', 'xml', 'csv', 'log'].includes(ext)) {
+            // Enhanced Text Viewer with syntax highlighting
+            const text = await blob.text();
+            
+            contentArea.style.cssText += `
+                padding: 24px;
+                background: #1a1f1c;
+            `;
+            
+            let processedContent = '';
+            
+            if (ext === 'md') {
+                // Enhanced markdown rendering
+                processedContent = text
+                    .replace(/^# (.*$)/gim, '<h1 style="color: #ffffff; margin: 24px 0 16px 0; font-size: 28px; border-bottom: 2px solid rgba(78, 205, 196, 0.3); padding-bottom: 8px;">$1</h1>')
+                    .replace(/^## (.*$)/gim, '<h2 style="color: #ffffff; margin: 20px 0 12px 0; font-size: 24px;">$1</h2>')
+                    .replace(/^### (.*$)/gim, '<h3 style="color: #ffffff; margin: 16px 0 8px 0; font-size: 20px;">$1</h3>')
+                    .replace(/\*\*(.*?)\*\*/gim, '<strong style="color: #ffffff;">$1</strong>')
+                    .replace(/\*(.*?)\*/gim, '<em>$1</em>')
+                    .replace(/`([^`]+)`/gim, '<code style="background: rgba(78, 205, 196, 0.15); color: #ffffff; padding: 2px 6px; border-radius: 4px; font-family: monospace;">$1</code>')
+                    .replace(/```([\\s\\S]*?)```/gim, '<pre style="background: rgba(78, 205, 196, 0.1); color: #ffffff; padding: 16px; border-radius: 8px; border-left: 4px solid #4ecdc4; overflow-x: auto; font-family: monospace; margin: 16px 0;"><code>$1</code></pre>')
+                    .replace(/^- (.*$)/gim, '<li style="margin: 4px 0; color: #e0e0e0;">$1</li>')
+                    .replace(/\\n/gim, '<br>');
+                
+                contentArea.innerHTML = `<div style="line-height: 1.8; color: #e0e0e0; max-width: none;">${processedContent}</div>`;
+                
+            } else if (ext === 'json') {
+                // Pretty print JSON
+                try {
+                    const jsonObj = JSON.parse(text);
+                    const prettyJson = JSON.stringify(jsonObj, null, 2);
+                    contentArea.innerHTML = `
+                        <pre style="
+                            background: rgba(76, 175, 80, 0.05); 
+                            color: #2c3e34; 
+                            padding: 24px; 
+                            border-radius: 8px; 
+                            border: 1px solid rgba(76, 175, 80, 0.2);
+                            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace; 
+                            font-size: 14px; 
+                            line-height: 1.6; 
+                            margin: 0;
+                            white-space: pre-wrap;
+                            overflow-wrap: break-word;
+                        "><code>${prettyJson}</code></pre>
+                    `;
+                } catch (e) {
+                    contentArea.innerHTML = `
+                        <pre style="
+                            background: rgba(76, 175, 80, 0.05); 
+                            color: #2c3e34; 
+                            padding: 24px; 
+                            border-radius: 8px; 
+                            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace; 
+                            font-size: 14px; 
+                            line-height: 1.6; 
+                            margin: 0;
+                            white-space: pre-wrap;
+                            overflow-wrap: break-word;
+                        "><code>${text}</code></pre>
+                    `;
+                }
+            } else {
+                // Regular text files with enhanced styling
+                contentArea.innerHTML = `
+                    <pre style="
+                        background: rgba(76, 175, 80, 0.05); 
+                        color: #2c3e34; 
+                        padding: 24px; 
+                        border-radius: 8px; 
+                        border: 1px solid rgba(76, 175, 80, 0.2);
+                        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace; 
+                        font-size: 14px; 
+                        line-height: 1.6; 
+                        margin: 0;
+                        white-space: pre-wrap;
+                        overflow-wrap: break-word;
+                    "><code>${text}</code></pre>
+                `;
+            }
+            
+        } else {
+            // Unsupported file type with download option
+            contentArea.style.cssText += `
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 400px;
+                background: rgba(78, 205, 196, 0.02);
+            `;
+            
+            contentArea.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #d0d0d0;">
+                    <div style="font-size: 64px; margin-bottom: 24px; color: #4ecdc4;">${this.getFileIcon(filename)}</div>
+                    <h3 style="color: #ffffff; margin-bottom: 12px;">Preview not available</h3>
+                    <p style="margin: 0 0 24px 0; font-size: 16px; color: #d0d0d0;">This file type (${ext.toUpperCase()}) cannot be previewed</p>
+                    <button onclick="taskPageManager.downloadFile('${fileId}')" class="create-btn" style="padding: 12px 24px; font-size: 16px;">
+                        📥 Download File
+                    </button>
+                </div>
+            `;
+        }
+    }
+
+    getFileIcon(filename) {
+        const ext = filename.split('.').pop().toLowerCase();
+        const icons = {
+            'pdf': '📄',
+            'doc': '📝', 'docx': '📝',
+            'xls': '📊', 'xlsx': '📊',
+            'ppt': '📊', 'pptx': '📊',
+            'txt': '📃',
+            'md': '📃',
+            'html': '🌐',
+            'jpg': '🖼️', 'jpeg': '🖼️', 'png': '🖼️', 'gif': '🖼️', 'svg': '🖼️',
+            'zip': '📦', 'rar': '📦',
+            'mp4': '🎥', 'avi': '🎥',
+            'mp3': '🎵', 'wav': '🎵'
+        };
+        return icons[ext] || '📄';
+    }
+
+    formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    showFileUpload() {
+        const form = document.getElementById('fileUploadForm');
+        if (form) {
+            form.style.display = 'block';
+        }
+    }
+
+    cancelFileUpload() {
+        const form = document.getElementById('fileUploadForm');
+        if (form) {
+            form.style.display = 'none';
+        }
+        this.selectedFiles = [];
+        document.getElementById('fileInput').value = '';
+    }
+
+    handleFileSelect(event) {
+        this.selectedFiles = Array.from(event.target.files);
+        const uploadArea = document.querySelector('.upload-area .upload-text p');
+        
+        if (this.selectedFiles.length > 0) {
+            uploadArea.textContent = `${this.selectedFiles.length} file(s) selected`;
+        } else {
+            uploadArea.textContent = 'Click to select files or drag and drop';
+        }
+    }
+
+    async uploadSelectedFiles() {
+        if (this.selectedFiles.length === 0) {
+            this.showError('Please select files to upload');
+            return;
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append('task_id', this.currentTask.id);
+            
+            this.selectedFiles.forEach((file, index) => {
+                formData.append('files', file);
+            });
+
+            // Show upload progress
+            this.showNotification('Uploading files...', 'info');
+
+            const response = await fetch('http://localhost:8000/api/v1/files/upload', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                },
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                // Add uploaded files to task
+                if (!this.currentTask.files) {
+                    this.currentTask.files = [];
+                }
+                
+                result.files.forEach(file => {
+                    this.currentTask.files.push(file);
+                });
+
+                // Refresh files display
+                this.refreshFilesDisplay();
+                
+                // Hide upload form and reset
+                this.cancelFileUpload();
+                
+                this.showSuccess(`${result.files.length} file(s) uploaded successfully!`);
+            } else {
+                this.showError(result.message || 'Failed to upload files');
+            }
+        } catch (error) {
+            console.error('Error uploading files:', error);
+            this.showError('Error uploading files');
+        }
+    }
+
+    async downloadFile(fileId) {
+        try {
+            const response = await fetch(`http://localhost:8000/api/v1/files/${fileId}/download`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                }
+            });
+
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = ''; // Browser will use filename from Content-Disposition header
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            } else {
+                this.showError('Failed to download file');
+            }
+        } catch (error) {
+            console.error('Error downloading file:', error);
+            this.showError('Error downloading file');
+        }
+    }
+
+    async deleteFile(fileId) {
+        if (!confirm('Are you sure you want to delete this file?')) {
+            return;
+        }
+
+        try {
+            const response = await api.delete(`/files/${fileId}`);
+            
+            // Remove from current task files
+            this.currentTask.files = this.currentTask.files.filter(f => f.id !== fileId);
+            
+            // Refresh display
+            this.refreshFilesDisplay();
+            
+            this.showSuccess('File deleted successfully!');
+        } catch (error) {
+            console.error('Error deleting file:', error);
+            this.showError('Error deleting file');
+        }
+    }
+
+    refreshFilesDisplay() {
+        const filesList = document.getElementById('taskFilesList');
+        if (filesList) {
+            filesList.innerHTML = this.renderTaskFiles();
+        }
     }
 
     // Render files for a milestone
@@ -682,11 +1516,8 @@ class TaskPageManager {
     // Load chat messages for task
     async loadChatMessages(taskId) {
         try {
-            const response = await fetch(`http://localhost:8000/api/v1/chat/task/${taskId}/messages`);
-            if (response.ok) {
-                this.chatMessages = await response.json();
-                this.renderChatMessages();
-            }
+            this.chatMessages = await api.getTaskChatMessages(taskId);
+            this.renderChatMessages();
         } catch (error) {
             console.error('Failed to load chat messages:', error);
         }
@@ -761,23 +1592,13 @@ class TaskPageManager {
 
         try {
             const messageData = {
-                content: content,
-                sender_id: this.app.currentUser?.id,
-                sender_email: this.app.currentUser?.email || 'unknown@example.com',
-                message_type: 'task_chat'
+                content: content
             };
 
-            const response = await fetch(`http://localhost:8000/api/v1/chat/task/${this.currentTask.id}/messages`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(messageData)
-            });
+            const response = await api.sendTaskChatMessage(this.currentTask.id, messageData);
 
-            if (response.ok) {
-                const newMessage = await response.json();
-                this.chatMessages.push(newMessage);
+            if (response.id) {
+                this.chatMessages.push(response);
                 this.renderChatMessages();
                 chatInput.value = '';
                 
@@ -788,7 +1609,7 @@ class TaskPageManager {
             }
         } catch (error) {
             console.error('Failed to send chat message:', error);
-            this.app.showNotification('Failed to send message. Please try again.', 'error');
+            this.showNotification('Failed to send message. Please try again.', 'error');
         }
     }
 
@@ -822,11 +1643,8 @@ class TaskPageManager {
     // Load public comments for task
     async loadPublicComments(taskId) {
         try {
-            const response = await fetch(`http://localhost:8000/api/v1/comments/task/${taskId}`);
-            if (response.ok) {
-                this.publicComments = await response.json();
-                this.renderPublicComments();
-            }
+            this.publicComments = await api.getTaskComments(taskId);
+            this.renderPublicComments();
         } catch (error) {
             console.error('Failed to load public comments:', error);
         }
@@ -903,30 +1721,20 @@ class TaskPageManager {
 
         const content = commentInput.value.trim();
         if (!content) {
-            this.app.showNotification('Please enter a comment before submitting.', 'error');
+            this.showNotification('Please enter a comment before submitting.', 'error');
             return;
         }
 
         try {
             const commentData = {
                 content: content,
-                task_id: this.currentTask.id,
-                author_id: this.app.currentUser?.id,
-                author_email: this.app.currentUser?.email || 'unknown@example.com',
-                author_role: this.app.currentUser?.role || 'Community Member'
+                task_id: this.currentTask.id
             };
 
-            const response = await fetch('http://localhost:8000/api/v1/comments/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(commentData)
-            });
+            const response = await api.createComment(commentData);
 
-            if (response.ok) {
-                const newComment = await response.json();
-                this.publicComments.push(newComment);
+            if (response.id) {
+                this.publicComments.push(response);
                 this.renderPublicComments();
                 commentInput.value = '';
                 
@@ -945,7 +1753,7 @@ class TaskPageManager {
             }
         } catch (error) {
             console.error('Failed to submit comment:', error);
-            this.app.showNotification('Failed to submit comment. Please try again.', 'error');
+            this.showNotification('Failed to submit comment. Please try again.', 'error');
         }
     }
 
@@ -1514,6 +2322,150 @@ class TaskPageManager {
         } catch (error) {
             console.error('Failed to create milestone:', error);
             this.app.showNotification('Failed to create milestone', 'error');
+        }
+    }
+
+    // Task action methods
+    async claimTask() {
+        try {
+            const response = await api.claimTask(this.currentTask.id);
+            if (response) {
+                this.currentTask.assignee_id = this.app.currentUser?.id;
+                this.currentTask.status = 'in_progress';
+                this.refreshTaskMetadata();
+                this.showSuccess('Task claimed successfully!');
+            }
+        } catch (error) {
+            console.error('Error claiming task:', error);
+            this.showError('Failed to claim task');
+        }
+    }
+
+    async makeTaskAvailable() {
+        try {
+            const response = await api.updateTaskStatus(this.currentTask.id, 'available');
+            if (response) {
+                this.currentTask.assignee_id = null;
+                this.currentTask.status = 'available';
+                this.refreshTaskMetadata();
+                this.showSuccess('Task is now available for claiming');
+            }
+        } catch (error) {
+            console.error('Error making task available:', error);
+            this.showError('Failed to make task available');
+        }
+    }
+
+    async markTaskCompleted() {
+        try {
+            const response = await api.updateTaskStatus(this.currentTask.id, 'completed');
+            if (response) {
+                this.currentTask.status = 'completed';
+                this.refreshTaskMetadata();
+                this.showSuccess('Task marked as completed!');
+            }
+        } catch (error) {
+            console.error('Error completing task:', error);
+            this.showError('Failed to complete task');
+        }
+    }
+
+    showAssignModal() {
+        // Create assignment modal
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        `;
+
+        modal.innerHTML = `
+            <div style="
+                background: rgba(68, 68, 68, 0.95);
+                border-radius: 16px;
+                padding: 24px;
+                max-width: 400px;
+                width: 90%;
+                border: 1px solid rgba(78, 205, 196, 0.2);
+            ">
+                <h3 style="color: #ffffff; margin-bottom: 16px;">👥 Assign Task</h3>
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; color: #ffffff;">Team Member Email:</label>
+                    <input type="email" id="assigneeEmail" placeholder="Enter team member's email" 
+                           style="width: 100%; padding: 12px; border: 1px solid rgba(78, 205, 196, 0.3); border-radius: 8px; background: rgba(68, 68, 68, 0.1); color: #ffffff;">
+                </div>
+                <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                    <button onclick="this.closest('.modal').remove()" 
+                            style="padding: 10px 20px; border: 1px solid rgba(68, 68, 68, 0.4); background: rgba(68, 68, 68, 0.1); color: #ffffff; border-radius: 8px; cursor: pointer;">
+                        Cancel
+                    </button>
+                    <button onclick="taskPageManager.assignTaskToUser(document.getElementById('assigneeEmail').value); this.closest('.modal').remove()" 
+                            class="create-btn" style="padding: 10px 20px;">
+                        Assign Task
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+        document.getElementById('assigneeEmail').focus();
+    }
+
+    async assignTaskToUser(email) {
+        if (!email || !email.trim()) {
+            this.showError('Please enter a valid email address');
+            return;
+        }
+
+        try {
+            // Update the task with the new assignee email
+            const updatedTask = {
+                ...this.currentTask,
+                assignee_id: email.trim(),
+                status: 'in_progress'
+            };
+            
+            const response = await api.updateTask(this.currentTask.id, updatedTask);
+            if (response) {
+                this.currentTask = response;
+                this.refreshTaskMetadata();
+                this.showSuccess(`Task assigned to ${email}`);
+            }
+        } catch (error) {
+            console.error('Error assigning task:', error);
+            this.showError('Failed to assign task. Please ensure the email is valid.');
+        }
+    }
+
+    refreshTaskMetadata() {
+        // Re-render the task details section
+        const detailsGrid = document.querySelector('.details-grid');
+        if (detailsGrid) {
+            detailsGrid.innerHTML = this.renderTaskMetadata();
+        }
+    }
+
+    showSuccess(message) {
+        if (this.app && this.app.showNotification) {
+            this.app.showNotification(message, 'success');
+        } else {
+            console.log('Success:', message);
+        }
+    }
+
+    showError(message) {
+        if (this.app && this.app.showNotification) {
+            this.app.showNotification(message, 'error');
+        } else {
+            console.error('Error:', message);
         }
     }
 }

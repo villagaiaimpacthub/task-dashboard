@@ -42,35 +42,24 @@ python3 server.py
 
 6. Access the application at http://localhost:3000
 
-## 🚀 Simple Backend Quick Start
+## 🚀 Development Quick Start
 
-For development with the simplified backend:
-
-### Option 1: Use the Startup Script (Recommended)
+### FastAPI Backend
 ```bash
-./start_services.sh
+cd hive-backend-alpha
+python3 -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-### Option 2: Manual Start
-1. **Stop any existing services**:
-   ```bash
-   ./stop_services.sh
-   ```
-
-2. **Start the Backend**:
-   ```bash
-   python3 simple_backend.py &
-   ```
-
-3. **Start the Frontend**:
-   ```bash
-   cd hive-frontend
-   python3 simple_server.py &
-   ```
+### Frontend
+```bash
+cd hive-frontend
+python3 -m http.server 3000
+```
 
 **Access Points**:
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:8000
+- API Documentation: http://localhost:8000/docs
 - Health Check: http://localhost:8000/health
 
 **Note**: Always use ports 3000 (frontend) and 8000 (backend) as defined in API_CONTRACT.md
@@ -109,11 +98,13 @@ For development with the simplified backend:
 
 ```
 task-dashboard/
-├── hive-backend-alpha/     # Backend API
-├── frontend/          # Frontend application
+├── hive-backend-alpha/     # FastAPI Backend (Active)
+├── hive-frontend/          # Frontend Application (Active)  
+├── archive/                # Archived legacy files
 ├── project-docs/           # Original specifications
-├── START_HERE.md          # Getting started guide
-└── DEPLOYMENT_GUIDE.md    # Deployment instructions
+├── API_CONTRACT.md         # API documentation
+├── START_HERE.md           # Getting started guide
+└── README.md              # This file
 ```
 
 ## 🤝 Contributing

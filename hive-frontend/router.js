@@ -62,14 +62,14 @@ class HIVERouter {
         // Handle /task/{id} pattern
         const taskMatch = path.match(/^\/task\/(.+)$/);
         if (taskMatch) {
-            params.taskId = taskMatch[1];
+            params.id = taskMatch[1];
             params.type = 'task';
         }
 
         // Handle /project/{id} pattern  
         const projectMatch = path.match(/^\/project\/(.+)$/);
         if (projectMatch) {
-            params.projectId = projectMatch[1];
+            params.id = projectMatch[1];
             params.type = 'project';
         }
 

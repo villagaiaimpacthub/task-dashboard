@@ -1,7 +1,10 @@
 from datetime import datetime
 from uuid import UUID
 from pydantic import BaseModel
-from typing import Optional, List, Union
+from typing import Optional, List, Union, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .milestone import MilestoneResponse
 
 
 class TaskCreate(BaseModel):
@@ -17,8 +20,9 @@ class TaskCreate(BaseModel):
     required_skills: Optional[List[str]] = []
     dependencies: Optional[List[str]] = []
     definition_of_done: Optional[str] = None
-    success_metrics: Optional[Union[str, List[str]]] = None
-    deliverables: Optional[Union[str, List[str]]] = None
+    success_metrics: Optional[List[str]] = None
+    deliverables: Optional[List[str]] = None
+    project_id: Optional[UUID] = None
 
 
 class TaskUpdate(BaseModel):
@@ -35,8 +39,8 @@ class TaskUpdate(BaseModel):
     required_skills: Optional[List[str]] = None
     dependencies: Optional[List[str]] = None
     definition_of_done: Optional[str] = None
-    success_metrics: Optional[Union[str, List[str]]] = None
-    deliverables: Optional[Union[str, List[str]]] = None
+    success_metrics: Optional[List[str]] = None
+    deliverables: Optional[List[str]] = None
 
 
 class TaskAssign(BaseModel):
@@ -62,8 +66,8 @@ class TaskResponse(BaseModel):
     required_skills: List[str]
     dependencies: List[str]
     definition_of_done: Optional[str]
-    success_metrics: Optional[Union[str, List[str]]]
-    deliverables: Optional[Union[str, List[str]]]
+    success_metrics: Optional[List[str]] = None
+    deliverables: Optional[List[str]] = None
     owner_id: UUID
     assignee_id: Optional[UUID]
     created_at: datetime

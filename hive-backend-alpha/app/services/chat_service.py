@@ -1,6 +1,6 @@
 from uuid import UUID
-from sqlalchemy.orm import Session
-from sqlalchemy import desc, and_, or_
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import desc, and_, or_, select
 from typing import List, Optional
 from datetime import datetime
 
@@ -11,10 +11,10 @@ from ..schemas.chat import ChatMessageCreate, ChatMessageWithSender, TaskChatRoo
 
 
 class ChatService:
-    def __init__(self, db: Session):
+    def __init__(self, db: AsyncSession):
         self.db = db
     
-    def create_task_chat_message(self, task_id: UUID, sender_id: UUID, content: str) -> ChatMessage:
+    async def create_task_chat_message(self, task_id: UUID, sender_id: UUID, content: str) -> ChatMessage:
         """Create a new chat message for a task."""
         message = ChatMessage(
             content=content,
@@ -23,11 +23,11 @@ class ChatService:
             sender_id=sender_id
         )
         self.db.add(message)
-        self.db.commit()
-        self.db.refresh(message)
+        await self.db.commit()
+        await self.db.refresh(message)
         return message
     
-    def create_direct_message(self, sender_id: UUID, recipient_id: UUID, content: str) -> ChatMessage:
+    async def create_direct_message(self, sender_id: UUID, recipient_id: UUID, content: str) -> ChatMessage:
         """Create a direct message between two users."""
         message = ChatMessage(
             content=content,
@@ -36,34 +36,35 @@ class ChatService:
             recipient_id=recipient_id
         )
         self.db.add(message)
-        self.db.commit()
-        self.db.refresh(message)
+        await self.db.commit()
+        await self.db.refresh(message)
         return message
     
-    def get_task_chat_messages(
+    async def get_task_chat_messages(
         self, 
         task_id: UUID, 
         limit: int = 50, 
         offset: int = 0
     ) -> List[ChatMessageWithSender]:
         """Get chat messages for a specific task."""
-        messages = (
-            self.db.query(
+        stmt = (
+            select(
                 ChatMessage,
                 User.email,
                 User.role,
                 User.is_online
             )
             .join(User, ChatMessage.sender_id == User.id)
-            .filter(
+            .where(
                 ChatMessage.task_id == task_id,
                 ChatMessage.message_type == MessageType.TASK_CHAT
             )
             .order_by(desc(ChatMessage.created_at))
             .offset(offset)
             .limit(limit)
-            .all()
         )
+        result = await self.db.execute(stmt)
+        messages = result.all()
         
         result = []
         for message, sender_email, sender_role, is_online in messages:
@@ -83,7 +84,7 @@ class ChatService:
         # Reverse to get chronological order (oldest first)
         return list(reversed(result))
     
-    def get_direct_messages(
+    async def get_direct_messages(
         self,
         user_id: UUID,
         other_user_id: UUID,
@@ -91,15 +92,15 @@ class ChatService:
         offset: int = 0
     ) -> List[ChatMessageWithSender]:
         """Get direct messages between two users."""
-        messages = (
-            self.db.query(
+        stmt = (
+            select(
                 ChatMessage,
                 User.email,
                 User.role,
                 User.is_online
             )
             .join(User, ChatMessage.sender_id == User.id)
-            .filter(
+            .where(
                 ChatMessage.message_type == MessageType.DIRECT_MESSAGE,
                 or_(
                     and_(
@@ -115,8 +116,9 @@ class ChatService:
             .order_by(desc(ChatMessage.created_at))
             .offset(offset)
             .limit(limit)
-            .all()
         )
+        result = await self.db.execute(stmt)
+        messages = result.all()
         
         result = []
         for message, sender_email, sender_role, is_online in messages:
@@ -136,15 +138,17 @@ class ChatService:
         # Reverse to get chronological order (oldest first)
         return list(reversed(result))
     
-    def get_user_task_chat_rooms(self, user_id: UUID) -> List[TaskChatRoom]:
+    async def get_user_task_chat_rooms(self, user_id: UUID) -> List[TaskChatRoom]:
         """Get all task chat rooms for a user (tasks they own or are assigned to)."""
         # Get tasks where user is owner or assignee
-        tasks = self.db.query(Task).filter(
+        stmt = select(Task).where(
             or_(
                 Task.owner_id == user_id,
                 Task.assignee_id == user_id
             )
-        ).all()
+        )
+        result = await self.db.execute(stmt)
+        tasks = result.scalars().all()
         
         chat_rooms = []
         for task in tasks:
@@ -152,7 +156,9 @@ class ChatService:
             participants = []
             
             # Add owner
-            owner = self.db.query(User).filter(User.id == task.owner_id).first()
+            owner_stmt = select(User).where(User.id == task.owner_id)
+            owner_result = await self.db.execute(owner_stmt)
+            owner = owner_result.scalar_one_or_none()
             if owner:
                 participants.append({
                     "id": str(owner.id),
@@ -163,7 +169,9 @@ class ChatService:
             
             # Add assignee if different from owner
             if task.assignee_id and task.assignee_id != task.owner_id:
-                assignee = self.db.query(User).filter(User.id == task.assignee_id).first()
+                assignee_stmt = select(User).where(User.id == task.assignee_id)
+                assignee_result = await self.db.execute(assignee_stmt)
+                assignee = assignee_result.scalar_one_or_none()
                 if assignee:
                     participants.append({
                         "id": str(assignee.id),
@@ -173,21 +181,23 @@ class ChatService:
                     })
             
             # Get last message
-            last_message_data = (
-                self.db.query(
+            last_message_stmt = (
+                select(
                     ChatMessage,
                     User.email,
                     User.role,
                     User.is_online
                 )
                 .join(User, ChatMessage.sender_id == User.id)
-                .filter(
+                .where(
                     ChatMessage.task_id == task.id,
                     ChatMessage.message_type == MessageType.TASK_CHAT
                 )
                 .order_by(desc(ChatMessage.created_at))
-                .first()
+                .limit(1)
             )
+            last_message_result = await self.db.execute(last_message_stmt)
+            last_message_data = last_message_result.first()
             
             last_message = None
             if last_message_data:
@@ -214,9 +224,11 @@ class ChatService:
         
         return chat_rooms
     
-    def can_user_access_task_chat(self, user_id: UUID, task_id: UUID) -> bool:
+    async def can_user_access_task_chat(self, user_id: UUID, task_id: UUID) -> bool:
         """Check if a user can access a task's chat (owner or assignee)."""
-        task = self.db.query(Task).filter(Task.id == task_id).first()
+        stmt = select(Task).where(Task.id == task_id)
+        result = await self.db.execute(stmt)
+        task = result.scalar_one_or_none()
         if not task:
             return False
         

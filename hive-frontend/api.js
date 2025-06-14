@@ -180,6 +180,55 @@ class APIClient {
         });
     }
 
+    // Project endpoints
+    async getProjects(skip = 0, limit = 100, status = null) {
+        let url = `/projects/?skip=${skip}&limit=${limit}`;
+        if (status) {
+            url += `&status=${status}`;
+        }
+        return this.request(url);
+    }
+
+    async getMyProjects(skip = 0, limit = 100, status = null) {
+        let url = `/projects/my?skip=${skip}&limit=${limit}`;
+        if (status) {
+            url += `&status=${status}`;
+        }
+        return this.request(url);
+    }
+
+    async getProject(projectId) {
+        return this.request(`/projects/${projectId}`);
+    }
+
+    async createProject(projectData) {
+        return this.request('/projects/', {
+            method: 'POST',
+            body: JSON.stringify(projectData),
+        });
+    }
+
+    async updateProject(projectId, projectData) {
+        return this.request(`/projects/${projectId}`, {
+            method: 'PUT',
+            body: JSON.stringify(projectData),
+        });
+    }
+
+    async deleteProject(projectId) {
+        return this.request(`/projects/${projectId}`, {
+            method: 'DELETE',
+        });
+    }
+
+    async getProjectTasks(projectId) {
+        return this.request(`/projects/${projectId}/tasks`);
+    }
+
+    async getProjectsSummary() {
+        return this.request('/projects/summary');
+    }
+
     // Dashboard endpoints
     async getDashboardSummary() {
         return this.request('/dashboard/summary', { auth: false });
@@ -197,6 +246,87 @@ class APIClient {
     async healthCheck() {
         const response = await fetch(`${API_BASE_URL}/health`);
         return response.json();
+    }
+
+    // Comments endpoints
+    async getTaskComments(taskId) {
+        return this.request(`/comments/task/${taskId}`);
+    }
+
+    async createComment(commentData) {
+        return this.request('/comments/', {
+            method: 'POST',
+            body: JSON.stringify(commentData),
+        });
+    }
+
+    async updateComment(commentId, commentData) {
+        return this.request(`/comments/${commentId}`, {
+            method: 'PUT',
+            body: JSON.stringify(commentData),
+        });
+    }
+
+    async deleteComment(commentId) {
+        return this.request(`/comments/${commentId}`, {
+            method: 'DELETE',
+        });
+    }
+
+    // Milestone endpoints
+    async createMilestone(milestoneData) {
+        return this.request('/milestones/', {
+            method: 'POST',
+            body: JSON.stringify(milestoneData),
+        });
+    }
+
+    async getMilestone(milestoneId) {
+        return this.request(`/milestones/${milestoneId}`);
+    }
+
+    async updateMilestone(milestoneId, milestoneData) {
+        return this.request(`/milestones/${milestoneId}`, {
+            method: 'PUT',
+            body: JSON.stringify(milestoneData),
+        });
+    }
+
+    async deleteMilestone(milestoneId) {
+        return this.request(`/milestones/${milestoneId}`, {
+            method: 'DELETE',
+        });
+    }
+
+    async getTaskMilestones(taskId) {
+        return this.request(`/tasks/${taskId}/milestones`);
+    }
+
+    // Chat endpoints
+    async getTaskChatMessages(taskId, limit = 50, offset = 0) {
+        return this.request(`/chat/task/${taskId}/messages?limit=${limit}&offset=${offset}`);
+    }
+
+    async sendTaskChatMessage(taskId, messageData) {
+        return this.request(`/chat/task/${taskId}/messages`, {
+            method: 'POST',
+            body: JSON.stringify(messageData),
+        });
+    }
+
+    async getUserTaskChatRooms() {
+        return this.request('/chat/task-rooms');
+    }
+
+    async sendDirectMessage(recipientId, messageData) {
+        return this.request(`/chat/direct/${recipientId}/messages`, {
+            method: 'POST',
+            body: JSON.stringify(messageData),
+        });
+    }
+
+    async getDirectMessages(otherUserId, limit = 50, offset = 0) {
+        return this.request(`/chat/direct/${otherUserId}/messages?limit=${limit}&offset=${offset}`);
     }
 
     // Check if user is authenticated

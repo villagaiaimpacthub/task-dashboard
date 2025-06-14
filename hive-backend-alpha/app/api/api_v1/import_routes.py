@@ -159,6 +159,7 @@ class SimpleMasterPlanParser:
         
         lines = content.split('\n')
         current_task = None
+        current_project = None
         
         for line in lines:
             line = line.strip()
@@ -193,6 +194,7 @@ class SimpleMasterPlanParser:
                     project_name = project_text
                 
                 if project_name:
+                    current_project = project_name
                     projects.append({
                         "id": f"proj_{len(projects)}",
                         "name": project_name,
@@ -219,6 +221,7 @@ class SimpleMasterPlanParser:
                         "dependencies": [],
                         "priority": "medium",
                         "impact_points": 100,
+                        "project": current_project,  # Associate with current project
                         "_needs_inference": True  # Flag for later processing
                     }
                 
@@ -255,6 +258,12 @@ class SimpleMasterPlanParser:
                 deliverables_text = re.sub(r'\*\*Deliverables:\*\*|Deliverables:', '', line).strip()
                 if deliverables_text and deliverables_text.lower() != "deliverables not specified":
                     current_task["deliverables"] = deliverables_text
+                    
+            # Parse Estimated Hours (**Estimated Hours:**)
+            elif current_task and ('**Estimated Hours:**' in line or 'Estimated Hours:' in line):
+                hours_text = re.sub(r'\*\*Estimated Hours:\*\*|Estimated Hours:', '', line).strip()
+                if hours_text:
+                    current_task["estimated_hours"] = hours_text
                     
             # Parse multi-line content for metrics and deliverables (when they span multiple lines)
             elif current_task and line.startswith('- ') and len(line.strip()) > 2:
@@ -323,6 +332,20 @@ class SimpleMasterPlanParser:
                 
                 # Clean up the inference flag
                 del task['_needs_inference']
+            
+            # Extract estimated hours from description if not already set
+            if not task.get('estimated_hours') and task.get('description'):
+                description = task['description']
+                # Look for patterns like "**Estimated Hours:** 12-15 hours" or similar
+                hours_pattern = r'\*\*Estimated Hours:\*\*\s*([^*\n]+)|Estimated Hours:\s*([^*\n]+)'
+                match = re.search(hours_pattern, description, re.IGNORECASE)
+                if match:
+                    hours_text = (match.group(1) or match.group(2)).strip()
+                    task['estimated_hours'] = hours_text
+                    # Remove the estimated hours from description
+                    task['description'] = re.sub(hours_pattern, '', description, flags=re.IGNORECASE).strip()
+                    # Clean up any double spaces or newlines
+                    task['description'] = re.sub(r'\s+', ' ', task['description']).strip()
         
         return {
             "waypoints": waypoints,
@@ -341,7 +364,9 @@ def validate_master_plan(content: str):
 from app.dependencies import get_current_user, get_db
 from app.models.user import User
 from app.schemas.task import TaskCreate
+from app.schemas.project import ProjectCreate
 from app.services.task_service import create_task
+from app.services.project_service import create_project
 from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter()
@@ -399,19 +424,46 @@ async def confirm_import(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Import the parsed tasks into the database"""
+    """Import the parsed projects and tasks into the database"""
     try:
         preview_data = request.preview_data
-        imported_count = 0
+        imported_projects = 0
+        imported_tasks = 0
+        project_id_map = {}  # Map project names to created project IDs
         
-        # Import tasks from the preview data
+        # First, create projects from the preview data
+        if "projects" in preview_data:
+            for project_data in preview_data["projects"]:
+                print(f"DEBUG: Creating project '{project_data.get('name')}'")
+                
+                # Convert parsed project to ProjectCreate schema
+                project_create = ProjectCreate(
+                    title=project_data.get("name", ""),
+                    description=project_data.get("description", "Project imported from master plan"),
+                    category=project_data.get("category", "General"),
+                    priority="medium",  # Default priority
+                    impact_points=project_data.get("impact_points", 100),
+                    deliverables=project_data.get("deliverables", []),
+                    definition_of_done=project_data.get("definition_of_done", "")
+                )
+                
+                # Create the project
+                created_project = await create_project(db, project_create, current_user.id)
+                project_id_map[project_data.get("name")] = created_project.id
+                imported_projects += 1
+                print(f"DEBUG: Created project with ID: {created_project.id}")
+        
+        # Then, import tasks and associate them with projects
         if "tasks" in preview_data:
             for task_data in preview_data["tasks"]:
-                # Debug: Check what data we have
                 print(f"DEBUG: Creating task '{task_data.get('title')}'")
-                print(f"DEBUG: Dependencies: {task_data.get('dependencies')}")
-                print(f"DEBUG: Required skills: {task_data.get('required_skills')}")
-                print(f"DEBUG: Category: {task_data.get('category')}")
+                
+                # Try to find which project this task belongs to
+                project_id = None
+                task_project = task_data.get("project")
+                if task_project and task_project in project_id_map:
+                    project_id = project_id_map[task_project]
+                    print(f"DEBUG: Associating task with project ID: {project_id}")
                 
                 # Convert parsed task to TaskCreate schema
                 task_create = TaskCreate(
@@ -425,17 +477,21 @@ async def confirm_import(
                     dependencies=task_data.get("dependencies", []),
                     definition_of_done=task_data.get("definition_of_done"),
                     success_metrics=task_data.get("success_metrics"),
-                    deliverables=task_data.get("deliverables")
+                    deliverables=task_data.get("deliverables"),
+                    project_id=project_id  # Associate with project
                 )
                 
                 # Create the task
                 await create_task(db, task_create, current_user)
-                imported_count += 1
+                imported_tasks += 1
         
         return {
             "status": "success",
-            "imported_count": imported_count
+            "imported_projects": imported_projects,
+            "imported_tasks": imported_tasks,
+            "total_imported": imported_projects + imported_tasks
         }
         
     except Exception as e:
+        print(f"ERROR in import: {str(e)}")
         raise HTTPException(status_code=500, detail={"status": "error", "message": str(e)})

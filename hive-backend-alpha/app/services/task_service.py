@@ -2,6 +2,7 @@ from typing import List, Optional
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 from app.models.task import Task
 from app.models.user import User
@@ -26,7 +27,8 @@ async def create_task(db: AsyncSession, task_create: TaskCreate, owner: User) ->
         definition_of_done=task_create.definition_of_done,
         success_metrics=task_create.success_metrics,
         deliverables=task_create.deliverables,
-        owner_id=owner.id
+        owner_id=owner.id,
+        project_id=task_create.project_id
     )
     db.add(task)
     await db.commit()
@@ -35,12 +37,20 @@ async def create_task(db: AsyncSession, task_create: TaskCreate, owner: User) ->
 
 
 async def get_task_by_id(db: AsyncSession, task_id: UUID) -> Optional[Task]:
-    result = await db.execute(select(Task).where(Task.id == task_id))
+    result = await db.execute(
+        select(Task)
+        .options(selectinload(Task.milestones))
+        .where(Task.id == task_id)
+    )
     return result.scalar_one_or_none()
 
 
 async def get_tasks(db: AsyncSession, skip: int = 0, limit: int = 100) -> List[Task]:
-    result = await db.execute(select(Task).offset(skip).limit(limit))
+    result = await db.execute(
+        select(Task)
+        .offset(skip)
+        .limit(limit)
+    )
     return result.scalars().all()
 
 

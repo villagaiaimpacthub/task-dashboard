@@ -2,8 +2,8 @@
 class HIVEApp {
     constructor() {
         this.currentUser = null;
-        this.tasks = [];
-        this.filteredTasks = [];
+        this.projects = [];
+        this.filteredProjects = [];
         this.currentFilter = 'all';
         this.dashboardStats = null;
         
@@ -232,28 +232,36 @@ class HIVEApp {
 
     // Load initial data
     async loadInitialData() {
-        await Promise.all([
-            this.loadTasks(),
-            this.loadDashboardStats(),
-            this.loadOnlineUsers(),
-            this.loadActiveTasks()
-        ]);
-    }
-
-    // Task management
-    async loadTasks() {
         try {
-            this.tasks = await api.getTasks();
-            this.filterTasks();
-            this.updateTaskCounts();
+            await Promise.all([
+                this.loadProjects(),
+                this.loadDashboardStats(),
+                this.loadOnlineUsers(),
+                this.loadActiveTasks()
+            ]);
         } catch (error) {
-            console.error('Failed to load tasks:', error);
-            this.showNotification('Failed to load tasks', 'error');
+            console.error('Error loading initial data:', error);
+            // Don't show error notification if projects actually loaded
+            if (!this.projects || this.projects.length === 0) {
+                this.showNotification('Failed to load projects', 'error');
+            }
         }
     }
 
-    async refreshTasks() {
-        await this.loadTasks();
+    // Project management
+    async loadProjects() {
+        try {
+            this.projects = await api.getProjects();
+            this.filterProjects();
+            this.updateProjectCounts();
+        } catch (error) {
+            console.error('Failed to load projects:', error);
+            this.showNotification('Failed to load projects', 'error');
+        }
+    }
+
+    async refreshProjects() {
+        await this.loadProjects();
         await this.loadActiveTasks();
     }
 
@@ -309,13 +317,13 @@ class HIVEApp {
         });
     }
 
-    filterTasks() {
+    filterProjects() {
         const filter = this.currentFilter;
         if (filter === 'all') {
-            this.filteredTasks = [...this.tasks];
+            this.filteredProjects = [...this.projects];
         } else if (['urgent', 'high', 'medium', 'low'].includes(filter)) {
             // Priority filtering
-            this.filteredTasks = this.tasks.filter(task => task.priority === filter);
+            this.filteredProjects = this.projects.filter(project => project.priority === filter);
         } else if (['regenerative-ag', 'clean-energy', 'circular-economy', 'restoration', 'community', 'ocean-health'].includes(filter)) {
             // Category filtering
             const categoryMap = {
@@ -326,54 +334,60 @@ class HIVEApp {
                 'community': 'Community',
                 'ocean-health': 'Ocean Health'
             };
-            this.filteredTasks = this.tasks.filter(task => task.category === categoryMap[filter]);
+            this.filteredProjects = this.projects.filter(project => project.category === categoryMap[filter]);
         } else if (['my-created', 'my-active', 'my-completed', 'assigned-to-me'].includes(filter)) {
             // My Work filtering
             switch (filter) {
                 case 'my-created':
-                    this.filteredTasks = this.tasks.filter(task => task.owner_id === this.currentUser?.id);
+                    this.filteredProjects = this.projects.filter(project => project.owner_id === this.currentUser?.id);
                     break;
                 case 'my-active':
-                    this.filteredTasks = this.tasks.filter(task => 
-                        task.assignee_id === this.currentUser?.id && 
-                        ['available', 'in_progress'].includes(task.status)
+                    this.filteredProjects = this.projects.filter(project => 
+                        project.assignee_id === this.currentUser?.id && 
+                        ['planning', 'active'].includes(project.status)
                     );
                     break;
                 case 'my-completed':
-                    this.filteredTasks = this.tasks.filter(task => 
-                        (task.owner_id === this.currentUser?.id || task.assignee_id === this.currentUser?.id) && 
-                        task.status === 'completed'
+                    this.filteredProjects = this.projects.filter(project => 
+                        (project.owner_id === this.currentUser?.id || project.assignee_id === this.currentUser?.id) && 
+                        project.status === 'completed'
                     );
                     break;
                 case 'assigned-to-me':
-                    this.filteredTasks = this.tasks.filter(task => task.assignee_id === this.currentUser?.id);
+                    this.filteredProjects = this.projects.filter(project => project.assignee_id === this.currentUser?.id);
                     break;
             }
+        } else if (filter.startsWith('skill:')) {
+            // Skill filtering
+            const skill = filter.substring(6);
+            this.filteredProjects = this.projects.filter(project => 
+                project.required_skills && project.required_skills.includes(skill)
+            );
         } else {
-            this.filteredTasks = this.tasks.filter(task => task.status === filter);
+            this.filteredProjects = this.projects.filter(project => project.status === filter);
         }
-        this.renderTasks();
+        this.renderProjects();
     }
 
-    updateTaskCounts() {
+    updateProjectCounts() {
         if (!this.currentUser) return;
         
         const counts = {
-            all: this.tasks.length,
-            urgent: this.tasks.filter(t => t.priority === 'urgent').length,
-            high: this.tasks.filter(t => t.priority === 'high').length,
-            medium: this.tasks.filter(t => t.priority === 'medium').length,
-            low: this.tasks.filter(t => t.priority === 'low').length,
-            myCreated: this.tasks.filter(t => t.owner_id === this.currentUser.id).length,
-            myActive: this.tasks.filter(t => 
-                t.assignee_id === this.currentUser.id && 
-                ['available', 'in_progress'].includes(t.status)
+            all: this.projects.length,
+            urgent: this.projects.filter(p => p.priority === 'urgent').length,
+            high: this.projects.filter(p => p.priority === 'high').length,
+            medium: this.projects.filter(p => p.priority === 'medium').length,
+            low: this.projects.filter(p => p.priority === 'low').length,
+            myCreated: this.projects.filter(p => p.owner_id === this.currentUser.id).length,
+            myActive: this.projects.filter(p => 
+                p.assignee_id === this.currentUser.id && 
+                ['planning', 'active'].includes(p.status)
             ).length,
-            myCompleted: this.tasks.filter(t => 
-                (t.owner_id === this.currentUser.id || t.assignee_id === this.currentUser.id) && 
-                t.status === 'completed'
+            myCompleted: this.projects.filter(p => 
+                (p.owner_id === this.currentUser.id || p.assignee_id === this.currentUser.id) && 
+                p.status === 'completed'
             ).length,
-            assignedToMe: this.tasks.filter(t => t.assignee_id === this.currentUser.id).length
+            assignedToMe: this.projects.filter(p => p.assignee_id === this.currentUser.id).length
         };
 
         Object.entries(counts).forEach(([key, count]) => {
@@ -382,129 +396,142 @@ class HIVEApp {
         });
     }
 
-    renderTasks() {
+    renderProjects() {
         const container = document.getElementById('taskGrid');
         
         if (!container) {
-            console.error('Task grid container not found');
+            console.error('Project grid container not found');
             return;
         }
         
-        if (this.filteredTasks.length === 0) {
-            container.innerHTML = '<div class="loading">No tasks found</div>';
+        if (this.filteredProjects.length === 0) {
+            container.innerHTML = '<div class="loading">No projects found</div>';
             return;
         }
 
-        container.innerHTML = this.filteredTasks.map(task => this.createTaskCard(task)).join('');
+        container.innerHTML = this.filteredProjects.map(project => this.createProjectCard(project)).join('');
         
-        // Add event listeners to task cards
-        this.setupTaskEventListeners();
+        // Add event listeners to project cards
+        this.setupProjectEventListeners();
     }
 
-    createTaskCard(task) {
-        const isOwner = task.owner_id === this.currentUser?.id;
-        const canAssign = isOwner && !task.assignee_id && task.status === 'available';
-        const canClaim = !task.assignee_id && task.status === 'available' && !isOwner;
+    createProjectCard(project) {
+        const isOwner = project.owner_id === this.currentUser?.id;
+        const canAssign = isOwner && !project.assignee_id && project.status === 'planning';
+        const canClaim = !project.assignee_id && project.status === 'planning' && !isOwner;
         
         // Generate skills HTML
-        const skillsHtml = (task.required_skills || []).map(skill => 
+        const skillsHtml = (project.required_skills || []).map(skill => 
             `<div class="skill-tag">${skill}</div>`
         ).join('');
+        
+        // Format dates
+        const startDate = project.start_date ? new Date(project.start_date).toLocaleDateString() : 'TBD';
+        const dueDate = project.due_date ? new Date(project.due_date).toLocaleDateString() : 'TBD';
+        
+        // Calculate progress
+        const progressPercent = project.completed_tasks > 0 ? 
+            Math.round((project.completed_tasks / project.task_count) * 100) : 0;
         
         // Determine action button
         let actionButton = '';
         
         if (canClaim) {
-            actionButton = `<button class="claim-btn" data-task-id="${task.id}">Claim Task</button>`;
+            actionButton = `<button class="claim-btn" data-project-id="${project.id}">Join Project</button>`;
         } else if (canAssign) {
-            actionButton = `<button class="assign-btn" data-task-id="${task.id}">Assign</button>`;
-        } else if (task.assignee_id === this.currentUser?.id) {
-            actionButton = `<button class="update-status-btn" data-task-id="${task.id}">Update Status</button>`;
-        } else if (isOwner && task.status === 'draft') {
-            actionButton = `<button class="assign-btn" data-task-id="${task.id}">Make Available</button>`;
+            actionButton = `<button class="assign-btn" data-project-id="${project.id}">Assign</button>`;
+        } else if (project.assignee_id === this.currentUser?.id) {
+            actionButton = `<button class="update-status-btn" data-project-id="${project.id}">Update Status</button>`;
         }
         
         return `
-            <div class="task-card" data-task-id="${task.id}">
+            <div class="task-card project-card" data-project-id="${project.id}">
                 <div class="task-meta">
-                    <div class="task-priority priority-${task.priority}">${task.priority}</div>
-                    <div class="task-type">${task.category || 'General'}</div>
+                    <div class="task-priority priority-${project.priority}">${project.priority}</div>
+                    <div class="task-type">${project.category || 'General'}</div>
                 </div>
-                <div class="task-title">${task.title}</div>
+                <div class="task-title">${project.title}</div>
                 <div class="task-description">
-                    ${task.description || 'No description provided'}
+                    ${project.description || 'No description provided'}
+                </div>
+                <div class="project-progress">
+                    <div class="progress-info">
+                        <span>${project.completed_tasks || 0}/${project.task_count || 0} tasks completed</span>
+                        <span>${progressPercent}%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${progressPercent}%"></div>
+                    </div>
                 </div>
                 <div class="task-details">
                     <div class="detail-item">
-                        <span class="detail-icon">⏱️</span>
-                        <span>${task.estimated_hours || '2-4 hours'}</span>
+                        <span class="detail-icon">📅</span>
+                        <span>Start: ${startDate}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">⏰</span>
+                        <span>Due: ${dueDate}</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-icon">👥</span>
-                        <span>${task.team_size || '3-5 collaborators'}</span>
+                        <span>${project.team_size || 1} team members</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-icon">📍</span>
-                        <span>${task.location || 'Global'}</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-icon">📅</span>
-                        <span>Due: ${task.due_date || '1 week'}</span>
+                        <span>${project.location || 'Global'}</span>
                     </div>
                 </div>
                 <div class="task-skills">
                     ${skillsHtml}
                 </div>
                 <div class="task-footer">
-                    <div class="impact-points">+${task.impact_points || 100} Impact</div>
+                    <div class="impact-points">+${project.impact_points || 100} Impact</div>
                     <div class="task-actions">
                         ${actionButton}
-                        ${isOwner ? `<button class="delete-btn" data-task-id="${task.id}">Delete</button>` : ''}
+                        ${isOwner ? `<button class="delete-btn" data-project-id="${project.id}">Delete</button>` : ''}
                     </div>
                 </div>
             </div>
         `;
     }
 
-    setupTaskEventListeners() {
-        // Task card clicks - navigate to task page
-        document.querySelectorAll('.task-card').forEach(card => {
+    setupProjectEventListeners() {
+        // Project card clicks - navigate to project page
+        const projectCards = document.querySelectorAll('.project-card');
+        
+        projectCards.forEach(card => {
             card.addEventListener('click', (e) => {
                 // Don't navigate if clicking on action buttons or their children
                 if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
                     return;
                 }
                 
-                const taskId = card.dataset.taskId;
-                if (taskId && router && router.navigate) {
-                    router.navigate(`/task/${taskId}`);
+                const projectId = card.dataset.projectId;
+                
+                if (projectId && router && router.navigate) {
+                    router.navigate(`/project/${projectId}`);
                 }
             });
         });
 
-        // Claim buttons
+        // Claim buttons (Join Project)
         document.querySelectorAll('.claim-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => this.handleClaimTask(e));
+            btn.addEventListener('click', (e) => this.handleJoinProject(e));
         });
 
         // Assign buttons
         document.querySelectorAll('.assign-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => this.handleAssignTask(e));
+            btn.addEventListener('click', (e) => this.handleAssignProject(e));
         });
 
         // Update status buttons
         document.querySelectorAll('.update-status-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => this.handleUpdateStatus(e));
-        });
-
-        // Status buttons (legacy)
-        document.querySelectorAll('.status-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => this.handleUpdateStatus(e));
+            btn.addEventListener('click', (e) => this.handleUpdateProjectStatus(e));
         });
 
         // Delete buttons
         document.querySelectorAll('.delete-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => this.handleDeleteTask(e));
+            btn.addEventListener('click', (e) => this.handleDeleteProject(e));
         });
     }
 
@@ -529,7 +556,7 @@ class HIVEApp {
                 impactScoreEl.textContent = `+${newImpactScore} Impact`;
             }
             
-            await this.loadTasks();
+            await this.loadProjects();
             await this.loadActiveTasks();
             this.showNotification(`Task claimed! +${task.impact_points || 0} impact points earned!`);
         } catch (error) {
@@ -546,7 +573,7 @@ class HIVEApp {
         if (this.currentUser) {
             try {
                 await api.assignTask(taskId, this.currentUser.id);
-                await this.loadTasks();
+                await this.loadProjects();
                 this.showNotification('Task assigned successfully!');
             } catch (error) {
                 this.showNotification('Failed to assign task', 'error');
@@ -572,7 +599,7 @@ class HIVEApp {
         if (newStatus) {
             try {
                 await api.updateTaskStatus(taskId, newStatus);
-                await this.loadTasks();
+                await this.loadProjects();
                 this.showNotification(`Task status updated to ${newStatus}!`);
             } catch (error) {
                 this.showNotification('Failed to update task status', 'error');
@@ -587,7 +614,7 @@ class HIVEApp {
         if (confirm('Are you sure you want to delete this task?')) {
             try {
                 await api.deleteTask(taskId);
-                await this.loadTasks();
+                await this.loadProjects();
                 this.showNotification('Task deleted successfully!');
             } catch (error) {
                 this.showNotification('Failed to delete task', 'error');
@@ -645,7 +672,7 @@ class HIVEApp {
             };
 
             await api.createTask(taskData);
-            await this.loadTasks();
+            await this.loadProjects();
             this.hideTaskModal();
             this.showNotification('Task created successfully!');
             
@@ -653,6 +680,53 @@ class HIVEApp {
             document.getElementById('taskForm').reset();
         } catch (error) {
             errorEl.textContent = error.message;
+        }
+    }
+
+    // Project handlers
+    async handleJoinProject(e) {
+        e.stopPropagation();
+        const projectId = e.target.dataset.projectId;
+        
+        try {
+            await api.updateProject(projectId, { assignee_id: this.currentUser.id });
+            await this.loadProjects();
+            this.showNotification('Successfully joined project!');
+        } catch (error) {
+            console.error('Failed to join project:', error);
+            this.showNotification('Failed to join project', 'error');
+        }
+    }
+
+    async handleAssignProject(e) {
+        e.stopPropagation();
+        const projectId = e.target.dataset.projectId;
+        
+        // TODO: Implement project assignment UI
+        this.showNotification('Project assignment feature coming soon!');
+    }
+
+    async handleUpdateProjectStatus(e) {
+        e.stopPropagation();
+        const projectId = e.target.dataset.projectId;
+        
+        // TODO: Implement project status update UI
+        this.showNotification('Project status update feature coming soon!');
+    }
+
+    async handleDeleteProject(e) {
+        e.stopPropagation();
+        const projectId = e.target.dataset.projectId;
+        
+        if (confirm('Are you sure you want to delete this project?')) {
+            try {
+                await api.deleteProject(projectId);
+                await this.loadProjects();
+                this.showNotification('Project deleted successfully!');
+            } catch (error) {
+                console.error('Failed to delete project:', error);
+                this.showNotification('Failed to delete project', 'error');
+            }
         }
     }
 
@@ -664,7 +738,7 @@ class HIVEApp {
         const filterItem = e.currentTarget;
         filterItem.classList.add('active');
         this.currentFilter = filterItem.dataset.filter;
-        this.filterTasks();
+        this.filterProjects();
     }
 
     handleSkillFilterClick(skillTag) {
@@ -676,7 +750,7 @@ class HIVEApp {
         document.querySelectorAll('.skill-tag').forEach(tag => tag.classList.remove('active'));
 
         if (wasActive) {
-            // If the skill was active, deselect it and show all tasks
+            // If the skill was active, deselect it and show all projects
             this.currentFilter = 'all';
             document.querySelector('.filter-item[data-filter="all"]').classList.add('active');
         } else {
@@ -684,7 +758,7 @@ class HIVEApp {
             this.currentFilter = `skill:${skill}`;
         }
         
-        this.filterTasks();
+        this.filterProjects();
     }
 
     // View toggle
@@ -771,7 +845,9 @@ class HIVEApp {
                 <div class="member-avatar">${user.email.substring(0, 2).toUpperCase()}</div>
                 <div class="member-info">
                     <div class="member-name">${user.email.split('@')[0]}</div>
-                    <div class="member-email">${user.email}</div>
+                    <div class="member-email" onclick="app.openDirectMessage('${user.id}', '${user.email}')" 
+                         style="cursor: pointer; color: #4ecdc4; text-decoration: underline;" 
+                         title="Click to send direct message">💬 ${user.email}</div>
                 </div>
                 <div class="member-status status-online">Online</div>
             </div>
@@ -909,6 +985,191 @@ class HIVEApp {
             notification.style.transform = 'translateX(400px)';
             setTimeout(() => notification.remove(), 300);
         }, 3000);
+    }
+
+    openDirectMessage(userId, userEmail) {
+        // Create DM modal
+        const modal = document.createElement('div');
+        modal.className = 'modal dm-modal';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        `;
+
+        modal.innerHTML = `
+            <div style="
+                background: rgba(68, 68, 68, 0.95);
+                border-radius: 16px;
+                padding: 0;
+                max-width: 600px;
+                width: 90%;
+                max-height: 80vh;
+                border: 1px solid rgba(78, 205, 196, 0.2);
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+            ">
+                <!-- Header -->
+                <div style="
+                    background: linear-gradient(135deg, #4ecdc4 0%, #00b8a9 100%);
+                    color: white;
+                    padding: 16px 24px;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    flex-shrink: 0;
+                ">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="
+                            width: 40px;
+                            height: 40px;
+                            border-radius: 50%;
+                            background: rgba(255, 255, 255, 0.2);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-weight: bold;
+                            font-size: 14px;
+                        ">${userEmail.substring(0, 2).toUpperCase()}</div>
+                        <div>
+                            <div style="font-weight: 600; font-size: 16px;">💬 Direct Message</div>
+                            <div style="font-size: 12px; opacity: 0.9;">${userEmail}</div>
+                        </div>
+                    </div>
+                    <button onclick="this.closest('.modal').remove()" 
+                            style="
+                                background: rgba(255, 255, 255, 0.2);
+                                border: none;
+                                color: white;
+                                border-radius: 8px;
+                                width: 32px;
+                                height: 32px;
+                                cursor: pointer;
+                                font-size: 16px;
+                                transition: background 0.2s;
+                            "
+                            onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'"
+                            onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'">
+                        ✕
+                    </button>
+                </div>
+                
+                <!-- Messages Area -->
+                <div id="dmMessages" style="
+                    flex: 1;
+                    padding: 20px;
+                    overflow-y: auto;
+                    background: rgba(40, 44, 52, 0.8);
+                    border-bottom: 1px solid rgba(78, 205, 196, 0.1);
+                ">
+                    <div style="text-align: center; color: #d0d0d0; font-style: italic; margin: 40px 0;">
+                        Start a conversation with ${userEmail.split('@')[0]}...
+                    </div>
+                </div>
+                
+                <!-- Message Input -->
+                <div style="
+                    padding: 16px 20px;
+                    background: rgba(68, 68, 68, 0.9);
+                    display: flex;
+                    gap: 12px;
+                    align-items: center;
+                ">
+                    <input type="text" id="dmMessageInput" placeholder="Type your message..." 
+                           style="
+                               flex: 1;
+                               padding: 12px;
+                               border: 1px solid rgba(78, 205, 196, 0.3);
+                               border-radius: 8px;
+                               background: rgba(68, 68, 68, 0.1);
+                               color: #ffffff;
+                               font-size: 14px;
+                           "
+                           onkeypress="if(event.key==='Enter') app.sendDirectMessage('${userId}', this.value); this.value=''; event.preventDefault();">
+                    <button onclick="app.sendDirectMessage('${userId}', document.getElementById('dmMessageInput').value); document.getElementById('dmMessageInput').value='';" 
+                            class="create-btn" style="padding: 12px 20px; white-space: nowrap;">
+                        📤 Send
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+        document.getElementById('dmMessageInput').focus();
+        
+        // Load existing messages if any
+        this.loadDirectMessages(userId);
+    }
+
+    async loadDirectMessages(userId) {
+        try {
+            const messages = await api.getDirectMessages(userId);
+            this.renderDirectMessages(messages);
+        } catch (error) {
+            console.log('No existing messages or error loading DMs:', error);
+        }
+    }
+
+    renderDirectMessages(messages) {
+        const container = document.getElementById('dmMessages');
+        if (!container || !messages || messages.length === 0) return;
+
+        const messagesHtml = messages.map(msg => {
+            const isOwn = msg.sender_id === this.currentUser?.id;
+            const timestamp = new Date(msg.created_at).toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            return `
+                <div style="
+                    margin-bottom: 16px;
+                    display: flex;
+                    justify-content: ${isOwn ? 'flex-end' : 'flex-start'};
+                ">
+                    <div style="
+                        max-width: 70%;
+                        padding: 12px 16px;
+                        border-radius: 16px;
+                        background: ${isOwn ? 'linear-gradient(135deg, #4ecdc4 0%, #00b8a9 100%)' : 'rgba(68, 68, 68, 0.8)'};
+                        color: white;
+                        position: relative;
+                    ">
+                        <div style="font-size: 14px; line-height: 1.4;">${msg.content}</div>
+                        <div style="font-size: 11px; opacity: 0.7; margin-top: 4px;">${timestamp}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        container.innerHTML = messagesHtml;
+        container.scrollTop = container.scrollHeight;
+    }
+
+    async sendDirectMessage(userId, content) {
+        if (!content || !content.trim()) return;
+
+        try {
+            const messageData = { content: content.trim() };
+            const response = await api.sendDirectMessage(userId, messageData);
+            
+            if (response) {
+                this.showNotification('Message sent!');
+                // Reload messages to show the new one
+                this.loadDirectMessages(userId);
+            }
+        } catch (error) {
+            console.error('Error sending DM:', error);
+            this.showNotification('Failed to send message', 'error');
+        }
     }
 
     showSettingsModal() {
@@ -1104,11 +1365,24 @@ class HIVEApp {
             this.hideImportLoading();
 
             if (response.status === 'success') {
-                this.showNotification(`Successfully imported ${response.imported_count} tasks!`);
+                const projectsCount = response.imported_projects || 0;
+                const tasksCount = response.imported_tasks || 0;
+                const totalCount = response.total_imported || response.imported_count || 0;
+                
+                let message = `Successfully imported ${totalCount} items!`;
+                if (projectsCount > 0 && tasksCount > 0) {
+                    message = `Successfully imported ${projectsCount} projects and ${tasksCount} tasks!`;
+                } else if (projectsCount > 0) {
+                    message = `Successfully imported ${projectsCount} projects!`;
+                } else if (tasksCount > 0) {
+                    message = `Successfully imported ${tasksCount} tasks!`;
+                }
+                
+                this.showNotification(message);
                 this.hideMasterPlanModal();
-                await this.loadTasks(); // Refresh tasks
+                await this.loadProjects(); // Refresh projects
             } else {
-                this.showImportError(response.message || 'Failed to import tasks');
+                this.showImportError(response.message || 'Failed to import');
             }
         } catch (error) {
             this.hideImportLoading();
@@ -1192,6 +1466,9 @@ class HIVEApp {
         // Register routes
         router.register('/', () => {
             console.log('Dashboard route triggered');
+            // Restore default page title
+            document.title = 'HIVE - Task Management System';
+            
             // Show main dashboard
             const mainContainer = document.querySelector('.main-container');
             if (mainContainer) mainContainer.style.display = 'grid';
@@ -1219,8 +1496,8 @@ class HIVEApp {
         router.register('/task/:id', (params) => {
             console.log('Task route triggered with params:', params);
             // Show task page
-            if (params.taskId) {
-                taskPageManager.showTaskPage(params.taskId);
+            if (params.id) {
+                taskPageManager.showTaskPage(params.id);
             }
         });
         
@@ -1255,8 +1532,13 @@ class HIVEApp {
         });
 
         router.register('/project/:id', (params) => {
-            console.log('Project detail route triggered with params:', params);
-            // TODO: Implement project detail page
+            console.log('Project route triggered with params:', params);
+            if (params.id) {
+                console.log('Calling projectPage.render with ID:', params.id);
+                projectPage.render(params.id);
+            } else {
+                console.error('No project ID in route params');
+            }
         });
 
 

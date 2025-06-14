@@ -6,6 +6,7 @@
     <title>HIVE - Collective Task Coordination</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="dark-theme.css">
+    <link rel="stylesheet" href="task-page-enhancements.css">
 </head>
 <body>
     <!-- Login Modal -->
@@ -38,7 +39,7 @@
         </div>
     </div>
 
-    <div class="main-container">
+    <div id="mainInterface" class="main-container">
         <!-- Header -->
         <div class="header-bar">
             <div class="logo">HIVE</div>
@@ -155,7 +156,7 @@
         <!-- Main Content -->
         <div class="main-content">
             <div class="content-header">
-                <h2 class="content-title">Available Tasks</h2>
+                <h2 class="content-title">Available Projects</h2>
                 <div class="action-buttons">
                     <button id="createTaskBtn" class="create-btn">+ Create Task</button>
                     <button id="importMasterPlanBtn" class="create-btn">📥 Import Master Plan</button>
@@ -502,6 +503,7 @@
     <script src="dark-mode.js"></script>
     <script src="router.js"></script>
     <script src="task-page.js"></script>
+    <script src="project-page.js"></script>
     <script src="settings-page.js"></script>
     <script src="hierarchy-pages.js"></script>
     <script src="app.js"></script>

@@ -24,13 +24,13 @@ lsof -ti:3000 | xargs kill -9 2>/dev/null || true
 Start in this order:
 
 ```bash
-# Start backend (port 8000)
-cd /mnt/c/task-dashboard
-python3 simple_backend.py &
+# Start backend (FastAPI with auto-reload)
+cd /mnt/c/task-dashboard/hive-backend-alpha
+python3 -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 &
 
 # Start frontend (port 3000)
 cd /mnt/c/task-dashboard/hive-frontend
-python3 simple_server.py &
+python3 -m http.server 3000 &
 ```
 
 ## API Configuration

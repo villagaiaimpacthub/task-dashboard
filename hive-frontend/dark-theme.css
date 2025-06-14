@@ -977,3 +977,40 @@ body.dark-mode {
 .dark-mode ::-webkit-scrollbar-thumb:hover {
     background: #4a5a4c;
 }
+
+/* File Upload Form - Force dark backgrounds */
+.dark-mode .file-upload-form,
+.dark-mode .project-skills,
+.dark-mode .project-overview,
+.dark-mode .project-content {
+    background: transparent !important;
+}
+
+.dark-mode .file-upload-form > div {
+    background: rgba(68, 68, 68, 0.15) !important;
+}
+
+/* Override any white modal backgrounds for file upload areas */
+.dark-mode .modal-content .file-upload-form,
+.dark-mode .modal-content .upload-area {
+    background: rgba(68, 68, 68, 0.15) !important;
+}
+
+/* Date input styling for dark mode */
+.dark-mode input[type="date"] {
+    color-scheme: dark;
+    background: rgba(68, 68, 68, 0.1) !important;
+    color: #ffffff !important;
+}
+
+/* Chrome/Edge date input calendar icon */
+.dark-mode input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
+/* Firefox date input styling */
+.dark-mode input[type="date"]::-moz-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}

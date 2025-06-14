@@ -24,7 +24,11 @@ class Task(BaseModel):
     deliverables = Column(JSON, nullable=True)  # Deliverables (string or list)
     owner_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     assignee_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    project_id = Column(UUID(as_uuid=True), ForeignKey("projects.id"), nullable=True)  # Tasks can belong to projects
     
     # Relationships
     owner = relationship("User", foreign_keys=[owner_id], backref="owned_tasks")
     assignee = relationship("User", foreign_keys=[assignee_id], backref="assigned_tasks")
+    project = relationship("Project", back_populates="tasks")
+    milestones = relationship("Milestone", back_populates="task", cascade="all, delete-orphan")
+    files = relationship("TaskFile", back_populates="task", cascade="all, delete-orphan")

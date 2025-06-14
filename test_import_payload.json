@@ -1,0 +1,28 @@
+{
+  "preview_data": {
+    "waypoints": [],
+    "projects": [
+      {
+        "id": "proj_0",
+        "name": "Test Project",
+        "description": "Project: Test Project"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "task_0",
+        "title": "Test Task",
+        "description": "This is a test task",
+        "dependencies": ["Requirements analysis", "Technical planning"],
+        "priority": "medium",
+        "impact_points": 100,
+        "category": "General Development",
+        "required_skills": ["Software development", "Problem solving"],
+        "success_metrics": ["Feature completeness", "Code quality", "Testing coverage"],
+        "deliverables": ["Working implementation", "Documentation", "Tests"],
+        "definition_of_done": "Feature implemented, tested, documented, and reviewed according to project standards",
+        "project": "Test Project"
+      }
+    ]
+  }
+}
