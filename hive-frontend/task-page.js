@@ -184,7 +184,7 @@ class TaskPageManager {
             <div class="task-page">
                 <!-- Task Header -->
                 <div class="project-header">
-                    <button onclick="router.navigate('/')" class="back-btn">← Back to Dashboard</button>
+                    <button onclick="taskPageManager.goBack()" class="back-btn">← Back</button>
                     <div class="project-title-section">
                         <h1 class="editable-field" onclick="taskPageManager.makeEditable(this, 'title')" title="Click to edit title">${task.title}</h1>
                         <div class="project-meta">
@@ -416,14 +416,27 @@ class TaskPageManager {
         const isAssigned = task.assignee_id && task.assignee_id !== 'Available';
         const isCurrentUserAssigned = task.assignee_id === currentUserId;
         
+        console.log('renderTaskActions - task.assignee_id:', task.assignee_id);
+        console.log('renderTaskActions - isAssigned:', isAssigned);
+        console.log('renderTaskActions - currentUserId:', currentUserId);
+        
         let actions = '';
         
-        if (!isAssigned && task.status === 'available') {
-            // Task is available - show claim button
+        // Show claim button for unassigned tasks (regardless of exact status)
+        if (!isAssigned) {
             actions += `
                 <div style="margin-top: 8px;">
-                    <button onclick="taskPageManager.claimTask()" class="claim-btn" 
-                            style="background: rgba(78, 205, 196, 0.15); color: #4ecdc4; border: 1px solid rgba(78, 205, 196, 0.3); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">
+                    <button onclick="taskPageManager.claimTask()" class="claim-btn" style="
+                        background: #4caf50;
+                        color: white;
+                        border: none;
+                        padding: 10px 20px;
+                        border-radius: 12px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                        margin-left: 0;
+                    ">
                         🙋‍♂️ Claim Task
                     </button>
                 </div>
@@ -435,12 +448,10 @@ class TaskPageManager {
             if (isAssigned) {
                 actions += `
                     <div style="margin-top: 8px;">
-                        <button onclick="taskPageManager.makeTaskAvailable()" class="make-available-btn"
-                                style="background: rgba(255, 152, 0, 0.15); color: #ff9800; border: 1px solid rgba(255, 152, 0, 0.3); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">
+                        <button onclick="taskPageManager.makeTaskAvailable()" class="btn-warning make-available-btn">
                             🔄 Make Available
                         </button>
-                        <button onclick="taskPageManager.showAssignModal()" class="assign-btn"
-                                style="background: rgba(78, 205, 196, 0.15); color: #4ecdc4; border: 1px solid rgba(78, 205, 196, 0.3); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; margin-left: 8px;">
+                        <button onclick="taskPageManager.showAssignModal()" class="btn-primary assign-btn" style="margin-left: 8px;">
                             👥 Reassign
                         </button>
                     </div>
@@ -448,8 +459,7 @@ class TaskPageManager {
             } else {
                 actions += `
                     <div style="margin-top: 8px;">
-                        <button onclick="taskPageManager.showAssignModal()" class="assign-btn"
-                                style="background: rgba(78, 205, 196, 0.15); color: #4ecdc4; border: 1px solid rgba(78, 205, 196, 0.3); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">
+                        <button onclick="taskPageManager.showAssignModal()" class="btn-primary assign-btn">
                             👥 Assign to Team Member
                         </button>
                     </div>
@@ -461,8 +471,7 @@ class TaskPageManager {
             // Current user is assigned - show status update options
             actions += `
                 <div style="margin-top: 8px;">
-                    <button onclick="taskPageManager.markTaskCompleted()" class="complete-btn"
-                            style="background: rgba(76, 175, 80, 0.15); color: #4caf50; border: 1px solid rgba(76, 175, 80, 0.3); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">
+                    <button onclick="taskPageManager.markTaskCompleted()" class="btn-success complete-btn">
                         ✅ Mark Complete
                     </button>
                 </div>
@@ -500,7 +509,7 @@ class TaskPageManager {
                     <div class="milestone-deadline" style="font-family: inherit; color: #d0d0d0;">
                         ${milestone.due_date ? `📅 Due: ${milestone.due_date}` : ''}
                     </div>
-                    <button class="milestone-delete-btn" onclick="taskPageManager.deleteMilestone('${milestone.id}')">
+                    <button class="btn-danger btn-small milestone-delete-btn" onclick="taskPageManager.deleteMilestone('${milestone.id}')">
                         🗑️ Delete
                     </button>
                 </div>
@@ -525,22 +534,6 @@ class TaskPageManager {
         `).join('');
     }
 
-    // Show create milestone form
-    showCreateMilestoneForm() {
-        const form = document.getElementById('milestoneCreationForm');
-        if (form) {
-            form.style.display = 'block';
-        }
-    }
-
-    // Cancel create milestone
-    cancelCreateMilestone() {
-        const form = document.getElementById('milestoneCreationForm');
-        if (form) {
-            form.style.display = 'none';
-            document.getElementById('newMilestoneForm').reset();
-        }
-    }
 
     // Handle create milestone form submission
     async handleCreateMilestone(event) {
@@ -566,6 +559,15 @@ class TaskPageManager {
             const response = await api.createMilestone(milestoneData);
             
             if (response && response.id) {
+                console.log('Created milestone:', response);
+                
+                // Check for duplicate IDs before adding
+                const existingMilestone = this.currentTask.milestones?.find(m => m.id === response.id);
+                if (existingMilestone) {
+                    console.warn('Duplicate milestone ID detected:', response.id);
+                    return;
+                }
+                
                 // Add the new milestone to the current task
                 if (!this.currentTask.milestones) {
                     this.currentTask.milestones = [];
@@ -576,7 +578,14 @@ class TaskPageManager {
                 if (!this.milestones) {
                     this.milestones = [];
                 }
-                this.milestones.push(response);
+                
+                // Check for duplicate in milestones array too
+                const existingInMilestones = this.milestones.find(m => m.id === response.id);
+                if (!existingInMilestones) {
+                    this.milestones.push(response);
+                }
+                
+                console.log('Total milestones after creation:', this.currentTask.milestones.length);
                 
                 // Refresh the milestones display
                 this.refreshMilestonesDisplay();
@@ -626,15 +635,29 @@ class TaskPageManager {
 
     // Delete milestone
     async deleteMilestone(milestoneId) {
+        console.log('deleteMilestone called with ID:', milestoneId);
+        console.log('Current milestones:', this.currentTask.milestones?.map(m => ({ id: m.id, title: m.title })));
+        
         if (!confirm('Are you sure you want to delete this milestone?')) {
             return;
         }
 
         try {
+            console.log('Calling API to delete milestone:', milestoneId);
             await api.deleteMilestone(milestoneId);
+            
+            const beforeCount = this.currentTask.milestones?.length || 0;
             
             // Remove from our data
             this.currentTask.milestones = this.currentTask.milestones.filter(m => m.id !== milestoneId);
+            
+            // Also remove from the local milestones array
+            if (this.milestones) {
+                this.milestones = this.milestones.filter(m => m.id !== milestoneId);
+            }
+            
+            const afterCount = this.currentTask.milestones?.length || 0;
+            console.log(`Milestones before deletion: ${beforeCount}, after: ${afterCount}`);
             
             // Refresh the display
             this.refreshMilestonesDisplay();
@@ -642,15 +665,29 @@ class TaskPageManager {
             this.showSuccess('Milestone deleted successfully!');
         } catch (error) {
             console.error('Error deleting milestone:', error);
-            this.showError('Error deleting milestone');
+            
+            // Check if it's an authentication error
+            if (error.message && (error.message.includes('401') || error.message.includes('unauthorized'))) {
+                console.warn('Authentication error during milestone deletion - preventing redirect');
+                this.showError('Authentication error - please refresh and try again');
+                return;
+            }
+            
+            this.showError('Error deleting milestone: ' + (error.message || 'Unknown error'));
         }
     }
 
     // Refresh milestones display
     refreshMilestonesDisplay() {
+        console.log('refreshMilestonesDisplay called');
+        console.log('Milestones to render:', this.currentTask.milestones?.map(m => ({ id: m.id, title: m.title })));
+        
         const milestonesList = document.querySelector('.milestones-list');
         if (milestonesList) {
             milestonesList.innerHTML = this.renderMilestones();
+            console.log('Milestones display refreshed');
+        } else {
+            console.log('milestones-list element not found');
         }
     }
 
@@ -941,23 +978,14 @@ class TaskPageManager {
                 </div>
                 <div class="file-actions" style="display: flex; gap: 8px; flex-wrap: wrap;">
                     ${this.canPreviewFile(file.name) ? `
-                        <button onclick="taskPageManager.previewFile('${file.id}', '${file.name}')" 
-                                style="padding: 6px 12px; border: 1px solid rgba(78, 205, 196, 0.3); background: rgba(78, 205, 196, 0.15); color: #4ecdc4; border-radius: 6px; cursor: pointer; font-size: 12px; transition: all 0.2s;"
-                                onmouseover="this.style.background='rgba(78, 205, 196, 0.25)'; this.style.color='#ffffff'"
-                                onmouseout="this.style.background='rgba(78, 205, 196, 0.15)'; this.style.color='#4ecdc4'">
+                        <button onclick="taskPageManager.previewFile('${file.id}', '${file.name}')" class="btn-primary btn-small">
                             👁️ Preview
                         </button>
                     ` : ''}
-                    <button onclick="taskPageManager.downloadFile('${file.id}')" 
-                            style="padding: 6px 12px; border: 1px solid rgba(78, 205, 196, 0.3); background: rgba(78, 205, 196, 0.15); color: #4ecdc4; border-radius: 6px; cursor: pointer; font-size: 12px; transition: all 0.2s;"
-                            onmouseover="this.style.background='rgba(78, 205, 196, 0.25)'; this.style.color='#ffffff'"
-                            onmouseout="this.style.background='rgba(78, 205, 196, 0.15)'; this.style.color='#4ecdc4'">
+                    <button onclick="taskPageManager.downloadFile('${file.id}')" class="btn-primary btn-small">
                         📥 Download
                     </button>
-                    <button onclick="taskPageManager.deleteFile('${file.id}')" 
-                            style="padding: 6px 12px; border: 1px solid rgba(220, 53, 69, 0.3); background: rgba(220, 53, 69, 0.15); color: #ff6b6b; border-radius: 6px; cursor: pointer; font-size: 12px; transition: all 0.2s;"
-                            onmouseover="this.style.background='rgba(220, 53, 69, 0.25)'; this.style.color='#ffffff'"
-                            onmouseout="this.style.background='rgba(220, 53, 69, 0.15)'; this.style.color='#ff6b6b'">
+                    <button onclick="taskPageManager.deleteFile('${file.id}')" class="btn-danger btn-small">
                         🗑️ Delete
                     </button>
                 </div>
@@ -1040,16 +1068,10 @@ class TaskPageManager {
                         </div>
                     </div>
                     <div style="display: flex; gap: 8px; align-items: center;">
-                        <button onclick="taskPageManager.downloadFile('${fileId}')" 
-                                style="background: rgba(255, 255, 255, 0.2); border: none; color: white; border-radius: 8px; padding: 8px 12px; cursor: pointer; font-size: 12px; transition: background 0.2s;"
-                                onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'"
-                                onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'">
+                        <button onclick="taskPageManager.downloadFile('${fileId}')" class="btn-neutral btn-medium">
                             📥 Download
                         </button>
-                        <button onclick="this.closest('.preview-modal').remove(); window.URL.revokeObjectURL('${url}')" 
-                                style="background: rgba(255, 255, 255, 0.2); border: none; color: white; border-radius: 8px; width: 32px; height: 32px; cursor: pointer; font-size: 16px; transition: background 0.2s;"
-                                onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'"
-                                onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'">
+                        <button onclick="this.closest('.preview-modal').remove(); window.URL.revokeObjectURL('${url}')" class="btn-close">
                             ✕
                         </button>
                     </div>
@@ -1433,15 +1455,24 @@ class TaskPageManager {
     }
 
     async deleteFile(fileId) {
+        console.log('deleteFile called with ID:', fileId);
+        console.log('Current files:', this.currentTask.files?.map(f => ({ id: f.id, name: f.name })));
+        
         if (!confirm('Are you sure you want to delete this file?')) {
             return;
         }
 
         try {
+            console.log('Calling API to delete file:', fileId);
             const response = await api.delete(`/files/${fileId}`);
+            
+            const beforeCount = this.currentTask.files?.length || 0;
             
             // Remove from current task files
             this.currentTask.files = this.currentTask.files.filter(f => f.id !== fileId);
+            
+            const afterCount = this.currentTask.files?.length || 0;
+            console.log(`Files before deletion: ${beforeCount}, after: ${afterCount}`);
             
             // Refresh display
             this.refreshFilesDisplay();
@@ -1449,7 +1480,15 @@ class TaskPageManager {
             this.showSuccess('File deleted successfully!');
         } catch (error) {
             console.error('Error deleting file:', error);
-            this.showError('Error deleting file');
+            
+            // Check if it's an authentication error
+            if (error.message && (error.message.includes('401') || error.message.includes('unauthorized'))) {
+                console.warn('Authentication error during file deletion - preventing redirect');
+                this.showError('Authentication error - please refresh and try again');
+                return;
+            }
+            
+            this.showError('Error deleting file: ' + (error.message || 'Unknown error'));
         }
     }
 
@@ -2437,6 +2476,32 @@ class TaskPageManager {
             this.app.showNotification(message, 'error');
         } else {
             console.error('Error:', message);
+        }
+    }
+
+    goBack() {
+        console.log('goBack called');
+        console.log('currentTask full object:', JSON.stringify(this.currentTask, null, 2));
+        console.log('project_id specifically:', this.currentTask?.project_id);
+        console.log('project_id type:', typeof this.currentTask?.project_id);
+        
+        // Check if task belongs to a project
+        if (this.currentTask && this.currentTask.project_id) {
+            // Navigate to the parent project
+            console.log('Navigating to project:', this.currentTask.project_id);
+            if (window.router) {
+                window.router.navigate(`/project/${this.currentTask.project_id}`);
+            } else {
+                console.error('Router not available');
+            }
+        } else {
+            // Navigate to dashboard if no parent project
+            console.log('Navigating to dashboard - no project_id found');
+            if (window.router) {
+                window.router.navigate('/');
+            } else {
+                console.error('Router not available');
+            }
         }
     }
 }

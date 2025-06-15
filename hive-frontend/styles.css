@@ -27,17 +27,6 @@ body {
     margin: 0;
 }
 
-/* Skills Assessment Link Button */
-.skills-link {
-    text-decoration: none !important;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    padding: 10px 16px;
-    height: auto;
-    line-height: 1.4;
-}
 
 /* Header Bar */
 .header-bar {
@@ -72,6 +61,7 @@ body {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    white-space: nowrap;
 }
 
 .scores-container {
@@ -87,7 +77,7 @@ body {
     font-weight: 600;
     color: #2c3e34;
     background: rgba(76, 175, 80, 0.08);
-    padding: 12px 24px;
+    padding: 8px 16px;
     border-radius: 20px;
     border: 1px solid rgba(76, 175, 80, 0.2);
     max-width: 100%;
@@ -109,6 +99,7 @@ body {
     font-size: 14px;
     transition: all 0.3s ease;
     cursor: pointer;
+    white-space: nowrap;
 }
 
 .wallet-score:hover {
@@ -138,6 +129,41 @@ body {
     transform: translateY(-1px);
 }
 
+/* Action Score Buttons (Kairos, My Telotype) */
+.action-score-btn {
+    background: linear-gradient(135deg, #9c27b0, #8e24aa);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 16px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.action-score-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(156, 39, 176, 0.3);
+}
+
+/* Specific color for My Telotype button */
+#telotypeBtn2 {
+    background: linear-gradient(135deg, #2196f3, #1976d2);
+}
+
+#telotypeBtn2:hover {
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+}
+
+/* Specific styling for text nav buttons */
+#kairosBtn {
+    font-size: 14px;
+    font-weight: 600;
+    min-width: 60px;
+}
+
 .impact-score {
     background: linear-gradient(135deg, #4caf50, #45a049);
     color: white;
@@ -147,6 +173,7 @@ body {
     font-size: 14px;
     transition: all 0.3s ease;
     cursor: pointer;
+    white-space: nowrap;
 }
 
 .impact-score:hover {
@@ -155,18 +182,21 @@ body {
 }
 
 .logout-btn {
-    background: #e57373;
+    background: linear-gradient(135deg, #e57373, #ef5350);
     color: white;
     border: none;
-    padding: 6px 12px;
-    border-radius: 12px;
-    font-size: 12px;
+    padding: 8px 16px;
+    border-radius: 16px;
+    font-weight: 600;
+    font-size: 14px;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: all 0.3s ease;
 }
 
 .logout-btn:hover {
-    background: #f44336;
+    background: linear-gradient(135deg, #ef5350, #f44336);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
 }
 
 .settings-btn {
@@ -336,10 +366,14 @@ body {
 }
 
 .content-header {
+    margin-bottom: 24px;
+}
+
+.header-top {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 24px;
+    margin-bottom: 16px;
 }
 
 .action-buttons {
@@ -372,13 +406,15 @@ body {
 }
 
 .toggle-btn {
-    padding: 8px 16px;
+    padding: 8px 12px;
     border: none;
     background: transparent;
     cursor: pointer;
     border-radius: 8px;
     font-weight: 500;
+    font-size: 16px;
     transition: all 0.2s;
+    color: #666;
 }
 
 .toggle-btn.active {
@@ -509,6 +545,32 @@ body {
 
 .claim-btn:hover, .assign-btn:hover, .update-status-btn:hover {
     background: #243329;
+    transform: translateY(-1px);
+}
+
+/* Task Card Actions */
+.task-card-actions {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(76, 175, 80, 0.1);
+    display: flex;
+    justify-content: center;
+}
+
+.claim-btn-small {
+    background: rgba(78, 205, 196, 0.15);
+    color: #4ecdc4;
+    border: 1px solid rgba(78, 205, 196, 0.3);
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.claim-btn-small:hover {
+    background: rgba(78, 205, 196, 0.25);
     transform: translateY(-1px);
 }
 
@@ -685,28 +747,6 @@ body {
     color: #2c3e34;
 }
 
-/* Floating Action Button */
-.fab {
-    position: fixed;
-    bottom: 48px;
-    right: 32px;
-    width: 56px;
-    height: 56px;
-    background: linear-gradient(135deg, #4caf50, #45a049);
-    border-radius: 50%;
-    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
-    border: none;
-    color: white;
-    font-size: 24px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    z-index: 1000;
-}
-
-.fab:hover {
-    transform: scale(1.1) translateY(-2px);
-    box-shadow: 0 8px 25px rgba(76, 175, 80, 0.5);
-}
 
 /* Modal Styles */
 .modal {
@@ -902,6 +942,16 @@ body {
     font-size: 14px;
     margin-top: 16px;
     text-align: center;
+    min-height: 0;
+    background: transparent;
+}
+
+.error-message:not(:empty) {
+    background: rgba(244, 67, 54, 0.1);
+    border: 1px solid rgba(244, 67, 54, 0.3);
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 16px;
 }
 
 /* Task Creation Modal Specifics */
@@ -3549,11 +3599,19 @@ body {
 }
 
 .error-message {
-    background: #f8d7da;
-    color: #721c24;
-    padding: 15px;
-    border-radius: 4px;
-    border: 1px solid #f5c6cb;
+    color: #f44336;
+    font-size: 14px;
+    text-align: center;
+    min-height: 0;
+    background: transparent;
+}
+
+.error-message:not(:empty) {
+    background: rgba(244, 67, 54, 0.1);
+    border: 1px solid rgba(244, 67, 54, 0.3);
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 16px;
 }
 
 .no-permission {
@@ -4329,4 +4387,129 @@ EOF < /dev/null
 
 .editable-field.editing {
     background-color: transparent;
+}
+
+/* Consistent Button Styles */
+.btn-primary {
+    background: rgba(78, 205, 196, 0.15);
+    color: #4ecdc4;
+    border: 1px solid rgba(78, 205, 196, 0.3);
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.btn-primary:hover {
+    background: rgba(78, 205, 196, 0.25);
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.btn-warning {
+    background: rgba(255, 152, 0, 0.15);
+    color: #ff9800;
+    border: 1px solid rgba(255, 152, 0, 0.3);
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.btn-warning:hover {
+    background: rgba(255, 152, 0, 0.25);
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.btn-success {
+    background: rgba(76, 175, 80, 0.15);
+    color: #4caf50;
+    border: 1px solid rgba(76, 175, 80, 0.3);
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.btn-success:hover {
+    background: rgba(76, 175, 80, 0.25);
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.btn-danger {
+    background: rgba(220, 53, 69, 0.15);
+    color: #ff6b6b;
+    border: 1px solid rgba(220, 53, 69, 0.3);
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.btn-danger:hover {
+    background: rgba(220, 53, 69, 0.25);
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.btn-small {
+    padding: 4px 8px;
+    font-size: 11px;
+}
+
+.btn-medium {
+    padding: 8px 16px;
+    font-size: 14px;
+}
+
+.btn-large {
+    padding: 12px 24px;
+    font-size: 16px;
+}
+
+.btn-neutral {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.btn-neutral:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+}
+
+.btn-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: #ffffff;
+    border-radius: 6px;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
 }

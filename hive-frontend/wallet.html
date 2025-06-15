@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet - HIVE</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="dark-theme.css">
+</head>
+<body>
+    <!-- Header Bar -->
+    <div class="header-bar">
+        <div class="left-section">
+            <div class="logo">HIVE TASK</div>
+            <div class="scores-container">
+                <div class="wallet-score" onclick="window.location.href='wallet.html'" title="Task Credits">💰 Credits</div>
+                <div class="impact-score" onclick="window.location.href='impact.html'">+ Impact</div>
+            </div>
+        </div>
+        <div class="prime-directive">
+            Prime Directive: Consciousness attunement for the benefit of all beings.
+        </div>
+        <div class="user-info">
+            <button onclick="window.location.href='kairos.html'" class="action-score-btn" title="Kairos - Task Timeline">Kairos</button>
+            <button onclick="window.location.href='telotype.html'" class="action-score-btn" title="My Telotype">My Telotype</button>
+            <button onclick="window.location.href='messages.html'" class="nav-btn" title="Messages">💬</button>
+            <button onclick="window.location.href='notifications.html'" class="nav-btn" title="Notifications">🔔</button>
+            <button class="settings-btn" title="Settings">⚙️</button>
+            <button onclick="logout()" class="logout-btn" title="Logout">🚪</button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="page-container" style="
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        min-height: 100vh;
+        padding: 70px 0 0 0;
+        color: #ffffff;
+    ">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 32px;">
+            <!-- Header -->
+            <div style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 32px;
+                padding-bottom: 20px;
+                border-bottom: 1px solid rgba(78, 205, 196, 0.2);
+            ">
+                <div>
+                    <h1 style="margin: 0 0 8px 0; font-size: 32px; font-weight: 700;">💰 Task Credits Wallet</h1>
+                    <p style="margin: 0; color: #d0d0d0; font-size: 16px;">
+                        Manage your earned credits and transaction history
+                    </p>
+                </div>
+                <button onclick="window.location.href='index.html'" style="
+                    background: rgba(78, 205, 196, 0.15);
+                    color: #4ecdc4;
+                    border: 1px solid rgba(78, 205, 196, 0.3);
+                    padding: 12px 24px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: 500;
+                    transition: all 0.3s ease;
+                " onmouseover="this.style.background='rgba(78, 205, 196, 0.25)'" 
+                   onmouseout="this.style.background='rgba(78, 205, 196, 0.15)'">
+                    ← Back to Dashboard
+                </button>
+            </div>
+
+            <!-- Wallet Summary -->
+            <div style="
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                gap: 24px;
+                margin-bottom: 32px;
+            ">
+                <div style="
+                    background: linear-gradient(135deg, #ff9800, #f57c00);
+                    border-radius: 16px;
+                    padding: 24px;
+                    color: white;
+                    text-align: center;
+                ">
+                    <div style="font-size: 48px; margin-bottom: 12px;">💰</div>
+                    <h3 style="margin: 0 0 8px 0; font-size: 28px; font-weight: 700;">1,250</h3>
+                    <p style="margin: 0; opacity: 0.9; font-size: 16px;">Total Credits</p>
+                </div>
+
+                <div style="
+                    background: rgba(76, 175, 80, 0.1);
+                    border: 1px solid rgba(76, 175, 80, 0.2);
+                    border-radius: 16px;
+                    padding: 24px;
+                    text-align: center;
+                ">
+                    <div style="font-size: 48px; margin-bottom: 12px;">📈</div>
+                    <h3 style="margin: 0 0 8px 0; color: #4caf50; font-size: 24px;">+85</h3>
+                    <p style="margin: 0; color: #d0d0d0; font-size: 14px;">This Month</p>
+                </div>
+
+                <div style="
+                    background: rgba(33, 150, 243, 0.1);
+                    border: 1px solid rgba(33, 150, 243, 0.2);
+                    border-radius: 16px;
+                    padding: 24px;
+                    text-align: center;
+                ">
+                    <div style="font-size: 48px; margin-bottom: 12px;">🎯</div>
+                    <h3 style="margin: 0 0 8px 0; color: #2196f3; font-size: 24px;">42</h3>
+                    <p style="margin: 0; color: #d0d0d0; font-size: 14px;">Tasks Completed</p>
+                </div>
+            </div>
+
+            <!-- Recent Transactions -->
+            <div style="
+                background: rgba(0, 0, 0, 0.4);
+                border: 1px solid rgba(78, 205, 196, 0.2);
+                border-radius: 16px;
+                padding: 24px;
+                margin-bottom: 32px;
+            ">
+                <h2 style="margin: 0 0 24px 0; color: #ffffff; font-size: 24px;">💳 Recent Transactions</h2>
+                
+                <div style="space-y: 16px;">
+                    <div style="
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        background: rgba(68, 68, 68, 0.3);
+                        border-radius: 12px;
+                        padding: 20px;
+                        margin-bottom: 16px;
+                    ">
+                        <div style="display: flex; align-items: center; gap: 16px;">
+                            <div style="
+                                width: 40px;
+                                height: 40px;
+                                background: rgba(76, 175, 80, 0.2);
+                                border-radius: 50%;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                color: #4caf50;
+                                font-size: 18px;
+                            ">✅</div>
+                            <div>
+                                <h4 style="margin: 0; color: #ffffff; font-size: 16px;">Task Completion Bonus</h4>
+                                <p style="margin: 0; color: #a0a0a0; font-size: 14px;">Database schema design task</p>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="color: #4caf50; font-weight: 600; font-size: 18px;">+25</span>
+                            <p style="margin: 0; color: #a0a0a0; font-size: 12px;">2 days ago</p>
+                        </div>
+                    </div>
+
+                    <div style="
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        background: rgba(68, 68, 68, 0.3);
+                        border-radius: 12px;
+                        padding: 20px;
+                        margin-bottom: 16px;
+                    ">
+                        <div style="display: flex; align-items: center; gap: 16px;">
+                            <div style="
+                                width: 40px;
+                                height: 40px;
+                                background: rgba(33, 150, 243, 0.2);
+                                border-radius: 50%;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                color: #2196f3;
+                                font-size: 18px;
+                            ">🎯</div>
+                            <div>
+                                <h4 style="margin: 0; color: #ffffff; font-size: 16px;">Project Milestone</h4>
+                                <p style="margin: 0; color: #a0a0a0; font-size: 14px;">HIVE system Phase 1 completion</p>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="color: #4caf50; font-weight: 600; font-size: 18px;">+50</span>
+                            <p style="margin: 0; color: #a0a0a0; font-size: 12px;">1 week ago</p>
+                        </div>
+                    </div>
+
+                    <div style="
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        background: rgba(68, 68, 68, 0.3);
+                        border-radius: 12px;
+                        padding: 20px;
+                        margin-bottom: 16px;
+                    ">
+                        <div style="display: flex; align-items: center; gap: 16px;">
+                            <div style="
+                                width: 40px;
+                                height: 40px;
+                                background: rgba(255, 152, 0, 0.2);
+                                border-radius: 50%;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                color: #ff9800;
+                                font-size: 18px;
+                            ">⚡</div>
+                            <div>
+                                <h4 style="margin: 0; color: #ffffff; font-size: 16px;">Quick Task Completion</h4>
+                                <p style="margin: 0; color: #a0a0a0; font-size: 14px;">UI bug fixes (3 tasks)</p>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="color: #4caf50; font-weight: 600; font-size: 18px;">+15</span>
+                            <p style="margin: 0; color: #a0a0a0; font-size: 12px;">2 weeks ago</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Credit Usage -->
+            <div style="
+                background: rgba(0, 0, 0, 0.4);
+                border: 1px solid rgba(78, 205, 196, 0.2);
+                border-radius: 16px;
+                padding: 24px;
+            ">
+                <h2 style="margin: 0 0 24px 0; color: #ffffff; font-size: 24px;">🎁 Coming Soon</h2>
+                <div style="
+                    text-align: center;
+                    padding: 40px 20px;
+                    color: #d0d0d0;
+                ">
+                    <div style="font-size: 64px; margin-bottom: 24px;">🚀</div>
+                    <h3 style="margin: 0 0 16px 0; color: #ffffff; font-size: 24px;">Credit Marketplace</h3>
+                    <p style="margin: 0; font-size: 16px; line-height: 1.6;">
+                        Use your earned credits to unlock premium features, access advanced tools, 
+                        and support ecosystem development projects.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function logout() {
+            localStorage.removeItem('auth_token');
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

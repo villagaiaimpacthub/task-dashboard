@@ -6,13 +6,14 @@ class SettingsPageManager {
 
     // Show settings page
     showSettingsPage() {
-        const isAdmin = this.app.currentUser && this.app.currentUser.permissions && this.app.currentUser.permissions.includes('manage_team');
+        try {
+            const isAdmin = this.app.currentUser && this.app.currentUser.permissions && this.app.currentUser.permissions.includes('manage_team');
         
         const settingsPageHTML = `
             <div class="settings-page">
                 <!-- Settings Header -->
                 <div class="settings-header">
-                    <button class="back-btn" onclick="router.navigate('/')">← Back to Dashboard</button>
+                    <button class="back-btn" onclick="window.router.navigate('/')">← Back to Dashboard</button>
                     <h1>Settings</h1>
                 </div>
 
@@ -113,6 +114,12 @@ class SettingsPageManager {
         
         settingsContainer.innerHTML = settingsPageHTML;
         settingsContainer.style.display = 'block';
+        settingsContainer.style.position = 'fixed';
+        settingsContainer.style.top = '0';
+        settingsContainer.style.left = '0';
+        settingsContainer.style.width = '100%';
+        settingsContainer.style.height = '100%';
+        settingsContainer.style.zIndex = '1000';
         
         // Enable scrolling
         document.body.style.overflow = 'auto';
@@ -122,6 +129,10 @@ class SettingsPageManager {
         
         // Render user skills
         this.app.renderUserSkills();
+        
+        } catch (error) {
+            console.error('Failed to load settings page:', error);
+        }
     }
 
     setupSettingsEventListeners() {
@@ -313,6 +324,21 @@ class SettingsPageManager {
             console.error('Error toggling user status:', error);
             alert('Failed to toggle user status');
         }
+    }
+
+    cleanup() {
+        const container = document.getElementById('settings-page-container');
+        if (container) {
+            container.style.display = 'none';
+        }
+        
+        // Restore main container
+        const mainContainer = document.querySelector('.main-container');
+        if (mainContainer) {
+            mainContainer.style.display = 'grid';
+        }
+        
+        document.body.style.overflow = 'hidden';
     }
 }
 

@@ -7,6 +7,7 @@ class WalletPageManager {
     }
 
     async showWalletPage() {
+        console.log('showWalletPage called');
         try {
             // Hide main container
             const mainContainer = document.querySelector('.main-container');
@@ -23,6 +24,12 @@ class WalletPageManager {
             }
 
             walletContainer.style.display = 'block';
+            walletContainer.style.position = 'fixed';
+            walletContainer.style.top = '0';
+            walletContainer.style.left = '0';
+            walletContainer.style.width = '100%';
+            walletContainer.style.height = '100%';
+            walletContainer.style.zIndex = '1000';
             document.body.style.overflow = 'auto';
 
             // Load wallet data
@@ -30,6 +37,7 @@ class WalletPageManager {
 
             // Render the wallet page
             this.renderWalletPage(walletContainer);
+            console.log('Wallet page rendered successfully');
 
         } catch (error) {
             console.error('Failed to load wallet page:', error);
@@ -40,9 +48,50 @@ class WalletPageManager {
         try {
             // For now, simulate wallet data
             // In the future, this would call an API endpoint
-            this.credits = 0; // Start with 0 credits
+            this.credits = 250; // Sample credit balance
             this.transactions = [
-                // Placeholder transactions - in real implementation, these would come from API
+                {
+                    id: '1',
+                    description: 'Task Completed: Implement user authentication',
+                    amount: 50,
+                    date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+                    type: 'earned'
+                },
+                {
+                    id: '2',
+                    description: 'Milestone Bonus: Phase 1 completion',
+                    amount: 100,
+                    date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+                    type: 'bonus'
+                },
+                {
+                    id: '3',
+                    description: 'Task Completed: Database optimization',
+                    amount: 75,
+                    date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+                    type: 'earned'
+                },
+                {
+                    id: '4',
+                    description: 'Premium Feature Access',
+                    amount: -25,
+                    date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+                    type: 'spent'
+                },
+                {
+                    id: '5',
+                    description: 'Task Completed: API endpoint development',
+                    amount: 60,
+                    date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+                    type: 'earned'
+                },
+                {
+                    id: '6',
+                    description: 'Community Contribution Bonus',
+                    amount: 30,
+                    date: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
+                    type: 'bonus'
+                }
             ];
 
         } catch (error) {
@@ -76,7 +125,7 @@ class WalletPageManager {
                             <h1 style="margin: 0 0 8px 0; font-size: 32px; font-weight: 700;">💰 Task Credits Wallet</h1>
                             <p style="margin: 0; color: #d0d0d0; font-size: 16px;">Manage your earned credits from completed tasks</p>
                         </div>
-                        <button onclick="router.navigate('/')" style="
+                        <button onclick="window.router.navigate('/')" style="
                             background: rgba(255, 152, 0, 0.15);
                             color: #ff9800;
                             border: 1px solid rgba(255, 152, 0, 0.3);
@@ -178,7 +227,7 @@ class WalletPageManager {
                         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
                         gap: 16px;
                     ">
-                        <button onclick="router.navigate('/')" style="
+                        <button onclick="window.router.navigate('/')" style="
                             background: rgba(78, 205, 196, 0.15);
                             color: #4ecdc4;
                             border: 1px solid rgba(78, 205, 196, 0.3);
@@ -193,7 +242,7 @@ class WalletPageManager {
                             🎯 Browse Available Tasks
                         </button>
                         
-                        <button onclick="router.navigate('/impact')" style="
+                        <button onclick="window.router.navigate('/impact')" style="
                             background: rgba(76, 175, 80, 0.15);
                             color: #4caf50;
                             border: 1px solid rgba(76, 175, 80, 0.3);
@@ -256,5 +305,5 @@ class WalletPageManager {
     }
 }
 
-// Global instance
-window.walletPageManager = new WalletPageManager(window.app);
+// Global instance - will be initialized after app loads
+window.walletPageManager = null;

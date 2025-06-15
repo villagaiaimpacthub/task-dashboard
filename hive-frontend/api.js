@@ -51,11 +51,26 @@ class APIClient {
             
             if (!response.ok) {
                 const error = await response.json().catch(() => ({ detail: 'Request failed' }));
-                throw new Error(error.detail || `HTTP ${response.status}`);
+                const errorMessage = error.detail || `HTTP ${response.status}`;
+                
+                // Log API errors for debugging but don't trigger global auth handling
+                console.error(`API ${config.method || 'GET'} ${endpoint} failed:`, {
+                    status: response.status,
+                    statusText: response.statusText,
+                    error: errorMessage
+                });
+                
+                throw new Error(errorMessage);
             }
 
             return await response.json();
         } catch (error) {
+            // Prevent any unhandled promise rejections from causing page redirects
+            if (error instanceof TypeError && error.message.includes('fetch')) {
+                console.error('Network error - API server may be unavailable:', error);
+                throw new Error('Network error - please check your connection');
+            }
+            
             console.error('API Request failed:', error);
             throw error;
         }

@@ -53,6 +53,29 @@ class HIVERouter {
         if (window.taskPageManager) {
             window.taskPageManager.cleanupChat();
         }
+        
+        // Clean up all page managers
+        if (window.impactPageManager && window.impactPageManager.cleanup) {
+            window.impactPageManager.cleanup();
+        }
+        if (window.walletPageManager && window.walletPageManager.cleanup) {
+            window.walletPageManager.cleanup();
+        }
+        if (window.notificationsPageManager && window.notificationsPageManager.cleanup) {
+            window.notificationsPageManager.cleanup();
+        }
+        if (window.messagesPageManager && window.messagesPageManager.cleanup) {
+            window.messagesPageManager.cleanup();
+        }
+        if (window.kairosPageManager && window.kairosPageManager.cleanup) {
+            window.kairosPageManager.cleanup();
+        }
+        if (window.telotypePageManager && window.telotypePageManager.cleanup) {
+            window.telotypePageManager.cleanup();
+        }
+        if (window.settingsPageManager && window.settingsPageManager.cleanup) {
+            window.settingsPageManager.cleanup();
+        }
     }
 
     // Parse parameters from path

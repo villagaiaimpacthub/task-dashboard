@@ -9,6 +9,7 @@ class MessagesPageManager {
     }
 
     async showMessagesPage() {
+        console.log('showMessagesPage called');
         try {
             // Hide main container
             const mainContainer = document.querySelector('.main-container');
@@ -25,6 +26,12 @@ class MessagesPageManager {
             }
 
             messagesContainer.style.display = 'block';
+            messagesContainer.style.position = 'fixed';
+            messagesContainer.style.top = '0';
+            messagesContainer.style.left = '0';
+            messagesContainer.style.width = '100%';
+            messagesContainer.style.height = '100%';
+            messagesContainer.style.zIndex = '1000';
             document.body.style.overflow = 'auto';
 
             // Load data
@@ -33,6 +40,7 @@ class MessagesPageManager {
 
             // Render the messages page
             this.renderMessagesPage(messagesContainer);
+            console.log('Messages page rendered successfully');
 
         } catch (error) {
             console.error('Failed to load messages page:', error);
@@ -43,7 +51,39 @@ class MessagesPageManager {
         try {
             // In real implementation, this would call an API to get user's conversations
             this.conversations = [
-                // Placeholder conversations
+                {
+                    userId: 'user1',
+                    userName: 'Sarah Johnson',
+                    userEmail: 'sarah.johnson@example.com',
+                    online: true,
+                    unread: true,
+                    lastMessage: {
+                        content: 'Hey, can you review my latest PR when you get a chance?',
+                        created_at: new Date(Date.now() - 30 * 60 * 1000).toISOString()
+                    }
+                },
+                {
+                    userId: 'user2',
+                    userName: 'Alex Chen',
+                    userEmail: 'alex.chen@example.com',
+                    online: false,
+                    unread: false,
+                    lastMessage: {
+                        content: 'Thanks for the help with the database optimization!',
+                        created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
+                    }
+                },
+                {
+                    userId: 'user3',
+                    userName: 'Maria Rodriguez',
+                    userEmail: 'maria.rodriguez@example.com',
+                    online: true,
+                    unread: false,
+                    lastMessage: {
+                        content: 'The UI mockups look great! Ready for implementation.',
+                        created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+                    }
+                }
             ];
         } catch (error) {
             console.error('Failed to load conversations:', error);
@@ -53,7 +93,25 @@ class MessagesPageManager {
 
     async loadOnlineUsers() {
         try {
-            this.onlineUsers = await api.getOnlineUsers();
+            // For demo purposes, add sample online users
+            this.onlineUsers = [
+                {
+                    id: 'user1',
+                    email: 'sarah.johnson@example.com'
+                },
+                {
+                    id: 'user2',
+                    email: 'alex.chen@example.com'
+                },
+                {
+                    id: 'user3',
+                    email: 'maria.rodriguez@example.com'
+                },
+                {
+                    id: 'user4',
+                    email: 'david.kim@example.com'
+                }
+            ];
         } catch (error) {
             console.error('Failed to load online users:', error);
             this.onlineUsers = [];
@@ -96,7 +154,7 @@ class MessagesPageManager {
                                 Direct messaging with team members across all projects
                             </p>
                         </div>
-                        <button onclick="router.navigate('/')" style="
+                        <button onclick="window.router.navigate('/')" style="
                             background: rgba(78, 205, 196, 0.15);
                             color: #4ecdc4;
                             border: 1px solid rgba(78, 205, 196, 0.3);
@@ -489,5 +547,5 @@ class MessagesPageManager {
     }
 }
 
-// Global instance
-window.messagesPageManager = new MessagesPageManager(window.app);
+// Global instance - will be initialized after app loads
+window.messagesPageManager = null;

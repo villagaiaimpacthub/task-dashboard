@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages - HIVE</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="dark-theme.css">
+</head>
+<body>
+    <!-- Header Bar -->
+    <div class="header-bar">
+        <div class="left-section">
+            <div class="logo">HIVE TASK</div>
+            <div class="scores-container">
+                <div class="wallet-score" onclick="window.location.href='wallet.html'" title="Task Credits">💰 Credits</div>
+                <div class="impact-score" onclick="window.location.href='impact.html'">+ Impact</div>
+            </div>
+        </div>
+        <div class="prime-directive">
+            Prime Directive: Consciousness attunement for the benefit of all beings.
+        </div>
+        <div class="user-info">
+            <button onclick="window.location.href='kairos.html'" class="action-score-btn" title="Kairos - Task Timeline">Kairos</button>
+            <button onclick="window.location.href='telotype.html'" class="action-score-btn" title="My Telotype">My Telotype</button>
+            <button onclick="window.location.href='messages.html'" class="nav-btn" title="Messages">💬</button>
+            <button onclick="window.location.href='notifications.html'" class="nav-btn" title="Notifications">🔔</button>
+            <button class="settings-btn" title="Settings">⚙️</button>
+            <button onclick="logout()" class="logout-btn" title="Logout">🚪</button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="page-container" style="
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        min-height: 100vh;
+        padding: 70px 0 0 0;
+        color: #ffffff;
+    ">
+        <div style="max-width: 1400px; margin: 0 auto; padding: 32px;">
+            <!-- Header -->
+            <div style="
+                padding-bottom: 20px;
+                border-bottom: 1px solid rgba(78, 205, 196, 0.2);
+                margin-bottom: 24px;
+            ">
+                <div style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                ">
+                    <div>
+                        <h1 style="margin: 0 0 4px 0; font-size: 28px; font-weight: 700;">💬 Messages</h1>
+                        <p style="margin: 0; color: #d0d0d0; font-size: 14px;">
+                            Direct messaging with team members across all projects
+                        </p>
+                    </div>
+                    <button onclick="window.location.href='index.html'" style="
+                        background: rgba(78, 205, 196, 0.15);
+                        color: #4ecdc4;
+                        border: 1px solid rgba(78, 205, 196, 0.3);
+                        padding: 10px 20px;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        font-weight: 500;
+                        font-size: 14px;
+                        transition: all 0.3s ease;
+                    " onmouseover="this.style.background='rgba(78, 205, 196, 0.25)'" 
+                       onmouseout="this.style.background='rgba(78, 205, 196, 0.15)'">
+                        ← Dashboard
+                    </button>
+                </div>
+            </div>
+
+            <!-- Messages Layout -->
+            <div style="
+                display: grid;
+                grid-template-columns: 320px 1fr;
+                height: calc(100vh - 140px);
+                gap: 24px;
+            ">
+                <!-- Left Sidebar: Conversations -->
+                <div style="
+                    background: rgba(0, 0, 0, 0.4);
+                    border: 1px solid rgba(78, 205, 196, 0.2);
+                    border-radius: 16px;
+                    padding: 20px;
+                    display: flex;
+                    flex-direction: column;
+                ">
+                    <h3 style="margin: 0 0 16px 0; color: #ffffff;">Recent Conversations</h3>
+                    
+                    <!-- Conversation Item -->
+                    <div style="
+                        padding: 16px;
+                        border-radius: 12px;
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                        background: rgba(78, 205, 196, 0.05);
+                        border: 1px solid rgba(78, 205, 196, 0.1);
+                        margin-bottom: 12px;
+                    " onmouseover="this.style.background='rgba(78, 205, 196, 0.1)'"
+                       onmouseout="this.style.background='rgba(78, 205, 196, 0.05)'">
+                        
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="
+                                width: 40px;
+                                height: 40px;
+                                border-radius: 50%;
+                                background: linear-gradient(135deg, #4ecdc4, #00b8a9);
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                color: white;
+                                font-weight: 600;
+                                position: relative;
+                            ">
+                                SJ
+                                <div style="
+                                    position: absolute;
+                                    bottom: 0;
+                                    right: 0;
+                                    width: 12px;
+                                    height: 12px;
+                                    background: #4caf50;
+                                    border: 2px solid #1a1a1a;
+                                    border-radius: 50%;
+                                "></div>
+                            </div>
+                            
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="
+                                    display: flex;
+                                    justify-content: space-between;
+                                    align-items: center;
+                                    margin-bottom: 4px;
+                                ">
+                                    <span style="
+                                        color: #ffffff;
+                                        font-weight: 600;
+                                        font-size: 14px;
+                                        white-space: nowrap;
+                                        overflow: hidden;
+                                        text-overflow: ellipsis;
+                                    ">Sarah Johnson</span>
+                                    <span style="
+                                        color: #a0a0a0;
+                                        font-size: 11px;
+                                        white-space: nowrap;
+                                    ">2:30pm</span>
+                                </div>
+                                
+                                <div style="
+                                    color: #d0d0d0;
+                                    font-size: 12px;
+                                    white-space: nowrap;
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
+                                ">Hey, can you review my latest PR when you get a chance?</div>
+                            </div>
+                            
+                            <div style="
+                                width: 8px;
+                                height: 8px;
+                                background: #4ecdc4;
+                                border-radius: 50%;
+                            "></div>
+                        </div>
+                    </div>
+
+                    <!-- More conversation items -->
+                    <div style="
+                        padding: 16px;
+                        border-radius: 12px;
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                        background: transparent;
+                        margin-bottom: 12px;
+                    " onmouseover="this.style.background='rgba(78, 205, 196, 0.05)'"
+                       onmouseout="this.style.background='transparent'">
+                        
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="
+                                width: 40px;
+                                height: 40px;
+                                border-radius: 50%;
+                                background: linear-gradient(135deg, #4ecdc4, #00b8a9);
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                color: white;
+                                font-weight: 600;
+                            ">AC</div>
+                            
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="
+                                    display: flex;
+                                    justify-content: space-between;
+                                    align-items: center;
+                                    margin-bottom: 4px;
+                                ">
+                                    <span style="
+                                        color: #ffffff;
+                                        font-weight: 600;
+                                        font-size: 14px;
+                                    ">Alex Chen</span>
+                                    <span style="
+                                        color: #a0a0a0;
+                                        font-size: 11px;
+                                    ">Yesterday</span>
+                                </div>
+                                
+                                <div style="
+                                    color: #d0d0d0;
+                                    font-size: 12px;
+                                    white-space: nowrap;
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
+                                ">Thanks for the help with the database optimization!</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Side: Chat Area -->
+                <div style="
+                    background: rgba(0, 0, 0, 0.2);
+                    border: 1px solid rgba(78, 205, 196, 0.2);
+                    border-radius: 16px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    text-align: center;
+                    color: #d0d0d0;
+                ">
+                    <div style="font-size: 80px; margin-bottom: 24px;">💬</div>
+                    <h2 style="margin: 0 0 16px 0; color: #ffffff; font-size: 24px;">Welcome to HIVE Messages</h2>
+                    <p style="margin: 0 0 24px 0; font-size: 16px; line-height: 1.6; max-width: 400px;">
+                        Connect with team members across all projects. Select a conversation from the sidebar to start chatting.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function logout() {
+            localStorage.removeItem('auth_token');
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

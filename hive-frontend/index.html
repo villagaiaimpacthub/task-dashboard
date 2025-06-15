@@ -43,20 +43,22 @@
         <!-- Header -->
         <div class="header-bar">
             <div class="left-section">
-                <div class="logo">HIVE</div>
+                <div class="logo">HIVE TASK</div>
                 <div class="scores-container">
-                    <div class="wallet-score" id="walletScore" title="Task Credits">💰 0 Credits</div>
-                    <div class="impact-score">+0 Impact</div>
+                    <div class="wallet-score" id="walletScore" onclick="window.location.href='wallet.html'" title="Task Credits">💰 Credits</div>
+                    <div class="impact-score" onclick="window.location.href='impact.html'">+ Impact</div>
                 </div>
             </div>
             <div class="prime-directive">
-                Prime Directive: The elevation of consciousness for the benefit of all beings.
+                Prime Directive: Consciousness attunement for the benefit of all beings.
             </div>
             <div class="user-info">
-                <button id="messagesBtn" class="nav-btn" title="Messages">💬</button>
-                <button id="notificationsBtn" class="nav-btn" title="Notifications">🔔</button>
+                <button onclick="window.location.href='kairos.html'" class="action-score-btn" title="Kairos - Task Timeline">Kairos</button>
+                <button onclick="window.location.href='telotype.html'" class="action-score-btn" title="My Telotype">My Telotype</button>
+                <button onclick="window.location.href='messages.html'" class="nav-btn" title="Messages">💬</button>
+                <button onclick="window.location.href='notifications.html'" class="nav-btn" title="Notifications">🔔</button>
                 <button id="settingsBtn" class="settings-btn" title="Settings">⚙️</button>
-                <button id="logoutBtn" class="logout-btn">Logout</button>
+                <button id="logoutBtn" class="logout-btn" title="Logout">🚪</button>
             </div>
         </div>
 
@@ -135,15 +137,16 @@
         <!-- Main Content -->
         <div class="main-content">
             <div class="content-header">
-                <h2 class="content-title">Available Projects</h2>
+                <div class="header-top">
+                    <h2 class="content-title">Available Projects</h2>
+                    <div class="view-toggle">
+                        <button class="toggle-btn active" title="Grid View">⊞</button>
+                        <button class="toggle-btn" title="List View">☰</button>
+                    </div>
+                </div>
                 <div class="action-buttons">
                     <button id="createProjectBtn" class="create-btn">+ Create Project</button>
                     <button id="importMasterPlanBtn" class="create-btn">📥 Import Master Plan</button>
-                    <a href="skills-assessment.html" class="create-btn skills-link">🎯 Skills Assessment</a>
-                    <div class="view-toggle">
-                        <button class="toggle-btn active">Grid View</button>
-                        <button class="toggle-btn">List View</button>
-                    </div>
                 </div>
             </div>
 
@@ -345,6 +348,155 @@
         </div>
     </div>
 
+    <!-- Project Creation Modal -->
+    <div id="projectModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Create New Project</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="projectForm">
+                    <!-- Basic Information -->
+                    <div class="form-section">
+                        <h4>Basic Information</h4>
+                        <div class="form-group">
+                            <label for="projectTitle">Project Title*</label>
+                            <input type="text" id="projectTitle" placeholder="e.g., HIVE Task Management System" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="projectDescription">Project Description*</label>
+                            <textarea id="projectDescription" placeholder="Provide a detailed overview of the project, its goals, and expected outcomes." rows="4" required></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Timeline & Priority -->
+                    <div class="form-section">
+                        <h4>Timeline & Priority</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="projectStartDate">Start Date</label>
+                                <input type="date" id="projectStartDate">
+                            </div>
+                            <div class="form-group">
+                                <label for="projectDueDate">Target Completion</label>
+                                <input type="date" id="projectDueDate">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="projectPriority">Priority*</label>
+                                <select id="projectPriority" required>
+                                    <option value="low">Low</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="high">High</option>
+                                    <option value="urgent">Urgent</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="projectCategory">Category*</label>
+                                <select id="projectCategory" required>
+                                    <option value="">Select category...</option>
+                                    <option value="Software Development">Software Development</option>
+                                    <option value="UI/UX Design">UI/UX Design</option>
+                                    <option value="Project Management">Project Management</option>
+                                    <option value="Data Analysis">Data Analysis</option>
+                                    <option value="Problem Solving">Problem Solving</option>
+                                    <option value="DevOps">DevOps</option>
+                                    <option value="Quality Assurance">Quality Assurance</option>
+                                    <option value="Business Analysis">Business Analysis</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Team & Scope -->
+                    <div class="form-section">
+                        <h4>Team & Scope</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="projectTeamSize">Expected Team Size</label>
+                                <input type="number" id="projectTeamSize" placeholder="Number of people needed" min="1" value="3">
+                            </div>
+                            <div class="form-group">
+                                <label for="projectScope">Scope</label>
+                                <select id="projectScope">
+                                    <option value="internal">Internal</option>
+                                    <option value="external">External</option>
+                                    <option value="global">Global</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="projectLocation">Location/Region</label>
+                            <input type="text" id="projectLocation" placeholder="e.g., Remote, Global, San Francisco">
+                        </div>
+                    </div>
+
+                    <!-- Impact & Resources -->
+                    <div class="form-section">
+                        <h4>Impact & Resources</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="projectImpactPoints">Impact Points</label>
+                                <input type="number" id="projectImpactPoints" placeholder="Total impact points for completion" min="1" value="100">
+                            </div>
+                            <div class="form-group">
+                                <label for="projectBudget">Budget</label>
+                                <input type="text" id="projectBudget" placeholder="e.g., $5000 or Volunteer">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="projectResources">Resources Needed</label>
+                            <textarea id="projectResources" placeholder="List any tools, technologies, materials, or resources required" rows="2"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Required Skills -->
+                    <div class="form-section">
+                        <h4>Required Skills</h4>
+                        <div class="form-group">
+                            <label for="projectRequiredSkills">Skills (comma-separated)</label>
+                            <input type="text" id="projectRequiredSkills" placeholder="e.g., Project Management, Python, UI Design, Team Leadership">
+                            <small class="form-help">Enter skills separated by commas</small>
+                        </div>
+                    </div>
+
+                    <!-- Success Metrics & Deliverables -->
+                    <div class="form-section">
+                        <h4>Success Metrics & Deliverables</h4>
+                        <div class="form-group">
+                            <label for="projectSuccessMetrics">Success Metrics</label>
+                            <textarea id="projectSuccessMetrics" placeholder="How will project success be measured? (one per line)" rows="3"></textarea>
+                            <small class="form-help">Enter each metric on a new line</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="projectDeliverables">Key Deliverables</label>
+                            <textarea id="projectDeliverables" placeholder="What are the main project outputs? (one per line)" rows="3"></textarea>
+                            <small class="form-help">Enter each deliverable on a new line</small>
+                        </div>
+                    </div>
+
+                    <!-- Definition of Done -->
+                    <div class="form-section">
+                        <h4>Definition of Done</h4>
+                        <div class="form-group">
+                            <label for="projectDefinitionOfDone">Project Completion Criteria</label>
+                            <textarea id="projectDefinitionOfDone" placeholder="What constitutes project completion? Define clear, measurable criteria." rows="3"></textarea>
+                            <small class="form-help">Be specific about what "done" means for this project</small>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="submit-btn">Create Project</button>
+                    </div>
+                </form>
+                <div id="projectError" class="error-message"></div>
+            </div>
+        </div>
+    </div>
+
     <!-- Settings Modal -->
     <div id="settingsModal" class="modal">
         <div class="modal-content">
@@ -474,8 +626,6 @@
 
     <!-- Connection status removed - backend doesn't support real-time WebSocket -->
 
-    <!-- Floating Action Button -->
-    <button class="fab" id="fabBtn" title="Propose New Task">+</button>
 
     <script src="api.js"></script>
     <script src="websocket.js"></script>
@@ -489,6 +639,8 @@
     <script src="wallet-page.js"></script>
     <script src="notifications-page.js"></script>
     <script src="messages-page.js"></script>
+    <script src="kairos-page.js"></script>
+    <script src="telotype-page.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

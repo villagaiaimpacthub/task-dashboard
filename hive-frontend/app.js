@@ -12,11 +12,38 @@ class HIVEApp {
         this.init();
     }
 
+    // Initialize all page managers
+    initializePageManagers() {
+        console.log('Initializing page managers...');
+        
+        // Set up global app reference
+        window.app = this;
+        
+        // Initialize all page managers with app instance
+        window.impactPageManager = new ImpactPageManager(this);
+        window.walletPageManager = new WalletPageManager(this);
+        window.notificationsPageManager = new NotificationsPageManager(this);
+        window.messagesPageManager = new MessagesPageManager(this);
+        window.kairosPageManager = new KairosPageManager(this);
+        window.telotypePageManager = new TelotypePageManager(this);
+        
+        // Initialize project page manager
+        window.projectPage = new ProjectPage(this);
+        
+        // Settings page manager already handles initialization differently
+        if (typeof SettingsPageManager !== 'undefined') {
+            window.settingsPageManager = new SettingsPageManager();
+        }
+        
+        console.log('Page managers initialized successfully');
+    }
+
     // Initialize the application
     async init() {
         console.log('Initializing HIVE Application...');
         
         this.setupEventListeners();
+        this.initializePageManagers();
         this.setupRouting();
         // WebSocket disabled - backend doesn't support real WebSocket
         // this.setupWebSocket();
@@ -29,9 +56,11 @@ class HIVEApp {
                 await this.loadInitialData();
             } catch (error) {
                 console.error('Failed to load user:', error);
+                // Don't attempt to load data when showing login
                 this.showLoginModal();
             }
         } else {
+            // Not authenticated - just show login without trying to load data
             this.showLoginModal();
         }
     }
@@ -49,22 +78,67 @@ class HIVEApp {
             btn.addEventListener('click', (e) => this.switchAuthTab(e));
         });
 
-        // Project creation (using task modal for now, should create dedicated project modal later)
-        document.getElementById('createProjectBtn').addEventListener('click', () => this.showTaskModal());
-        document.getElementById('fabBtn').addEventListener('click', () => this.showTaskModal());
+        // Project creation
+        document.getElementById('createProjectBtn').addEventListener('click', () => this.showProjectModal());
+        document.getElementById('projectForm').addEventListener('submit', (e) => this.handleCreateProject(e));
         document.getElementById('taskForm').addEventListener('submit', (e) => this.handleCreateTask(e));
-        document.getElementById('settingsBtn').addEventListener('click', () => router.navigate('/settings'));
-        document.getElementById('messagesBtn').addEventListener('click', () => router.navigate('/messages'));
-        document.getElementById('notificationsBtn').addEventListener('click', () => router.navigate('/notifications'));
-        document.getElementById('walletScore').addEventListener('click', () => router.navigate('/wallet'));
+        document.getElementById('settingsBtn').addEventListener('click', () => {
+            if (window.router) {
+                window.router.navigate('/settings');
+            } else {
+                console.error('Router not available');
+            }
+        });
+        document.getElementById('kairosBtn').addEventListener('click', () => {
+            if (window.router) {
+                window.router.navigate('/kairos');
+            } else {
+                console.error('Router not available');
+            }
+        });
+        document.getElementById('messagesBtn').addEventListener('click', () => {
+            if (window.router) {
+                window.router.navigate('/messages');
+            } else {
+                console.error('Router not available');
+            }
+        });
+        document.getElementById('notificationsBtn').addEventListener('click', () => {
+            if (window.router) {
+                window.router.navigate('/notifications');
+            } else {
+                console.error('Router not available');
+            }
+        });
+        document.getElementById('telotypeBtn2').addEventListener('click', () => {
+            if (window.router) {
+                window.router.navigate('/telotype');
+            } else {
+                console.error('Router not available');
+            }
+        });
+        document.getElementById('walletScore').addEventListener('click', () => {
+            if (window.router) {
+                window.router.navigate('/wallet');
+            } else {
+                console.error('Router not available');
+            }
+        });
         
         // Impact score should go to impact history page
-        document.querySelector('.impact-score').addEventListener('click', () => router.navigate('/impact'));
+        document.querySelector('.impact-score').addEventListener('click', () => {
+            if (window.router) {
+                window.router.navigate('/impact');
+            } else {
+                console.error('Router not available');
+            }
+        });
         document.getElementById('addSkillForm').addEventListener('submit', (e) => this.handleAddSkill(e));
         document.getElementById('currentSkills').addEventListener('click', (e) => this.handleRemoveSkill(e));
         
         // Master Plan Import
         document.getElementById('importMasterPlanBtn').addEventListener('click', () => this.showMasterPlanModal());
+        
 
         // Search functionality
         document.getElementById('taskSearch').addEventListener('input', (e) => this.handleSearch(e));
@@ -94,6 +168,9 @@ class HIVEApp {
             });
         });
 
+        // Global ESC key handling
+        document.addEventListener('keydown', (e) => this.handleGlobalKeyPress(e));
+        
         // Skill tag filtering
         const skillsContainer = document.querySelector('.sidebar .filter-group:last-of-type');
         skillsContainer.addEventListener('click', (e) => {
@@ -245,31 +322,50 @@ class HIVEApp {
     // Load initial data
     async loadInitialData() {
         try {
-            await Promise.all([
-                this.loadProjects(),
+            // Load projects first, then other data
+            await this.loadProjects();
+            
+            // Load other data in parallel but don't let their failures affect the whole process
+            await Promise.allSettled([
                 this.loadDashboardStats(),
                 this.loadOnlineUsers(),
-                this.loadActiveTasks()
+                this.loadActiveTasks(),
+                this.updateWalletDisplay()
             ]);
+            
+            console.log('Initial data loading completed');
         } catch (error) {
             console.error('Error loading initial data:', error);
-            // Don't show error notification if projects actually loaded
-            if (!this.projects || this.projects.length === 0) {
-                this.showNotification('Failed to load projects', 'error');
-            }
+            // Error handling is now done in individual load methods
         }
     }
 
     // Project management
     async loadProjects() {
+        // Don't attempt to load projects if not authenticated
+        if (!api.isAuthenticated()) {
+            console.log('Skipping project load - not authenticated');
+            return;
+        }
+        
         try {
-            this.projects = await api.getProjects();
+            const projects = await api.getProjects();
+            this.projects = projects;
             this.updateCategories();
             this.filterProjects();
             this.updateProjectCounts();
+            
+            // Clear any previous error notifications about projects
+            console.log('Projects loaded successfully:', projects.length, 'projects');
         } catch (error) {
             console.error('Failed to load projects:', error);
-            this.showNotification('Failed to load projects', 'error');
+            
+            // Only show error if we don't already have projects loaded AND user is authenticated
+            if ((!this.projects || this.projects.length === 0) && api.isAuthenticated()) {
+                this.showNotification('Failed to load projects', 'error');
+            } else if (this.projects && this.projects.length > 0) {
+                console.log('Using cached projects due to load error');
+            }
         }
     }
 
@@ -460,8 +556,6 @@ class HIVEApp {
         
         if (canClaim) {
             actionButton = `<button class="claim-btn" data-project-id="${project.id}">Join Project</button>`;
-        } else if (canAssign) {
-            actionButton = `<button class="assign-btn" data-project-id="${project.id}">Assign</button>`;
         } else if (project.assignee_id === this.currentUser?.id) {
             actionButton = `<button class="update-status-btn" data-project-id="${project.id}">Update Status</button>`;
         }
@@ -539,11 +633,6 @@ class HIVEApp {
         // Claim buttons (Join Project)
         document.querySelectorAll('.claim-btn').forEach(btn => {
             btn.addEventListener('click', (e) => this.handleJoinProject(e));
-        });
-
-        // Assign buttons
-        document.querySelectorAll('.assign-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => this.handleAssignProject(e));
         });
 
         // Update status buttons
@@ -644,6 +733,82 @@ class HIVEApp {
         }
     }
 
+    // Global keyboard event handling
+    handleGlobalKeyPress(e) {
+        // Only handle ESC key
+        if (e.key !== 'Escape') return;
+        
+        // Don't handle ESC if user is typing in an input field
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        
+        // Check current page and navigate accordingly
+        const projectPageContainer = document.getElementById('projectPageContainer');
+        const taskPageContainer = document.getElementById('task-page-container');
+        const settingsContainer = document.getElementById('settings-page-container');
+        const impactContainer = document.getElementById('impact-page-container');
+        const walletContainer = document.getElementById('wallet-page-container');
+        const notificationsContainer = document.getElementById('notifications-page-container');
+        const messagesContainer = document.getElementById('messages-page-container');
+        const kairosContainer = document.getElementById('kairos-page-container');
+        const telotypeContainer = document.getElementById('telotype-page-container');
+        
+        // If on task page, go back to project (if task has project_id) or dashboard
+        if (taskPageContainer && taskPageContainer.style.display !== 'none') {
+            this.handleEscFromTask();
+            return;
+        }
+        
+        // If on project page, go back to dashboard
+        if (projectPageContainer && projectPageContainer.style.display !== 'none') {
+            if (window.projectPage) {
+                window.projectPage.goBackToDashboard();
+            }
+            return;
+        }
+        
+        // If on any other page, go back to dashboard
+        if ((settingsContainer && settingsContainer.style.display !== 'none') ||
+            (impactContainer && impactContainer.style.display !== 'none') ||
+            (walletContainer && walletContainer.style.display !== 'none') ||
+            (notificationsContainer && notificationsContainer.style.display !== 'none') ||
+            (messagesContainer && messagesContainer.style.display !== 'none') ||
+            (kairosContainer && kairosContainer.style.display !== 'none') ||
+            (telotypeContainer && telotypeContainer.style.display !== 'none')) {
+            
+            if (window.router) {
+                window.router.navigate('/');
+            }
+            return;
+        }
+        
+        // If any modal is open, close it
+        const openModals = document.querySelectorAll('.modal.show');
+        if (openModals.length > 0) {
+            openModals.forEach(modal => modal.classList.remove('show'));
+            return;
+        }
+    }
+    
+    handleEscFromTask() {
+        // Check if current task belongs to a project
+        if (window.taskPageManager && window.taskPageManager.currentTask) {
+            const currentTask = window.taskPageManager.currentTask;
+            
+            // If task has a project_id, go back to project page
+            if (currentTask.project_id) {
+                if (window.router) {
+                    window.router.navigate(`/project/${currentTask.project_id}`);
+                }
+                return;
+            }
+        }
+        
+        // Otherwise go back to dashboard
+        if (window.router) {
+            window.router.navigate('/');
+        }
+    }
+
     async handleCreateTask(e) {
         e.preventDefault();
         
@@ -693,13 +858,86 @@ class HIVEApp {
                 status: 'available'
             };
 
+            // If task is being created from a project page, associate it with the project
+            if (window.projectPage && window.projectPage.taskProjectId) {
+                taskData.project_id = window.projectPage.taskProjectId;
+            }
+
             await api.createTask(taskData);
             await this.loadProjects();
             this.hideTaskModal();
             this.showNotification('Task created successfully!');
             
+            // If we're on a project page, refresh the project tasks
+            if (window.projectPage && window.projectPage.taskProjectId) {
+                await window.projectPage.loadProjectTasks(window.projectPage.taskProjectId);
+                window.projectPage.renderProjectPage();
+                // Clear the project association
+                window.projectPage.taskProjectId = null;
+            }
+            
             // Reset form
             document.getElementById('taskForm').reset();
+        } catch (error) {
+            errorEl.textContent = error.message;
+        }
+    }
+
+    async handleCreateProject(e) {
+        e.preventDefault();
+        
+        const errorEl = document.getElementById('projectError');
+
+        try {
+            // Collect all form data
+            const projectData = {
+                // Basic information
+                title: document.getElementById('projectTitle').value,
+                description: document.getElementById('projectDescription').value,
+                
+                // Timeline & Priority
+                start_date: document.getElementById('projectStartDate').value || null,
+                due_date: document.getElementById('projectDueDate').value || null,
+                priority: document.getElementById('projectPriority').value,
+                category: document.getElementById('projectCategory').value,
+                
+                // Team & Scope
+                team_size: parseInt(document.getElementById('projectTeamSize').value) || 3,
+                scope: document.getElementById('projectScope').value,
+                location: document.getElementById('projectLocation').value || null,
+                
+                // Impact & Resources
+                impact_points: parseInt(document.getElementById('projectImpactPoints').value) || 100,
+                budget: document.getElementById('projectBudget').value || null,
+                resources_needed: document.getElementById('projectResources').value || null,
+                
+                // Required Skills
+                required_skills: document.getElementById('projectRequiredSkills').value
+                    ? document.getElementById('projectRequiredSkills').value.split(',').map(s => s.trim()).filter(s => s)
+                    : [],
+                
+                // Success Metrics & Deliverables
+                success_metrics: document.getElementById('projectSuccessMetrics').value
+                    ? document.getElementById('projectSuccessMetrics').value.split('\n').map(s => s.trim()).filter(s => s)
+                    : [],
+                deliverables: document.getElementById('projectDeliverables').value
+                    ? document.getElementById('projectDeliverables').value.split('\n').map(s => s.trim()).filter(s => s)
+                    : [],
+                
+                // Definition of Done
+                definition_of_done: document.getElementById('projectDefinitionOfDone').value || null,
+                
+                // Status (default)
+                status: 'available'
+            };
+
+            await api.createProject(projectData);
+            await this.loadProjects();
+            this.hideProjectModal();
+            this.showNotification('Project created successfully!');
+            
+            // Reset form
+            document.getElementById('projectForm').reset();
         } catch (error) {
             errorEl.textContent = error.message;
         }
@@ -720,13 +958,6 @@ class HIVEApp {
         }
     }
 
-    async handleAssignProject(e) {
-        e.stopPropagation();
-        const projectId = e.target.dataset.projectId;
-        
-        // TODO: Implement project assignment UI
-        this.showNotification('Project assignment feature coming soon!');
-    }
 
     async handleUpdateProjectStatus(e) {
         e.stopPropagation();
@@ -961,7 +1192,7 @@ class HIVEApp {
 
     // View toggle
     toggleView(e) {
-        const viewType = e.target.textContent.toLowerCase().includes('grid') ? 'grid' : 'list';
+        const viewType = e.target.title.toLowerCase().includes('grid') ? 'grid' : 'list';
         
         document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
         e.target.classList.add('active');
@@ -1052,6 +1283,22 @@ class HIVEApp {
         `).join('');
     }
 
+    // Update wallet display with sample credits
+    async updateWalletDisplay() {
+        const walletScoreEl = document.getElementById('walletScore');
+        const impactScoreEl = document.querySelector('.impact-score');
+        
+        if (walletScoreEl) {
+            // Sample credit balance
+            walletScoreEl.textContent = '💰 250 Credits';
+        }
+        
+        if (impactScoreEl) {
+            // Sample impact score
+            impactScoreEl.textContent = '+450 Impact';
+        }
+    }
+
     // Skill management
     renderUserSkills() {
         const skillsSidebar = document.querySelector('.sidebar .filter-group:last-of-type');
@@ -1123,6 +1370,9 @@ class HIVEApp {
 
     // UI helpers
     showLoginModal() {
+        // Clear any existing notifications before showing login
+        this.clearNotifications();
+        
         const modal = document.getElementById('loginModal');
         if (modal) modal.classList.add('show');
     }
@@ -1142,6 +1392,16 @@ class HIVEApp {
         if (modal) modal.classList.remove('show');
     }
 
+    showProjectModal() {
+        const modal = document.getElementById('projectModal');
+        if (modal) modal.classList.add('show');
+    }
+
+    hideProjectModal() {
+        const modal = document.getElementById('projectModal');
+        if (modal) modal.classList.remove('show');
+    }
+
     showMainInterface() {
         const container = document.querySelector('.main-container');
         if (container) container.style.display = 'grid';
@@ -1152,6 +1412,12 @@ class HIVEApp {
         if (modal) {
             modal.classList.remove('show');
         }
+    }
+
+    clearNotifications() {
+        // Remove all existing notifications
+        const notifications = document.querySelectorAll('.notification');
+        notifications.forEach(notification => notification.remove());
     }
 
     showNotification(message, type = 'success') {
@@ -1896,7 +2162,7 @@ class HIVEApp {
         console.log('Page managers initialized');
         
         // Register routes
-        router.register('/', () => {
+        window.router.register('/', () => {
             console.log('Dashboard route triggered');
             // Restore default page title
             document.title = 'HIVE - Task Management System';
@@ -1934,6 +2200,10 @@ class HIVEApp {
             if (messagesContainer) {
                 messagesContainer.style.display = 'none';
             }
+            const projectContainer = document.getElementById('projectPageContainer');
+            if (projectContainer) {
+                projectContainer.style.display = 'none';
+            }
             // Restore body overflow to hidden for dashboard
             document.body.style.overflow = 'hidden';
             // Show dashboard - restore default layout
@@ -1941,7 +2211,7 @@ class HIVEApp {
             this.loadInitialData();
         });
         
-        router.register('/task/:id', (params) => {
+        window.router.register('/task/:id', (params) => {
             console.log('Task route triggered with params:', params);
             // Show task page
             if (params.id) {
@@ -1949,61 +2219,72 @@ class HIVEApp {
             }
         });
         
-        router.register('/settings', () => {
+        window.router.register('/settings', () => {
             console.log('Settings route triggered');
             settingsPageManager.showSettingsPage();
         });
 
-        router.register('/impact', () => {
+        window.router.register('/impact', () => {
             console.log('Impact route triggered');
-            impactPageManager.showImpactPage();
+            window.impactPageManager.showImpactPage();
         });
 
-        router.register('/wallet', () => {
+        window.router.register('/wallet', () => {
             console.log('Wallet route triggered');
-            walletPageManager.showWalletPage();
+            window.walletPageManager.showWalletPage();
         });
 
-        router.register('/notifications', () => {
+        window.router.register('/notifications', () => {
             console.log('Notifications route triggered');
-            notificationsPageManager.showNotificationsPage();
+            window.notificationsPageManager.showNotificationsPage();
         });
 
-        router.register('/messages', () => {
+        window.router.register('/messages', () => {
             console.log('Messages route triggered');
-            messagesPageManager.showMessagesPage();
+            window.messagesPageManager.showMessagesPage();
         });
 
-        router.register('/protocols', () => {
-            console.log('Protocols route triggered');
-            protocolsPageManager.render();
+        window.router.register('/kairos', () => {
+            console.log('Kairos route triggered');
+            window.kairosPageManager.showKairosPage();
         });
 
-        router.register('/protocol/:id', (params) => {
+        window.router.register('/telotype', () => {
+            console.log('Telotype route triggered');
+            window.telotypePageManager.showTelotypePage();
+        });
+
+        // Temporarily disabled until page managers are implemented
+        window.router.register('/protocols', () => {
+            console.log('Protocols route triggered - not yet implemented');
+            this.showNotification('Protocols page coming soon!', 'error');
+        });
+
+        window.router.register('/protocol/:id', (params) => {
             console.log('Protocol detail route triggered with params:', params);
-            // TODO: Implement protocol detail page
+            this.showNotification('Protocol details coming soon!', 'error');
         });
 
-        router.register('/implementations', () => {
-            console.log('Implementations route triggered');
-            implementationsPageManager.render();
+        window.router.register('/implementations', () => {
+            console.log('Implementations route triggered - not yet implemented');
+            this.showNotification('Implementations page coming soon!', 'error');
         });
 
-        router.register('/implementation/:id', (params) => {
+        window.router.register('/implementation/:id', (params) => {
             console.log('Implementation detail route triggered with params:', params);
-            // TODO: Implement implementation detail page
+            this.showNotification('Implementation details coming soon!', 'error');
         });
 
-        router.register('/projects', () => {
-            console.log('Projects route triggered');
-            projectsPageManager.render();
+        window.router.register('/projects', () => {
+            console.log('Projects route triggered - not yet implemented');
+            this.showNotification('Projects page coming soon!', 'error');
         });
 
-        router.register('/project/:id', (params) => {
+        window.router.register('/project/:id', (params) => {
             console.log('Project route triggered with params:', params);
             if (params.id) {
-                console.log('Calling projectPage.render with ID:', params.id);
-                projectPage.render(params.id);
+                console.log('Calling window.projectPage.render with ID:', params.id);
+                window.projectPage.render(params.id);
             } else {
                 console.error('No project ID in route params');
             }
@@ -2011,10 +2292,10 @@ class HIVEApp {
 
 
         
-        console.log('Router initialized:', router);
+        console.log('Router initialized:', window.router);
         
         // Now handle the current route
-        router.handleRoute();
+        window.router.handleRoute();
     }
 }
 

@@ -7,6 +7,7 @@ class NotificationsPageManager {
     }
 
     async showNotificationsPage() {
+        console.log('showNotificationsPage called');
         try {
             // Hide main container
             const mainContainer = document.querySelector('.main-container');
@@ -23,6 +24,12 @@ class NotificationsPageManager {
             }
 
             notificationsContainer.style.display = 'block';
+            notificationsContainer.style.position = 'fixed';
+            notificationsContainer.style.top = '0';
+            notificationsContainer.style.left = '0';
+            notificationsContainer.style.width = '100%';
+            notificationsContainer.style.height = '100%';
+            notificationsContainer.style.zIndex = '1000';
             document.body.style.overflow = 'auto';
 
             // Load notifications
@@ -30,6 +37,7 @@ class NotificationsPageManager {
 
             // Render the notifications page
             this.renderNotificationsPage(notificationsContainer);
+            console.log('Notifications page rendered successfully');
 
         } catch (error) {
             console.error('Failed to load notifications page:', error);
@@ -41,16 +49,51 @@ class NotificationsPageManager {
             // For now, simulate notifications data
             // In the future, this would call an API endpoint to get user's notifications
             this.notifications = [
-                // Placeholder notifications - in real implementation, these would come from API
-                // {
-                //     id: '1',
-                //     type: 'task_assigned',
-                //     title: 'New Task Assigned',
-                //     message: 'You have been assigned to "Implement user authentication system"',
-                //     project: 'HIVE Backend Development',
-                //     created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-                //     read: false
-                // }
+                {
+                    id: '1',
+                    type: 'task_assigned',
+                    title: 'New Task Assigned',
+                    message: 'You have been assigned to "Implement user authentication system"',
+                    project: 'HIVE Backend Development',
+                    created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+                    read: false
+                },
+                {
+                    id: '2',
+                    type: 'project_updated',
+                    title: 'Project Status Updated',
+                    message: 'HIVE Task Management System project has been updated with new requirements',
+                    project: 'HIVE Frontend Development',
+                    created_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
+                    read: false
+                },
+                {
+                    id: '3',
+                    type: 'task_completed',
+                    title: 'Task Completed',
+                    message: 'Your task "Database schema design" has been marked as completed',
+                    project: 'HIVE Backend Development',
+                    created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+                    read: true
+                },
+                {
+                    id: '4',
+                    type: 'milestone_completed',
+                    title: 'Milestone Achieved',
+                    message: 'Phase 1 milestone completed! Great work on the authentication system.',
+                    project: 'HIVE Backend Development',
+                    created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+                    read: true
+                },
+                {
+                    id: '5',
+                    type: 'team_message',
+                    title: 'Team Update',
+                    message: 'New team member joined the project. Welcome Sarah!',
+                    project: 'HIVE Frontend Development',
+                    created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+                    read: true
+                }
             ];
 
             this.unreadCount = this.notifications.filter(n => !n.read).length;
@@ -89,7 +132,7 @@ class NotificationsPageManager {
                                 ${this.unreadCount > 0 ? `• ${this.unreadCount} unread` : '• All caught up!'}
                             </p>
                         </div>
-                        <button onclick="router.navigate('/')" style="
+                        <button onclick="window.router.navigate('/')" style="
                             background: rgba(78, 205, 196, 0.15);
                             color: #4ecdc4;
                             border: 1px solid rgba(78, 205, 196, 0.3);
@@ -348,5 +391,5 @@ class NotificationsPageManager {
     }
 }
 
-// Global instance
-window.notificationsPageManager = new NotificationsPageManager(window.app);
+// Global instance - will be initialized after app loads
+window.notificationsPageManager = null;

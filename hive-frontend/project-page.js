@@ -1,6 +1,7 @@
 // Project Page Component
 class ProjectPage {
-    constructor() {
+    constructor(app) {
+        this.app = app;
         this.project = null;
         this.tasks = [];
         this.currentUser = null;
@@ -113,7 +114,7 @@ class ProjectPage {
         container.innerHTML = `
             <div class="project-page">
                 <div class="project-header">
-                    <button onclick="router.navigate('/')" class="back-btn">← Back to Dashboard</button>
+                    <button onclick="projectPage.goBackToDashboard()" class="back-btn">← Back to Dashboard</button>
                     <div class="project-title-section">
                         <h1>${project.title}</h1>
                         <div class="project-meta">
@@ -215,8 +216,39 @@ class ProjectPage {
                         <span>${task.location || 'Global'}</span>
                     </span>
                 </div>
+                ${this.renderTaskCardActions(task)}
             </div>
         `).join('');
+    }
+
+    renderTaskCardActions(task) {
+        const currentUser = this.app.currentUser;
+        if (!currentUser) return '';
+
+        const isAssigned = task.assignee_id === currentUser.id;
+        const isAvailable = task.status === 'available' && !task.assignee_id;
+        
+        if (isAvailable) {
+            return `
+                <div class="task-card-actions">
+                    <button onclick="event.stopPropagation(); projectPageManager.claimTask('${task.id}')" 
+                            class="btn-primary claim-btn-small">
+                        🙋‍♂️ Claim
+                    </button>
+                </div>
+            `;
+        }
+        
+        return '';
+    }
+
+    renderTasks() {
+        const tasksGrid = document.getElementById('projectTasksGrid');
+        if (tasksGrid) {
+            tasksGrid.innerHTML = this.renderProjectTasks();
+            // Re-setup event listeners for the new content
+            this.setupEventListeners();
+        }
     }
 
     setupEventListeners() {
@@ -237,8 +269,145 @@ class ProjectPage {
     }
 
     showCreateTaskModal() {
-        // TODO: Show task creation modal with project pre-selected
-        app.showNotification('Task creation for projects coming soon!');
+        // Pre-populate the task form with project information
+        if (this.project) {
+            // Set the category to match the project's category
+            const categorySelect = document.getElementById('category');
+            if (categorySelect && this.project.category) {
+                categorySelect.value = this.project.category;
+            }
+            
+            // Set default values from project
+            const prioritySelect = document.getElementById('priority');
+            if (prioritySelect) {
+                prioritySelect.value = this.project.priority || 'medium';
+            }
+            
+            const locationInput = document.getElementById('location');
+            if (locationInput && this.project.location) {
+                locationInput.value = this.project.location;
+            }
+            
+            const scopeSelect = document.getElementById('scope');
+            if (scopeSelect) {
+                scopeSelect.value = this.project.scope || 'internal';
+            }
+            
+            // Set required skills if available
+            const skillsInput = document.getElementById('requiredSkills');
+            if (skillsInput && this.project.required_skills) {
+                skillsInput.value = this.project.required_skills.join(', ');
+            }
+        }
+        
+        // Store current project ID for task creation
+        this.taskProjectId = this.project?.id;
+        
+        // Show the task modal
+        app.showTaskModal();
+    }
+
+    goBackToDashboard() {
+        // Hide project page
+        this.hide();
+        // Navigate to dashboard using router
+        if (window.router) {
+            window.router.navigate('/');
+        } else {
+            // Fallback if router is not available
+            this.showDashboard();
+        }
+    }
+
+    showDashboard() {
+        // Show main interface
+        const mainInterface = document.getElementById('mainInterface');
+        if (mainInterface) {
+            mainInterface.style.display = 'block';
+        }
+        
+        // Hide project page
+        this.hide();
+        
+        // Restore body overflow
+        document.body.style.overflow = 'hidden';
+        
+        // Update URL without using router
+        if (window.history && window.history.pushState) {
+            window.history.pushState({}, '', '/');
+        }
+    }
+
+    async claimTask(taskId) {
+        try {
+            console.log('Claiming task:', taskId);
+            const response = await api.claimTask(taskId);
+            if (response) {
+                // Update the task in our local array
+                const task = this.tasks.find(t => t.id === taskId);
+                if (task) {
+                    task.assignee_id = this.app.currentUser?.id;
+                    task.status = 'in_progress';
+                }
+                
+                // Re-render the project tasks to update the UI
+                this.renderTasks();
+                
+                // Show success message
+                this.showSuccess('Task claimed successfully!');
+            }
+        } catch (error) {
+            console.error('Error claiming task:', error);
+            this.showError('Failed to claim task');
+        }
+    }
+
+    showSuccess(message) {
+        // Simple success notification
+        const notification = document.createElement('div');
+        notification.className = 'success-notification';
+        notification.textContent = message;
+        notification.style.cssText = `
+            position: fixed;
+            top: 90px;
+            right: 20px;
+            background: #4caf50;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            z-index: 10000;
+            animation: slideInRight 0.3s ease;
+        `;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+
+    showError(message) {
+        // Simple error notification
+        const notification = document.createElement('div');
+        notification.className = 'error-notification';
+        notification.textContent = message;
+        notification.style.cssText = `
+            position: fixed;
+            top: 90px;
+            right: 20px;
+            background: #f44336;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            z-index: 10000;
+            animation: slideInRight 0.3s ease;
+        `;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
     }
 
     hide() {
@@ -246,11 +415,14 @@ class ProjectPage {
         if (container) {
             container.style.display = 'none';
         }
-        document.getElementById('mainInterface').style.display = 'block';
+        const mainInterface = document.getElementById('mainInterface');
+        if (mainInterface) {
+            mainInterface.style.display = 'block';
+        }
         // Restore default page title
         document.title = 'HIVE - Task Management System';
     }
 }
 
-// Global instance
-const projectPage = new ProjectPage();
+// Global instance - will be initialized with app instance
+let projectPage = null;
