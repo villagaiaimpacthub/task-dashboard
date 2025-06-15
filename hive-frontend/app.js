@@ -89,50 +89,8 @@ class HIVEApp {
                 console.error('Router not available');
             }
         });
-        document.getElementById('kairosBtn').addEventListener('click', () => {
-            if (window.router) {
-                window.router.navigate('/kairos');
-            } else {
-                console.error('Router not available');
-            }
-        });
-        document.getElementById('messagesBtn').addEventListener('click', () => {
-            if (window.router) {
-                window.router.navigate('/messages');
-            } else {
-                console.error('Router not available');
-            }
-        });
-        document.getElementById('notificationsBtn').addEventListener('click', () => {
-            if (window.router) {
-                window.router.navigate('/notifications');
-            } else {
-                console.error('Router not available');
-            }
-        });
-        document.getElementById('telotypeBtn2').addEventListener('click', () => {
-            if (window.router) {
-                window.router.navigate('/telotype');
-            } else {
-                console.error('Router not available');
-            }
-        });
-        document.getElementById('walletScore').addEventListener('click', () => {
-            if (window.router) {
-                window.router.navigate('/wallet');
-            } else {
-                console.error('Router not available');
-            }
-        });
-        
-        // Impact score should go to impact history page
-        document.querySelector('.impact-score').addEventListener('click', () => {
-            if (window.router) {
-                window.router.navigate('/impact');
-            } else {
-                console.error('Router not available');
-            }
-        });
+        // Navigation buttons now use direct HTML navigation via onclick attributes
+        // Wallet and impact scores now use direct HTML navigation via onclick
         document.getElementById('addSkillForm').addEventListener('submit', (e) => this.handleAddSkill(e));
         document.getElementById('currentSkills').addEventListener('click', (e) => this.handleRemoveSkill(e));
         
