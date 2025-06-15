@@ -77,6 +77,28 @@ body.dark-mode {
     color: #ffffff;
 }
 
+.dark-mode .wallet-score {
+    background: linear-gradient(135deg, #ff9800, #f57c00);
+    color: white;
+}
+
+.dark-mode .wallet-score:hover {
+    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4);
+}
+
+.dark-mode .nav-btn {
+    background: rgba(78, 205, 196, 0.1);
+    border: 1px solid rgba(78, 205, 196, 0.2);
+    color: #4ecdc4;
+    backdrop-filter: blur(10px);
+}
+
+.dark-mode .nav-btn:hover {
+    background: rgba(78, 205, 196, 0.2);
+    border-color: rgba(78, 205, 196, 0.4);
+    color: #ffffff;
+}
+
 /* Sidebar */
 .dark-mode .sidebar {
     background: rgba(0, 0, 0, 0.6);

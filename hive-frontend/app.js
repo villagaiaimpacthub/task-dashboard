@@ -54,6 +54,9 @@ class HIVEApp {
         document.getElementById('fabBtn').addEventListener('click', () => this.showTaskModal());
         document.getElementById('taskForm').addEventListener('submit', (e) => this.handleCreateTask(e));
         document.getElementById('settingsBtn').addEventListener('click', () => router.navigate('/settings'));
+        document.getElementById('messagesBtn').addEventListener('click', () => this.showMessagesModal());
+        document.getElementById('notificationsBtn').addEventListener('click', () => this.showNotificationsModal());
+        document.getElementById('walletScore').addEventListener('click', () => this.showWalletModal());
         document.getElementById('addSkillForm').addEventListener('submit', (e) => this.handleAddSkill(e));
         document.getElementById('currentSkills').addEventListener('click', (e) => this.handleRemoveSkill(e));
         
@@ -1286,6 +1289,232 @@ class HIVEApp {
             console.error('Error sending DM:', error);
             this.showNotification('Failed to send message', 'error');
         }
+    }
+
+    // Navigation Modal Methods
+    showMessagesModal() {
+        const modal = document.createElement('div');
+        modal.className = 'modal messages-modal';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        `;
+
+        modal.innerHTML = `
+            <div style="
+                background: rgba(68, 68, 68, 0.95);
+                border-radius: 16px;
+                padding: 0;
+                max-width: 800px;
+                width: 90%;
+                max-height: 80vh;
+                border: 1px solid rgba(78, 205, 196, 0.2);
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+            ">
+                <div style="
+                    padding: 20px;
+                    border-bottom: 1px solid rgba(78, 205, 196, 0.2);
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    background: rgba(78, 205, 196, 0.1);
+                ">
+                    <h3 style="margin: 0; color: #ffffff; font-size: 20px;">💬 Messages</h3>
+                    <button onclick="this.closest('.modal').remove()" style="
+                        background: none;
+                        border: none;
+                        color: #ffffff;
+                        font-size: 24px;
+                        cursor: pointer;
+                        padding: 0;
+                        width: 30px;
+                        height: 30px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    ">&times;</button>
+                </div>
+                <div style="
+                    flex: 1;
+                    padding: 20px;
+                    overflow-y: auto;
+                    color: #ffffff;
+                ">
+                    <div style="text-align: center; padding: 40px; color: #d0d0d0; font-style: italic;">
+                        <div style="font-size: 48px; margin-bottom: 16px;">💬</div>
+                        <p>Your direct messages will appear here.</p>
+                        <p style="font-size: 14px; margin-top: 16px;">Click on a team member's email in the right sidebar to start a conversation!</p>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+    }
+
+    showNotificationsModal() {
+        const modal = document.createElement('div');
+        modal.className = 'modal notifications-modal';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        `;
+
+        modal.innerHTML = `
+            <div style="
+                background: rgba(68, 68, 68, 0.95);
+                border-radius: 16px;
+                padding: 0;
+                max-width: 600px;
+                width: 90%;
+                max-height: 80vh;
+                border: 1px solid rgba(78, 205, 196, 0.2);
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+            ">
+                <div style="
+                    padding: 20px;
+                    border-bottom: 1px solid rgba(78, 205, 196, 0.2);
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    background: rgba(78, 205, 196, 0.1);
+                ">
+                    <h3 style="margin: 0; color: #ffffff; font-size: 20px;">🔔 Notifications</h3>
+                    <button onclick="this.closest('.modal').remove()" style="
+                        background: none;
+                        border: none;
+                        color: #ffffff;
+                        font-size: 24px;
+                        cursor: pointer;
+                        padding: 0;
+                        width: 30px;
+                        height: 30px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    ">&times;</button>
+                </div>
+                <div style="
+                    flex: 1;
+                    padding: 20px;
+                    overflow-y: auto;
+                    color: #ffffff;
+                ">
+                    <div style="text-align: center; padding: 40px; color: #d0d0d0; font-style: italic;">
+                        <div style="font-size: 48px; margin-bottom: 16px;">🔔</div>
+                        <p>No new notifications</p>
+                        <p style="font-size: 14px; margin-top: 16px;">Task assignments and updates will appear here.</p>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+    }
+
+    showWalletModal() {
+        const modal = document.createElement('div');
+        modal.className = 'modal wallet-modal';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        `;
+
+        modal.innerHTML = `
+            <div style="
+                background: rgba(68, 68, 68, 0.95);
+                border-radius: 16px;
+                padding: 0;
+                max-width: 500px;
+                width: 90%;
+                max-height: 80vh;
+                border: 1px solid rgba(255, 152, 0, 0.2);
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+            ">
+                <div style="
+                    padding: 20px;
+                    border-bottom: 1px solid rgba(255, 152, 0, 0.2);
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    background: rgba(255, 152, 0, 0.1);
+                ">
+                    <h3 style="margin: 0; color: #ffffff; font-size: 20px;">💰 Task Credits Wallet</h3>
+                    <button onclick="this.closest('.modal').remove()" style="
+                        background: none;
+                        border: none;
+                        color: #ffffff;
+                        font-size: 24px;
+                        cursor: pointer;
+                        padding: 0;
+                        width: 30px;
+                        height: 30px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    ">&times;</button>
+                </div>
+                <div style="
+                    flex: 1;
+                    padding: 20px;
+                    overflow-y: auto;
+                    color: #ffffff;
+                ">
+                    <div style="text-align: center; margin-bottom: 24px;">
+                        <div style="font-size: 72px; margin-bottom: 16px;">💰</div>
+                        <div style="font-size: 32px; font-weight: bold; color: #ff9800; margin-bottom: 8px;">0 Credits</div>
+                        <p style="color: #d0d0d0; margin: 0;">Current Balance</p>
+                    </div>
+                    
+                    <div style="background: rgba(255, 152, 0, 0.1); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                        <h4 style="margin: 0 0 12px 0; color: #ff9800;">How to earn credits:</h4>
+                        <ul style="margin: 0; padding-left: 20px; color: #d0d0d0;">
+                            <li>Complete assigned tasks</li>
+                            <li>Achieve task milestones</li>
+                            <li>Contribute to community projects</li>
+                            <li>Help other team members</li>
+                        </ul>
+                    </div>
+                    
+                    <div style="background: rgba(78, 205, 196, 0.1); border-radius: 12px; padding: 20px;">
+                        <h4 style="margin: 0 0 12px 0; color: #4ecdc4;">Recent Activity:</h4>
+                        <p style="color: #d0d0d0; margin: 0; font-style: italic;">No recent transactions</p>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
     }
 
     showSettingsModal() {
