@@ -49,14 +49,17 @@ class HIVEApp {
             btn.addEventListener('click', (e) => this.switchAuthTab(e));
         });
 
-        // Task creation
-        document.getElementById('createTaskBtn').addEventListener('click', () => this.showTaskModal());
+        // Project creation (using task modal for now, should create dedicated project modal later)
+        document.getElementById('createProjectBtn').addEventListener('click', () => this.showTaskModal());
         document.getElementById('fabBtn').addEventListener('click', () => this.showTaskModal());
         document.getElementById('taskForm').addEventListener('submit', (e) => this.handleCreateTask(e));
         document.getElementById('settingsBtn').addEventListener('click', () => router.navigate('/settings'));
-        document.getElementById('messagesBtn').addEventListener('click', () => this.showMessagesModal());
-        document.getElementById('notificationsBtn').addEventListener('click', () => this.showNotificationsModal());
-        document.getElementById('walletScore').addEventListener('click', () => this.showWalletModal());
+        document.getElementById('messagesBtn').addEventListener('click', () => router.navigate('/messages'));
+        document.getElementById('notificationsBtn').addEventListener('click', () => router.navigate('/notifications'));
+        document.getElementById('walletScore').addEventListener('click', () => router.navigate('/wallet'));
+        
+        // Impact score should go to impact history page
+        document.querySelector('.impact-score').addEventListener('click', () => router.navigate('/impact'));
         document.getElementById('addSkillForm').addEventListener('submit', (e) => this.handleAddSkill(e));
         document.getElementById('currentSkills').addEventListener('click', (e) => this.handleRemoveSkill(e));
         
@@ -784,14 +787,90 @@ class HIVEApp {
     updateCategories() {
         this.categories.clear();
         
-        // Extract unique categories from projects
+        // Extract unique categories from projects and normalize them to skill-based categories
         this.projects.forEach(project => {
             if (project.category && project.category.trim()) {
-                this.categories.add(project.category.trim());
+                const normalizedCategory = this.normalizeCategory(project.category.trim());
+                this.categories.add(normalizedCategory);
+            }
+            
+            // Also extract from required skills to create skill-based categories
+            if (project.required_skills && Array.isArray(project.required_skills)) {
+                project.required_skills.forEach(skill => {
+                    const skillCategory = this.skillToCategory(skill);
+                    if (skillCategory) {
+                        this.categories.add(skillCategory);
+                    }
+                });
             }
         });
         
+        // Add some default skill-based categories if none exist
+        if (this.categories.size === 0) {
+            ['Software Development', 'UI/UX Design', 'Project Management', 'Data Analysis', 'Problem Solving'].forEach(cat => {
+                this.categories.add(cat);
+            });
+        }
+        
         this.renderCategories();
+    }
+    
+    // Normalize category names to skill-based categories
+    normalizeCategory(category) {
+        const categoryMap = {
+            'Backend Development': 'Software Development',
+            'Frontend Development': 'Software Development', 
+            'User Interface': 'UI/UX Design',
+            'Real-time Features': 'Software Development',
+            'Communication Features': 'Software Development',
+            'Data & Infrastructure': 'Data Analysis',
+            'Authentication & Security': 'Software Development',
+            'Authorization & Access Control': 'Software Development',
+            'Core Features': 'Software Development',
+            'File Management': 'Software Development',
+            'General Development': 'Software Development'
+        };
+        
+        return categoryMap[category] || category;
+    }
+    
+    // Convert skills to categories
+    skillToCategory(skill) {
+        const skillLower = skill.toLowerCase();
+        
+        if (skillLower.includes('python') || skillLower.includes('javascript') || 
+            skillLower.includes('react') || skillLower.includes('node') ||
+            skillLower.includes('programming') || skillLower.includes('development') ||
+            skillLower.includes('coding') || skillLower.includes('backend') ||
+            skillLower.includes('frontend') || skillLower.includes('api')) {
+            return 'Software Development';
+        }
+        
+        if (skillLower.includes('design') || skillLower.includes('ui') || 
+            skillLower.includes('ux') || skillLower.includes('interface') ||
+            skillLower.includes('wireframe') || skillLower.includes('mockup')) {
+            return 'UI/UX Design';
+        }
+        
+        if (skillLower.includes('project') || skillLower.includes('management') || 
+            skillLower.includes('planning') || skillLower.includes('coordination') ||
+            skillLower.includes('scrum') || skillLower.includes('agile')) {
+            return 'Project Management';
+        }
+        
+        if (skillLower.includes('data') || skillLower.includes('analysis') || 
+            skillLower.includes('analytics') || skillLower.includes('database') ||
+            skillLower.includes('sql') || skillLower.includes('statistics')) {
+            return 'Data Analysis';
+        }
+        
+        if (skillLower.includes('problem') || skillLower.includes('solving') || 
+            skillLower.includes('debugging') || skillLower.includes('troubleshooting') ||
+            skillLower.includes('critical thinking')) {
+            return 'Problem Solving';
+        }
+        
+        return null; // Don't create category for unrecognized skills
     }
 
     // Render category filters dynamically
@@ -809,16 +888,16 @@ class HIVEApp {
         }
         
         const categoryIcons = {
-            'Authentication & Security': '🔐',
-            'Authorization & Access Control': '🛡️',
-            'Core Features': '⚙️',
-            'Backend Development': '🖥️',
-            'Data & Infrastructure': '🗄️',
-            'User Interface': '🎨',
-            'Real-time Features': '⚡',
-            'Communication Features': '💬',
-            'File Management': '📁',
-            'General Development': '🔧'
+            'Software Development': '💻',
+            'UI/UX Design': '🎨',
+            'Project Management': '📋',
+            'Data Analysis': '📊',
+            'Problem Solving': '🧩',
+            'DevOps': '⚙️',
+            'Quality Assurance': '🔍',
+            'Technical Writing': '📝',
+            'Business Analysis': '💼',
+            'Security': '🔐'
         };
         
         const categoryColors = [
@@ -1801,10 +1880,18 @@ class HIVEApp {
         // Initialize page managers
         taskPageManager = new TaskPageManager(this);
         settingsPageManager = new SettingsPageManager(this);
+        impactPageManager = new ImpactPageManager(this);
+        walletPageManager = new WalletPageManager(this);
+        notificationsPageManager = new NotificationsPageManager(this);
+        messagesPageManager = new MessagesPageManager(this);
         
         // Make globally accessible for cleanup
         window.taskPageManager = taskPageManager;
         window.settingsPageManager = settingsPageManager;
+        window.impactPageManager = impactPageManager;
+        window.walletPageManager = walletPageManager;
+        window.notificationsPageManager = notificationsPageManager;
+        window.messagesPageManager = messagesPageManager;
         
         console.log('Page managers initialized');
         
@@ -1831,6 +1918,22 @@ class HIVEApp {
             if (importContainer) {
                 importContainer.style.display = 'none';
             }
+            const impactContainer = document.getElementById('impact-page-container');
+            if (impactContainer) {
+                impactContainer.style.display = 'none';
+            }
+            const walletContainer = document.getElementById('wallet-page-container');
+            if (walletContainer) {
+                walletContainer.style.display = 'none';
+            }
+            const notificationsContainer = document.getElementById('notifications-page-container');
+            if (notificationsContainer) {
+                notificationsContainer.style.display = 'none';
+            }
+            const messagesContainer = document.getElementById('messages-page-container');
+            if (messagesContainer) {
+                messagesContainer.style.display = 'none';
+            }
             // Restore body overflow to hidden for dashboard
             document.body.style.overflow = 'hidden';
             // Show dashboard - restore default layout
@@ -1849,6 +1952,26 @@ class HIVEApp {
         router.register('/settings', () => {
             console.log('Settings route triggered');
             settingsPageManager.showSettingsPage();
+        });
+
+        router.register('/impact', () => {
+            console.log('Impact route triggered');
+            impactPageManager.showImpactPage();
+        });
+
+        router.register('/wallet', () => {
+            console.log('Wallet route triggered');
+            walletPageManager.showWalletPage();
+        });
+
+        router.register('/notifications', () => {
+            console.log('Notifications route triggered');
+            notificationsPageManager.showNotificationsPage();
+        });
+
+        router.register('/messages', () => {
+            console.log('Messages route triggered');
+            messagesPageManager.showMessagesPage();
         });
 
         router.register('/protocols', () => {

@@ -68,7 +68,13 @@ class TaskPageManager {
             }
 
             // Load milestones
-            this.milestones = await this.loadTaskMilestones(taskId);
+            const loadedMilestones = await this.loadTaskMilestones(taskId);
+            
+            // Store milestones in both places for compatibility
+            this.milestones = loadedMilestones;
+            if (!this.currentTask.milestones) {
+                this.currentTask.milestones = loadedMilestones;
+            }
 
             // Load existing files for all milestones
             await this.loadExistingFiles(taskId);
@@ -103,11 +109,20 @@ class TaskPageManager {
     // Load task milestones
     async loadTaskMilestones(taskId) {
         try {
-            // For now, convert DoD items to milestones
-            // Later, enhance with dedicated milestone system
-            const task = this.currentTask;
+            // Try to load actual milestones from the API
+            if (api.getTaskMilestones) {
+                const milestones = await api.getTaskMilestones(taskId);
+                return milestones || [];
+            }
             
-            if (task.definition_of_done) {
+            // Fallback: If task has milestones array, use it
+            if (this.currentTask.milestones) {
+                return this.currentTask.milestones;
+            }
+            
+            // Legacy: Convert DoD items to milestones if no real milestones exist
+            const task = this.currentTask;
+            if (task.definition_of_done && task.definition_of_done.length > 0) {
                 return task.definition_of_done.map((dod, index) => ({
                     id: `milestone-${index}`,
                     title: dod.text,
@@ -550,12 +565,18 @@ class TaskPageManager {
 
             const response = await api.createMilestone(milestoneData);
             
-            if (response.id) {
+            if (response && response.id) {
                 // Add the new milestone to the current task
                 if (!this.currentTask.milestones) {
                     this.currentTask.milestones = [];
                 }
                 this.currentTask.milestones.push(response);
+                
+                // Also update the local milestones array
+                if (!this.milestones) {
+                    this.milestones = [];
+                }
+                this.milestones.push(response);
                 
                 // Refresh the milestones display
                 this.refreshMilestonesDisplay();
@@ -569,6 +590,7 @@ class TaskPageManager {
             }
         } catch (error) {
             console.error('Error creating milestone:', error);
+            console.error('Milestone data:', milestoneData);
             this.showError('Error creating milestone: ' + (error.message || 'Unknown error'));
         }
     }
@@ -579,7 +601,8 @@ class TaskPageManager {
             const milestone = this.currentTask.milestones.find(m => m.id === milestoneId);
             if (!milestone) return;
 
-            const response = await api.put(`/milestones/${milestoneId}`, {
+            const response = await api.updateMilestone(milestoneId, {
+                ...milestone,
                 is_completed: !milestone.is_completed
             });
 
@@ -608,7 +631,7 @@ class TaskPageManager {
         }
 
         try {
-            await api.delete(`/milestones/${milestoneId}`);
+            await api.deleteMilestone(milestoneId);
             
             // Remove from our data
             this.currentTask.milestones = this.currentTask.milestones.filter(m => m.id !== milestoneId);
@@ -2270,58 +2293,6 @@ class TaskPageManager {
         }
         if (newMilestoneForm) {
             newMilestoneForm.reset();
-        }
-    }
-
-    async handleCreateMilestone(event) {
-        event.preventDefault();
-        
-        try {
-            // Collect form data
-            const formData = {
-                task_id: this.currentTask.id,
-                title: document.getElementById('milestoneTitle').value,
-                description: document.getElementById('milestoneDescription').value,
-                prime_directive_contribution: document.getElementById('primeDirectiveContribution').value,
-                okr_connection: document.getElementById('okrConnection').value,
-                dod_category: document.getElementById('dodCategory').value,
-                deadline: document.getElementById('milestoneDeadline').value || null,
-                acceptance_criteria: document.getElementById('acceptanceCriteria').value
-                    ? document.getElementById('acceptanceCriteria').value.split('\n').map(s => s.trim()).filter(s => s)
-                    : [],
-                completed: false,
-                files: [],
-                help_requests: []
-            };
-
-            // Send to backend
-            const response = await fetch('http://localhost:8000/api/v1/milestones', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData)
-            });
-
-            if (response.ok) {
-                const newMilestone = await response.json();
-                
-                // Add to local milestones array
-                this.milestones.push(newMilestone);
-                
-                // Hide form and reset
-                this.cancelCreateMilestone();
-                
-                // Re-render milestones section
-                this.renderTaskPage();
-                
-                this.app.showNotification('Milestone created successfully!');
-            } else {
-                throw new Error('Failed to create milestone');
-            }
-        } catch (error) {
-            console.error('Failed to create milestone:', error);
-            this.app.showNotification('Failed to create milestone', 'error');
         }
     }
 
