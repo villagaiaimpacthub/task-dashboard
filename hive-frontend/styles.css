@@ -57,6 +57,13 @@ body {
     border-bottom: 1px solid rgba(76, 175, 80, 0.1);
 }
 
+.left-section {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    justify-self: start;
+}
+
 .logo {
     font-size: 26px;
     font-weight: 800;
@@ -65,7 +72,12 @@ body {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    justify-self: start;
+}
+
+.scores-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .prime-directive {
