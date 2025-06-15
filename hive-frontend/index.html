@@ -55,6 +55,14 @@
 
         <!-- Left Sidebar -->
         <div class="sidebar">
+            <!-- Search Section -->
+            <div class="search-section">
+                <div class="search-container">
+                    <input type="text" id="taskSearch" placeholder="🔍 Search tasks..." class="search-input">
+                    <button id="clearSearch" class="clear-search-btn" style="display: none;">&times;</button>
+                </div>
+            </div>
+            
             <div class="section-header">Priority</div>
             <div class="filter-group">
                 <div class="filter-item active" data-filter="all">
@@ -79,47 +87,11 @@
                 </div>
             </div>
 
-            <div class="section-header">TaskMaster Layers</div>
-            <div class="filter-group">
-                <div class="filter-item" data-filter="protocols" onclick="router.navigate('/protocols')">
-                    <div class="filter-icon" style="background: #e8f5e9; color: #2e7d32;">🔧</div>
-                    <span>Protocol Development</span>
-                </div>
-                <div class="filter-item" data-filter="implementations" onclick="router.navigate('/implementations')">
-                    <div class="filter-icon" style="background: #e3f2fd; color: #1976d2;">🚀</div>
-                    <span>Client Implementations</span>
-                </div>
-                <div class="filter-item" data-filter="projects" onclick="router.navigate('/projects')">
-                    <div class="filter-icon" style="background: #f3e5f5; color: #7b1fa2;">📂</div>
-                    <span>Client Projects</span>
-                </div>
-            </div>
-
             <div class="section-header">Category</div>
-            <div class="filter-group">
-                <div class="filter-item" data-filter="protocol_core">
-                    <div class="filter-icon" style="background: #e8f5e9; color: #2e7d32;">🌱</div>
-                    <span>Protocol Core</span>
-                </div>
-                <div class="filter-item" data-filter="client_project">
-                    <div class="filter-icon" style="background: #e3f2fd; color: #1976d2;">🤝</div>
-                    <span>Client Projects</span>
-                </div>
-                <div class="filter-item" data-filter="infrastructure">
-                    <div class="filter-icon" style="background: #fff3e0; color: #f57c00;">⚡</div>
-                    <span>Infrastructure</span>
-                </div>
-                <div class="filter-item" data-filter="regenerative-ag">
-                    <div class="filter-icon" style="background: #f1f8e9; color: #558b2f;">🌾</div>
-                    <span>Regenerative Ag</span>
-                </div>
-                <div class="filter-item" data-filter="community">
-                    <div class="filter-icon" style="background: #e8eaf6; color: #3f51b5;">🤝</div>
-                    <span>Community</span>
-                </div>
-                <div class="filter-item" data-filter="restoration">
-                    <div class="filter-icon" style="background: #e0f2f1; color: #00695c;">🌳</div>
-                    <span>Restoration</span>
+            <div class="filter-group" id="categoryFilters">
+                <!-- Categories will be populated dynamically from project data -->
+                <div class="no-categories" style="padding: 12px; color: #888; font-style: italic;">
+                    Categories will appear after importing projects
                 </div>
             </div>
 

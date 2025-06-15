@@ -84,6 +84,36 @@ body.dark-mode {
     border-right: 1px solid rgba(78, 205, 196, 0.15);
 }
 
+/* Search Section - Dark Mode */
+.dark-mode .search-section {
+    background: rgba(78, 205, 196, 0.05);
+    border-bottom: 1px solid rgba(78, 205, 196, 0.15);
+}
+
+.dark-mode .search-input {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(78, 205, 196, 0.3);
+    color: #ffffff;
+}
+
+.dark-mode .search-input:focus {
+    border-color: #4ecdc4;
+    box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.2);
+}
+
+.dark-mode .search-input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.dark-mode .clear-search-btn {
+    color: #d0d0d0;
+}
+
+.dark-mode .clear-search-btn:hover {
+    background: rgba(78, 205, 196, 0.2);
+    color: #4ecdc4;
+}
+
 .dark-mode .section-header {
     color: #4ecdc4;
     border-bottom: 1px solid rgba(78, 205, 196, 0.25);

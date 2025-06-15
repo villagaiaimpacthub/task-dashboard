@@ -5,7 +5,9 @@ class HIVEApp {
         this.projects = [];
         this.filteredProjects = [];
         this.currentFilter = 'all';
+        this.searchQuery = '';
         this.dashboardStats = null;
+        this.categories = new Set();
         
         this.init();
     }
@@ -57,6 +59,10 @@ class HIVEApp {
         
         // Master Plan Import
         document.getElementById('importMasterPlanBtn').addEventListener('click', () => this.showMasterPlanModal());
+
+        // Search functionality
+        document.getElementById('taskSearch').addEventListener('input', (e) => this.handleSearch(e));
+        document.getElementById('clearSearch').addEventListener('click', () => this.clearSearch());
 
         // Filters
         document.querySelectorAll('.filter-item').forEach(item => {
@@ -252,6 +258,7 @@ class HIVEApp {
     async loadProjects() {
         try {
             this.projects = await api.getProjects();
+            this.updateCategories();
             this.filterProjects();
             this.updateProjectCounts();
         } catch (error) {
@@ -319,53 +326,62 @@ class HIVEApp {
 
     filterProjects() {
         const filter = this.currentFilter;
+        let filtered = [];
+        
         if (filter === 'all') {
-            this.filteredProjects = [...this.projects];
+            filtered = [...this.projects];
         } else if (['urgent', 'high', 'medium', 'low'].includes(filter)) {
             // Priority filtering
-            this.filteredProjects = this.projects.filter(project => project.priority === filter);
-        } else if (['regenerative-ag', 'clean-energy', 'circular-economy', 'restoration', 'community', 'ocean-health'].includes(filter)) {
-            // Category filtering
-            const categoryMap = {
-                'regenerative-ag': 'Regenerative Ag',
-                'clean-energy': 'Clean Energy',
-                'circular-economy': 'Circular Economy',
-                'restoration': 'Restoration',
-                'community': 'Community',
-                'ocean-health': 'Ocean Health'
-            };
-            this.filteredProjects = this.projects.filter(project => project.category === categoryMap[filter]);
+            filtered = this.projects.filter(project => project.priority === filter);
+        } else if (this.categories.has(filter)) {
+            // Dynamic category filtering
+            filtered = this.projects.filter(project => project.category === filter);
         } else if (['my-created', 'my-active', 'my-completed', 'assigned-to-me'].includes(filter)) {
             // My Work filtering
             switch (filter) {
                 case 'my-created':
-                    this.filteredProjects = this.projects.filter(project => project.owner_id === this.currentUser?.id);
+                    filtered = this.projects.filter(project => project.owner_id === this.currentUser?.id);
                     break;
                 case 'my-active':
-                    this.filteredProjects = this.projects.filter(project => 
+                    filtered = this.projects.filter(project => 
                         project.assignee_id === this.currentUser?.id && 
                         ['planning', 'active'].includes(project.status)
                     );
                     break;
                 case 'my-completed':
-                    this.filteredProjects = this.projects.filter(project => 
+                    filtered = this.projects.filter(project => 
                         (project.owner_id === this.currentUser?.id || project.assignee_id === this.currentUser?.id) && 
                         project.status === 'completed'
                     );
                     break;
                 case 'assigned-to-me':
-                    this.filteredProjects = this.projects.filter(project => project.assignee_id === this.currentUser?.id);
+                    filtered = this.projects.filter(project => project.assignee_id === this.currentUser?.id);
                     break;
             }
         } else if (filter.startsWith('skill:')) {
             // Skill filtering
             const skill = filter.substring(6);
-            this.filteredProjects = this.projects.filter(project => 
+            filtered = this.projects.filter(project => 
                 project.required_skills && project.required_skills.includes(skill)
             );
         } else {
-            this.filteredProjects = this.projects.filter(project => project.status === filter);
+            filtered = this.projects.filter(project => project.status === filter);
         }
+        
+        // Apply search filter if there's a search query
+        if (this.searchQuery.trim()) {
+            const query = this.searchQuery.toLowerCase().trim();
+            filtered = filtered.filter(project => 
+                project.title.toLowerCase().includes(query) ||
+                project.description.toLowerCase().includes(query) ||
+                (project.category && project.category.toLowerCase().includes(query)) ||
+                (project.required_skills && project.required_skills.some(skill => 
+                    skill.toLowerCase().includes(query)
+                ))
+            );
+        }
+        
+        this.filteredProjects = filtered;
         this.renderProjects();
     }
 
@@ -757,6 +773,106 @@ class HIVEApp {
             skillTag.classList.add('active');
             this.currentFilter = `skill:${skill}`;
         }
+        
+        this.filterProjects();
+    }
+
+    // Update categories from project data
+    updateCategories() {
+        this.categories.clear();
+        
+        // Extract unique categories from projects
+        this.projects.forEach(project => {
+            if (project.category && project.category.trim()) {
+                this.categories.add(project.category.trim());
+            }
+        });
+        
+        this.renderCategories();
+    }
+
+    // Render category filters dynamically
+    renderCategories() {
+        const categoryContainer = document.getElementById('categoryFilters');
+        if (!categoryContainer) return;
+        
+        if (this.categories.size === 0) {
+            categoryContainer.innerHTML = `
+                <div class="no-categories" style="padding: 12px; color: #888; font-style: italic;">
+                    Categories will appear after importing projects
+                </div>
+            `;
+            return;
+        }
+        
+        const categoryIcons = {
+            'Authentication & Security': '🔐',
+            'Authorization & Access Control': '🛡️',
+            'Core Features': '⚙️',
+            'Backend Development': '🖥️',
+            'Data & Infrastructure': '🗄️',
+            'User Interface': '🎨',
+            'Real-time Features': '⚡',
+            'Communication Features': '💬',
+            'File Management': '📁',
+            'General Development': '🔧'
+        };
+        
+        const categoryColors = [
+            { bg: '#e8f5e9', color: '#2e7d32' },
+            { bg: '#e3f2fd', color: '#1976d2' },
+            { bg: '#fff3e0', color: '#f57c00' },
+            { bg: '#f1f8e9', color: '#558b2f' },
+            { bg: '#e8eaf6', color: '#3f51b5' },
+            { bg: '#e0f2f1', color: '#00695c' },
+            { bg: '#fce4ec', color: '#c2185b' },
+            { bg: '#f3e5f5', color: '#7b1fa2' }
+        ];
+        
+        const categoriesArray = Array.from(this.categories).sort();
+        const categoryHtml = categoriesArray.map((category, index) => {
+            const colorIndex = index % categoryColors.length;
+            const colors = categoryColors[colorIndex];
+            const icon = categoryIcons[category] || '📋';
+            const slug = category.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+            
+            return `
+                <div class="filter-item" data-filter="${category}">
+                    <div class="filter-icon" style="background: ${colors.bg}; color: ${colors.color};">${icon}</div>
+                    <span>${category}</span>
+                </div>
+            `;
+        }).join('');
+        
+        categoryContainer.innerHTML = categoryHtml;
+        
+        // Re-attach event listeners for new category items
+        categoryContainer.querySelectorAll('.filter-item').forEach(item => {
+            item.addEventListener('click', (e) => this.handleFilterClick(e));
+        });
+    }
+
+    // Search handling
+    handleSearch(e) {
+        this.searchQuery = e.target.value;
+        const clearBtn = document.getElementById('clearSearch');
+        
+        if (this.searchQuery.trim()) {
+            clearBtn.style.display = 'block';
+        } else {
+            clearBtn.style.display = 'none';
+        }
+        
+        this.filterProjects();
+    }
+
+    clearSearch() {
+        const searchInput = document.getElementById('taskSearch');
+        const clearBtn = document.getElementById('clearSearch');
+        
+        searchInput.value = '';
+        this.searchQuery = '';
+        clearBtn.style.display = 'none';
         
         this.filterProjects();
     }
