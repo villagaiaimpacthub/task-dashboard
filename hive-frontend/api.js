@@ -299,7 +299,7 @@ class APIClient {
     }
 
     async getTaskMilestones(taskId) {
-        return this.request(`/tasks/${taskId}/milestones`);
+        return this.request(`/milestones/task/${taskId}`);
     }
 
     // Chat endpoints
