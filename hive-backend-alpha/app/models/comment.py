@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Text, ForeignKey
+from sqlalchemy import Column, String, Text, ForeignKey, Index
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from .base import BaseModel
@@ -14,3 +14,8 @@ class Comment(BaseModel):
     # Relationships
     task = relationship("Task", backref="comments")
     author = relationship("User", backref="comments")
+    
+    __table_args__ = (
+        Index('idx_comment_task_id', 'task_id'),
+        Index('idx_comment_author_id', 'author_id'),
+    )

@@ -34,7 +34,7 @@ class SettingsPageManager {
                                 <!-- User skills will be loaded here -->
                             </div>
                             <form id="addSkillForm" class="add-skill-form">
-                                <input type="text" id="newSkillInput" placeholder="Add a new skill (e.g., Python)" required>
+                                <input type="text" id="newSkillInput" placeholder="Add skills separated by commas (e.g., Python, React, Docker)" required>
                                 <button type="submit" class="submit-btn">Add Skill</button>
                             </form>
                         </div>

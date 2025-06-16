@@ -195,6 +195,19 @@ class APIClient {
         });
     }
 
+    async unassignTask(taskId) {
+        return this.request(`/tasks/${taskId}/unassign`, {
+            method: 'POST',
+        });
+    }
+
+    async assignTaskByEmail(taskId, email) {
+        return this.request(`/tasks/${taskId}/assign-by-email`, {
+            method: 'POST',
+            body: JSON.stringify({ email }),
+        });
+    }
+
     // Project endpoints
     async getProjects(skip = 0, limit = 100, status = null) {
         let url = `/projects/?skip=${skip}&limit=${limit}`;

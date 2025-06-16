@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Text, ForeignKey, Enum
+from sqlalchemy import Column, String, Text, ForeignKey, Enum, Index
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from .base import BaseModel
@@ -30,3 +30,10 @@ class ChatMessage(BaseModel):
     task = relationship("Task", backref="chat_messages")
     sender = relationship("User", foreign_keys=[sender_id], backref="sent_messages")
     recipient = relationship("User", foreign_keys=[recipient_id], backref="received_messages")
+    
+    __table_args__ = (
+        Index('idx_chat_message_type', 'message_type'),
+        Index('idx_chat_message_task_id', 'task_id'),
+        Index('idx_chat_message_sender_id', 'sender_id'),
+        Index('idx_chat_message_recipient_id', 'recipient_id'),
+    )

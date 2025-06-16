@@ -100,7 +100,11 @@ async def update_project(
         return None
     
     # Check if user has permission to update
-    if project.owner_id != user_id and project.assignee_id != user_id:
+    # Allow joining unassigned projects (setting assignee_id when it's currently None)
+    is_joining = 'assignee_id' in project_data.model_dump(exclude_unset=True) and project.assignee_id is None
+    is_owner_or_assignee = project.owner_id == user_id or project.assignee_id == user_id
+    
+    if not (is_owner_or_assignee or is_joining):
         return None
     
     # Update fields

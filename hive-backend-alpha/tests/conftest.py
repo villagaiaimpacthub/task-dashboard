@@ -3,21 +3,32 @@ import pytest_asyncio
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.pool import StaticPool
+import os
 
 from app.main import app
 from app.database import get_db, Base
 from app.models.user import User
 from app.core.security import create_access_token
 
-# Test database URL
-TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
-
-# Create test engine
-test_engine = create_async_engine(
-    TEST_DATABASE_URL,
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool,
+# Test database URL - use TEST_DATABASE_URL env var or in-memory SQLite as fallback
+TEST_DATABASE_URL = os.getenv(
+    "TEST_DATABASE_URL",
+    "sqlite+aiosqlite:///:memory:"
 )
+
+# Create test engine with appropriate settings based on database type
+if TEST_DATABASE_URL.startswith("sqlite"):
+    test_engine = create_async_engine(
+        TEST_DATABASE_URL,
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+else:
+    # PostgreSQL configuration
+    test_engine = create_async_engine(
+        TEST_DATABASE_URL,
+        poolclass=StaticPool,
+    )
 
 TestSessionLocal = async_sessionmaker(
     test_engine, class_=AsyncSession, expire_on_commit=False

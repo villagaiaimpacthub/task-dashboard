@@ -144,6 +144,7 @@ class HIVEApp {
         // Wallet and impact scores now use direct HTML navigation via onclick
         document.getElementById('addSkillForm').addEventListener('submit', (e) => this.handleAddSkill(e));
         document.getElementById('currentSkills').addEventListener('click', (e) => this.handleRemoveSkill(e));
+        document.getElementById('newSkillInput').addEventListener('input', (e) => this.handleSkillInputPreview(e));
         
         // Master Plan Import
         document.getElementById('importMasterPlanBtn').addEventListener('click', () => this.showMasterPlanModal());
@@ -280,11 +281,24 @@ class HIVEApp {
                 impactScore.textContent = `+${this.currentUser.impact_score || 0} Impact`;
             }
             
+            // Update Active Tasks title with username
+            const activeTasksTitle = document.getElementById('userActiveTasksTitle');
+            if (activeTasksTitle) {
+                const username = this.currentUser.email.split('@')[0];
+                activeTasksTitle.textContent = `@${username} Active Tasks`;
+            }
+            
             // Show/hide TaskMaster layers based on permissions
             this.updateTaskMasterAccess();
             
             // Render user skills
             this.renderUserSkills();
+        } else {
+            // Reset to default when no user is logged in
+            const activeTasksTitle = document.getElementById('userActiveTasksTitle');
+            if (activeTasksTitle) {
+                activeTasksTitle.textContent = 'Your Active Tasks';
+            }
         }
     }
 
@@ -715,7 +729,12 @@ class HIVEApp {
                     
                 } catch (error) {
                     console.error('Error in global project click handler:', error);
-                    // Don't let this error break other interactions
+                    // Attempt to recover by reloading the page if clicking becomes completely broken
+                    this.clickErrorCount = (this.clickErrorCount || 0) + 1;
+                    if (this.clickErrorCount > 3) {
+                        console.error('Multiple click handler failures detected. App may be in broken state.');
+                        this.showNotification('Click handling issues detected. Refreshing recommended.', 'warning');
+                    }
                 }
             };
             
@@ -1458,24 +1477,85 @@ class HIVEApp {
         }
     }
 
+    handleSkillInputPreview(e) {
+        const input = e.target;
+        const inputValue = input.value.trim();
+        
+        // Create or get preview container
+        let previewContainer = document.getElementById('skillPreview');
+        if (!previewContainer) {
+            previewContainer = document.createElement('div');
+            previewContainer.id = 'skillPreview';
+            previewContainer.className = 'skill-preview';
+            input.parentNode.insertBefore(previewContainer, input.nextSibling);
+        }
+        
+        if (!inputValue) {
+            previewContainer.innerHTML = '';
+            return;
+        }
+        
+        // Split by comma and create preview bubbles
+        const skills = inputValue
+            .split(',')
+            .map(skill => skill.trim())
+            .filter(skill => skill.length > 0);
+        
+        if (skills.length > 0) {
+            const bubblesHtml = skills.map(skill => {
+                const isDuplicate = this.currentUser?.skills?.includes(skill);
+                const className = isDuplicate ? 'skill-bubble preview duplicate' : 'skill-bubble preview';
+                return `<span class="${className}">${skill}${isDuplicate ? ' (exists)' : ''}</span>`;
+            }).join('');
+            
+            previewContainer.innerHTML = `
+                <div class="preview-label">Preview (${skills.length} skill${skills.length === 1 ? '' : 's'}):</div>
+                <div class="preview-bubbles">${bubblesHtml}</div>
+            `;
+        } else {
+            previewContainer.innerHTML = '';
+        }
+    }
+
     async handleAddSkill(e) {
         e.preventDefault();
         const input = document.getElementById('newSkillInput');
-        const newSkill = input.value.trim();
+        const inputValue = input.value.trim();
 
-        if (newSkill && !this.currentUser.skills.includes(newSkill)) {
+        if (!inputValue) return;
+
+        // Split by comma and clean up each skill
+        const newSkills = inputValue
+            .split(',')
+            .map(skill => skill.trim())
+            .filter(skill => skill.length > 0)
+            .filter(skill => !this.currentUser.skills.includes(skill));
+
+        if (newSkills.length > 0) {
             try {
-                this.currentUser.skills.push(newSkill);
+                this.currentUser.skills.push(...newSkills);
                 await api.updateCurrentUser({ skills: this.currentUser.skills });
                 this.renderUserSkills();
                 input.value = '';
-                this.showNotification(`Skill "${newSkill}" added successfully!`);
+                
+                // Clear preview
+                const previewContainer = document.getElementById('skillPreview');
+                if (previewContainer) {
+                    previewContainer.innerHTML = '';
+                }
+                
+                const skillText = newSkills.length === 1 ? 'skill' : 'skills';
+                this.showNotification(`${newSkills.length} ${skillText} added: ${newSkills.join(', ')}`);
             } catch (error) {
-                console.error('Failed to add skill:', error);
-                this.showNotification('Failed to add skill.', 'error');
+                console.error('Failed to add skills:', error);
+                this.showNotification('Failed to add skills.', 'error');
                 // Revert optimistic update
-                this.currentUser.skills = this.currentUser.skills.filter(s => s !== newSkill);
+                newSkills.forEach(skill => {
+                    this.currentUser.skills = this.currentUser.skills.filter(s => s !== skill);
+                });
             }
+        } else {
+            this.showNotification('No new skills to add (duplicates filtered out).', 'warning');
         }
     }
 
@@ -2272,16 +2352,35 @@ class HIVEApp {
     setupRouting() {
         console.log('Setting up routing...');
         
-        // Initialize page managers
-        taskPageManager = new TaskPageManager(this);
-        settingsPageManager = new SettingsPageManager(this);
-        impactPageManager = new ImpactPageManager(this);
-        walletPageManager = new WalletPageManager(this);
-        notificationsPageManager = new NotificationsPageManager(this);
-        messagesPageManager = new MessagesPageManager(this);
+        // Initialize page managers with error recovery
+        try {
+            taskPageManager = new TaskPageManager(this);
+            window.taskPageManager = taskPageManager;
+            console.log('TaskPageManager initialized successfully');
+        } catch (error) {
+            console.error('Failed to initialize TaskPageManager:', error);
+        }
         
-        // Make globally accessible for cleanup
-        window.taskPageManager = taskPageManager;
+        try {
+            settingsPageManager = new SettingsPageManager(this);
+            impactPageManager = new ImpactPageManager(this);
+            walletPageManager = new WalletPageManager(this);
+            notificationsPageManager = new NotificationsPageManager(this);
+            messagesPageManager = new MessagesPageManager(this);
+        } catch (error) {
+            console.error('Failed to initialize some page managers:', error);
+        }
+        
+        // Verify critical managers are available
+        if (!window.taskPageManager) {
+            console.error('TaskPageManager not available! Attempting recovery...');
+            try {
+                window.taskPageManager = new TaskPageManager(this);
+                console.log('TaskPageManager recovery successful');
+            } catch (recoveryError) {
+                console.error('TaskPageManager recovery failed:', recoveryError);
+            }
+        }
         window.settingsPageManager = settingsPageManager;
         window.impactPageManager = impactPageManager;
         window.walletPageManager = walletPageManager;

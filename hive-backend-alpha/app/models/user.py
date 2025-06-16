@@ -1,4 +1,5 @@
-from sqlalchemy import Column, String, Boolean, Integer, JSON
+from sqlalchemy import Column, String, Boolean, Integer, Index
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
 from passlib.context import CryptContext
 from .base import BaseModel
@@ -14,7 +15,7 @@ class User(BaseModel):
     is_active = Column(Boolean, default=True, nullable=False)
     is_online = Column(Boolean, default=False, nullable=False)
     impact_score = Column(Integer, default=0, nullable=False)
-    skills = Column(JSON, default=list)  # List of user's skills
+    skills = Column(JSONB, default=list)  # List of user's skills
     role = Column(String, nullable=True)  # e.g., "Ecosystem Designer", "Data Analyst"
     status = Column(String, default="available")  # available, busy
     
@@ -27,3 +28,9 @@ class User(BaseModel):
     
     def verify_password(self, password: str) -> bool:
         return pwd_context.verify(password, self.hashed_password)
+    
+    __table_args__ = (
+        Index('idx_user_email', 'email'),
+        Index('idx_user_is_active', 'is_active'),
+        Index('idx_user_skills', 'skills', postgresql_using='gin'),
+    )

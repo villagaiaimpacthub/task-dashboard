@@ -1,5 +1,5 @@
-from sqlalchemy import Column, String, Text, DateTime, Boolean, Integer, ForeignKey, JSON
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Column, String, Text, DateTime, Boolean, Integer, ForeignKey, Index
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import uuid
@@ -33,13 +33,13 @@ class Project(BaseModel):
     location = Column(String, nullable=True)
     
     # Project details
-    success_metrics = Column(JSON, nullable=True)  # List of success criteria
-    deliverables = Column(JSON, nullable=True)  # List of expected deliverables
-    dependencies = Column(JSON, nullable=True)  # List of dependencies
-    required_skills = Column(JSON, nullable=True)  # List of required skills
+    success_metrics = Column(JSONB, nullable=True)  # List of success criteria
+    deliverables = Column(JSONB, nullable=True)  # List of expected deliverables
+    dependencies = Column(JSONB, nullable=True)  # List of dependencies
+    required_skills = Column(JSONB, nullable=True)  # List of required skills
     
     # Definition of Done
-    definition_of_done = Column(JSON, nullable=True)  # List of DoD items
+    definition_of_done = Column(JSONB, nullable=True)  # List of DoD items
     
     # Timestamps
     created_at = Column(DateTime, default=func.now())
@@ -52,3 +52,12 @@ class Project(BaseModel):
     
     def __repr__(self):
         return f"<Project(id={self.id}, title='{self.title}', status='{self.status}')>"
+    
+    __table_args__ = (
+        Index('idx_project_status', 'status'),
+        Index('idx_project_priority', 'priority'),
+        Index('idx_project_owner_id', 'owner_id'),
+        Index('idx_project_assignee_id', 'assignee_id'),
+        Index('idx_project_due_date', 'due_date'),
+        Index('idx_project_required_skills', 'required_skills', postgresql_using='gin'),
+    )

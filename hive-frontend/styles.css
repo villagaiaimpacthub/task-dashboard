@@ -1189,6 +1189,56 @@ body {
     min-width: 150px;
 }
 
+/* Skill Preview Styles */
+.skill-preview {
+    margin-top: 12px;
+    padding: 12px;
+    background: rgba(76, 175, 80, 0.05);
+    border-radius: 8px;
+    border: 1px dashed rgba(76, 175, 80, 0.2);
+}
+
+.preview-label {
+    font-size: 12px;
+    color: #2e7d32;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.preview-bubbles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.skill-bubble.preview {
+    background: rgba(76, 175, 80, 0.15);
+    color: #2e7d32;
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    border: 1px solid rgba(76, 175, 80, 0.3);
+    transition: all 0.2s ease;
+    animation: skillAppear 0.3s ease;
+}
+
+.skill-bubble.preview.duplicate {
+    background: rgba(255, 152, 0, 0.15);
+    color: #ef6c00;
+    border: 1px solid rgba(255, 152, 0, 0.3);
+}
+
+@keyframes skillAppear {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
 /* Toggle Switch Styles */
 .toggle-group {
     display: flex;

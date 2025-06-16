@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Text, ForeignKey, Boolean, DateTime
+from sqlalchemy import Column, String, Text, ForeignKey, Boolean, DateTime, Index
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from .base import BaseModel
@@ -17,3 +17,9 @@ class Milestone(BaseModel):
     
     # Relationships
     task = relationship("Task", back_populates="milestones")
+    
+    __table_args__ = (
+        Index('idx_milestone_status', 'status'),
+        Index('idx_milestone_task_id', 'task_id'),
+        Index('idx_milestone_is_completed', 'is_completed'),
+    )

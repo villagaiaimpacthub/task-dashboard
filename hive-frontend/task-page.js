@@ -429,17 +429,89 @@ class TaskPageManager {
         console.log('renderTaskActions - task.assignee_id:', task.assignee_id);
         console.log('renderTaskActions - isAssigned:', isAssigned);
         console.log('renderTaskActions - currentUserId:', currentUserId);
+        console.log('renderTaskActions - task.status:', task.status);
+        console.log('renderTaskActions - isOwner:', isOwner);
+        console.log('renderTaskActions - !isAssigned:', !isAssigned);
+        console.log('renderTaskActions - task.status === "draft":', task.status === 'draft');
         
         let actions = '';
         
-        // Task detail page - focus on viewing and status, actions are at project level
+        // Task detail page - provide direct action buttons for better UX
         if (!isAssigned) {
-            actions += `
-                <div style="margin-top: 8px; padding: 12px; background: rgba(78, 205, 196, 0.1); border-radius: 8px;">
-                    <span style="color: #4ecdc4; font-size: 14px;">💡 This task is available for assignment</span>
-                    <br><small style="color: #999;">Go to the project page to claim or assign this task</small>
-                </div>
-            `;
+            // Check if task is in draft status
+            if (task.status === 'draft') {
+                actions += `
+                    <div style="margin-top: 8px; padding: 12px; background: rgba(255, 193, 7, 0.1); border-radius: 8px;">
+                        <span style="color: #ffc107; font-size: 14px;">📋 This task is in draft status</span>
+                        <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+                            ${isOwner ? `
+                                <button onclick="window.taskPageManager.makeTaskAvailable()" style="
+                                    background: rgba(76, 175, 80, 0.2); 
+                                    color: #4caf50; 
+                                    border: 1px solid rgba(76, 175, 80, 0.3); 
+                                    padding: 8px 16px; 
+                                    border-radius: 6px; 
+                                    cursor: pointer; 
+                                    font-size: 13px;
+                                    font-weight: 600;
+                                    transition: all 0.3s ease;
+                                " onmouseover="this.style.background='rgba(76, 175, 80, 0.3)'" 
+                                   onmouseout="this.style.background='rgba(76, 175, 80, 0.2)'">
+                                    🚀 Make Available
+                                </button>
+                            ` : ''}
+                            <small style="color: #999;">Only the owner can make this task available for assignment</small>
+                        </div>
+                    </div>
+                `;
+            } else if (isOwner) {
+                // Owner of available task - can't claim own task, but can assign to others
+                actions += `
+                    <div style="margin-top: 8px; padding: 12px; background: rgba(33, 150, 243, 0.1); border-radius: 8px;">
+                        <span style="color: #2196f3; font-size: 14px;">👑 You own this task</span>
+                        <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button onclick="console.log('Assign button clicked'); try { window.taskPageManager.showAssignTaskModal(); } catch(e) { console.error('Assignment modal error:', e); alert('Error: ' + e.message); }" style="
+                                background: rgba(33, 150, 243, 0.2); 
+                                color: #2196f3; 
+                                border: 1px solid rgba(33, 150, 243, 0.3); 
+                                padding: 8px 16px; 
+                                border-radius: 6px; 
+                                cursor: pointer; 
+                                font-size: 13px;
+                                font-weight: 600;
+                                transition: all 0.3s ease;
+                            " onmouseover="this.style.background='rgba(33, 150, 243, 0.3)'" 
+                               onmouseout="this.style.background='rgba(33, 150, 243, 0.2)'">
+                                👥 Assign to Someone
+                            </button>
+                            <small style="color: #999; margin-left: 8px; align-self: center;">You can't claim your own task</small>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // Available task, not owner - can claim
+                actions += `
+                    <div style="margin-top: 8px; padding: 12px; background: rgba(78, 205, 196, 0.1); border-radius: 8px;">
+                        <span style="color: #4ecdc4; font-size: 14px;">💡 This task is available for assignment</span>
+                        <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button onclick="window.taskPageManager.claimTask()" style="
+                                background: rgba(76, 175, 80, 0.2); 
+                                color: #4caf50; 
+                                border: 1px solid rgba(76, 175, 80, 0.3); 
+                                padding: 8px 16px; 
+                                border-radius: 6px; 
+                                cursor: pointer; 
+                                font-size: 13px;
+                                font-weight: 600;
+                                transition: all 0.3s ease;
+                            " onmouseover="this.style.background='rgba(76, 175, 80, 0.3)'" 
+                               onmouseout="this.style.background='rgba(76, 175, 80, 0.2)'">
+                                🎯 Claim Task
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
         }
         
         if (isOwner && task.status !== 'completed') {
@@ -455,7 +527,36 @@ class TaskPageManager {
             actions += `
                 <div style="margin-top: 8px; padding: 12px; background: rgba(76, 175, 80, 0.1); border-radius: 8px;">
                     <span style="color: #4caf50; font-size: 14px;">🎯 This task is assigned to you</span>
-                    <br><small style="color: #999;">Update status from the project page or mark complete when done</small>
+                    <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button onclick="window.taskPageManager.markTaskCompleted()" style="
+                            background: rgba(76, 175, 80, 0.2); 
+                            color: #4caf50; 
+                            border: 1px solid rgba(76, 175, 80, 0.3); 
+                            padding: 8px 16px; 
+                            border-radius: 6px; 
+                            cursor: pointer; 
+                            font-size: 13px;
+                            font-weight: 600;
+                            transition: all 0.3s ease;
+                        " onmouseover="this.style.background='rgba(76, 175, 80, 0.3)'" 
+                           onmouseout="this.style.background='rgba(76, 175, 80, 0.2)'">
+                            ✅ Mark Complete
+                        </button>
+                        <button onclick="window.taskPageManager.unassignTask()" style="
+                            background: rgba(244, 67, 54, 0.2); 
+                            color: #f44336; 
+                            border: 1px solid rgba(244, 67, 54, 0.3); 
+                            padding: 8px 16px; 
+                            border-radius: 6px; 
+                            cursor: pointer; 
+                            font-size: 13px;
+                            font-weight: 600;
+                            transition: all 0.3s ease;
+                        " onmouseover="this.style.background='rgba(244, 67, 54, 0.3)'" 
+                           onmouseout="this.style.background='rgba(244, 67, 54, 0.2)'">
+                            🔄 Unassign
+                        </button>
+                    </div>
                 </div>
             `;
         } else if (isCurrentUserAssigned && task.status === 'completed') {
@@ -2615,6 +2716,364 @@ class TaskPageManager {
             } else {
                 console.error('Router not available');
             }
+        }
+    }
+
+    // Task Assignment and Management Functions
+    
+    // Claim task for current user
+    async claimTask() {
+        try {
+            if (!this.currentTask || !this.app.currentUser) {
+                this.showError('Unable to claim task - missing task or user information');
+                return;
+            }
+            
+            const taskId = this.currentTask.id;
+            const userId = this.app.currentUser.id;
+            
+            console.log('Claiming task:', taskId, 'for user:', userId);
+            console.log('Current task status:', this.currentTask.status);
+            console.log('Current task assignee:', this.currentTask.assignee_id);
+            
+            // Check if task is in a claimable state
+            if (this.currentTask.status === 'draft') {
+                this.showError('This task is still in draft status. Ask the owner to make it available first.');
+                return;
+            }
+            
+            if (this.currentTask.assignee_id && this.currentTask.assignee_id !== null) {
+                this.showError('This task is already assigned to someone else.');
+                return;
+            }
+            
+            // Call API to assign task to current user
+            await api.assignTask(taskId, userId);
+            
+            // Update task status to in_progress and assignee
+            this.currentTask.assignee_id = userId;
+            this.currentTask.status = 'in_progress';
+            
+            // Re-render the task page to show updated state
+            this.renderTaskPage();
+            
+            this.showSuccess('Task claimed successfully! You are now assigned to this task.');
+            
+        } catch (error) {
+            console.error('Error claiming task:', error);
+            
+            // Provide more specific error messages based on the API response
+            if (error.message.includes('not available for claiming')) {
+                this.showError('This task is not available for claiming. It may be in draft status or already assigned.');
+            } else if (error.message.includes('already assigned')) {
+                this.showError('This task is already assigned to someone else.');
+            } else {
+                this.showError('Failed to claim task. Please try again.');
+            }
+        }
+    }
+    
+    // Mark task as completed
+    async markTaskCompleted() {
+        try {
+            if (!this.currentTask) {
+                this.showError('Unable to complete task - missing task information');
+                return;
+            }
+            
+            const taskId = this.currentTask.id;
+            
+            console.log('Marking task as completed:', taskId);
+            
+            // Call API to update task status
+            await api.updateTaskStatus(taskId, 'completed');
+            
+            // Update local task state
+            this.currentTask.status = 'completed';
+            this.currentTask.completed_at = new Date().toISOString();
+            
+            // Re-render the task page to show updated state
+            this.renderTaskPage();
+            
+            this.showSuccess('Task marked as completed! Great work! 🎉');
+            
+        } catch (error) {
+            console.error('Error completing task:', error);
+            this.showError('Failed to mark task as completed. Please try again.');
+        }
+    }
+    
+    // Unassign task from current user
+    async unassignTask() {
+        try {
+            if (!this.currentTask) {
+                this.showError('Unable to unassign task - missing task information');
+                return;
+            }
+            
+            const taskId = this.currentTask.id;
+            
+            console.log('Unassigning task:', taskId);
+            
+            // Call API to unassign task
+            await api.unassignTask(taskId);
+            
+            // Update local task state
+            this.currentTask.assignee_id = null;
+            this.currentTask.status = 'available';
+            
+            // Re-render the task page to show updated state
+            this.renderTaskPage();
+            
+            this.showSuccess('Task unassigned successfully. It is now available for others to claim.');
+            
+        } catch (error) {
+            console.error('Error unassigning task:', error);
+            this.showError('Failed to unassign task. Please try again.');
+        }
+    }
+    
+    // Make task available for assignment (from draft status)
+    async makeTaskAvailable() {
+        try {
+            if (!this.currentTask) {
+                this.showError('Unable to update task - missing task information');
+                return;
+            }
+            
+            const taskId = this.currentTask.id;
+            
+            console.log('Making task available:', taskId);
+            
+            // Call API to update task status to available
+            await api.updateTaskStatus(taskId, 'available');
+            
+            // Update local task state
+            this.currentTask.status = 'available';
+            
+            // Re-render the task page to show updated state
+            this.renderTaskPage();
+            
+            this.showSuccess('Task is now available for assignment!');
+            
+        } catch (error) {
+            console.error('Error making task available:', error);
+            this.showError('Failed to make task available. Please try again.');
+        }
+    }
+
+    // Show assignment modal with team members
+    showAssignTaskModal() {
+        console.log('showAssignTaskModal called');
+        console.log('Current task:', this.currentTask);
+        console.log('App:', this.app);
+        
+        try {
+            if (!this.currentTask) {
+                console.error('Missing current task');
+                this.showError('Unable to show assignment modal - missing task information');
+                return;
+            }
+
+            console.log('Creating modal overlay...');
+
+            // Remove any existing modal first
+            const existingModal = document.getElementById('assign-task-modal');
+            if (existingModal) {
+                console.log('Removing existing modal');
+                existingModal.remove();
+            }
+
+            // Create modal overlay
+            const modalOverlay = document.createElement('div');
+            modalOverlay.id = 'assign-task-modal';
+            modalOverlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.7);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                backdrop-filter: blur(4px);
+            `;
+
+            modalOverlay.innerHTML = `
+                <div style="
+                    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+                    border-radius: 16px;
+                    padding: 32px;
+                    max-width: 500px;
+                    width: 90%;
+                    max-height: 80vh;
+                    overflow-y: auto;
+                    border: 1px solid rgba(78, 205, 196, 0.3);
+                    color: #ffffff;
+                ">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                        <h3 style="margin: 0; color: #4ecdc4; font-size: 24px;">👥 Assign Task</h3>
+                        <button onclick="document.getElementById('assign-task-modal').remove()" style="
+                            background: rgba(244, 67, 54, 0.2);
+                            color: #f44336;
+                            border: 1px solid rgba(244, 67, 54, 0.3);
+                            border-radius: 8px;
+                            padding: 8px 12px;
+                            cursor: pointer;
+                            font-size: 18px;
+                        ">✕</button>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <p style="color: #d0d0d0; margin: 0 0 16px 0;">
+                            <strong>Task:</strong> ${this.currentTask.title}
+                        </p>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <label for="assign-email-input" style="display: block; color: #4ecdc4; margin-bottom: 8px; font-weight: 600;">
+                            Assign to Team Member by Email:
+                        </label>
+                        <input type="email" id="assign-email-input" name="assign-email-input" placeholder="teammate@example.com" style="
+                            width: 100%;
+                            padding: 12px;
+                            border: 1px solid rgba(78, 205, 196, 0.3);
+                            border-radius: 8px;
+                            background: rgba(0, 0, 0, 0.3);
+                            color: #ffffff;
+                            font-size: 14px;
+                            box-sizing: border-box;
+                        ">
+                        <small style="color: #999; display: block; margin-top: 4px;">
+                            Enter the email address of the team member you want to assign this task to
+                        </small>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <div style="display: block; color: #4ecdc4; margin-bottom: 8px; font-weight: 600;">
+                            Quick Assign:
+                        </div>
+                        <div id="team-members-list" style="display: flex; flex-direction: column; gap: 8px;">
+                            <div style="padding: 12px; background: rgba(0, 0, 0, 0.2); border-radius: 8px; text-align: center; color: #999;">
+                                Loading team members...
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                        <button onclick="document.getElementById('assign-task-modal').remove()" style="
+                            background: rgba(108, 117, 125, 0.2);
+                            color: #6c757d;
+                            border: 1px solid rgba(108, 117, 125, 0.3);
+                            padding: 12px 24px;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            font-weight: 600;
+                        ">Cancel</button>
+                        <button onclick="window.taskPageManager.assignTaskByEmail()" style="
+                            background: rgba(76, 175, 80, 0.2);
+                            color: #4caf50;
+                            border: 1px solid rgba(76, 175, 80, 0.3);
+                            padding: 12px 24px;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            font-weight: 600;
+                        ">Assign Task</button>
+                    </div>
+                </div>
+            `;
+
+            console.log('Appending modal to body...');
+            document.body.appendChild(modalOverlay);
+            console.log('Modal appended successfully');
+
+            // Load team members for quick assignment
+            console.log('Loading team members...');
+            this.loadTeamMembers();
+
+            // Focus on email input
+            console.log('Focusing on email input...');
+            const emailInput = document.getElementById('assign-email-input');
+            if (emailInput) {
+                emailInput.focus();
+                console.log('Email input focused');
+            } else {
+                console.error('Could not find email input to focus');
+            }
+
+        } catch (error) {
+            console.error('Error showing assignment modal:', error);
+            this.showError('Failed to show assignment modal');
+        }
+    }
+
+    // Load team members for quick assignment
+    async loadTeamMembers() {
+        try {
+            // For now, show current user and a few example team members
+            // In real implementation, this would load from an API
+            const teamMembersList = document.getElementById('team-members-list');
+            
+            if (!teamMembersList) return;
+
+            const currentUserEmail = this.app.currentUser?.email || 'you@example.com';
+            
+            teamMembersList.innerHTML = `
+                <div style="padding: 8px; background: rgba(78, 205, 196, 0.1); border: 1px solid rgba(78, 205, 196, 0.2); border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #4ecdc4;">${currentUserEmail} (You)</span>
+                    <small style="color: #999;">Current user</small>
+                </div>
+                <div style="padding: 12px; background: rgba(0, 0, 0, 0.2); border-radius: 8px; text-align: center; color: #999; font-style: italic;">
+                    Team member management will be implemented when user management system is complete.
+                    <br><small>For now, use the email field above to assign to any email address.</small>
+                </div>
+            `;
+
+        } catch (error) {
+            console.error('Error loading team members:', error);
+        }
+    }
+
+    // Assign task by email
+    async assignTaskByEmail() {
+        try {
+            const emailInput = document.getElementById('assign-email-input');
+            const email = emailInput?.value?.trim();
+
+            if (!email) {
+                this.showError('Please enter an email address');
+                return;
+            }
+
+            if (!email.includes('@')) {
+                this.showError('Please enter a valid email address');
+                return;
+            }
+
+            const taskId = this.currentTask.id;
+            
+            console.log('Assigning task:', taskId, 'to email:', email);
+
+            // Call API to assign task by email
+            await api.assignTaskByEmail(taskId, email);
+
+            // Update local task state (assuming the API returns the assigned user ID)
+            this.currentTask.assignee_email = email;
+            this.currentTask.status = 'in_progress';
+
+            // Close modal
+            document.getElementById('assign-task-modal')?.remove();
+
+            // Re-render the task page to show updated state
+            this.renderTaskPage();
+
+            this.showSuccess(`Task assigned to ${email} successfully!`);
+
+        } catch (error) {
+            console.error('Error assigning task by email:', error);
+            this.showError('Failed to assign task. Please check the email address and try again.');
         }
     }
 
