@@ -44,6 +44,11 @@ class ProjectPage {
         
         try {
             console.log('Loading project data...');
+            
+            // Store project ID immediately for task navigation
+            sessionStorage.setItem('currentProjectId', projectId);
+            console.log('DEBUG: Stored project ID in sessionStorage during load:', projectId);
+            
             await this.loadProject(projectId);
             await this.loadProjectTasks(projectId);
             console.log('Project data loaded, rendering page...');
@@ -114,7 +119,7 @@ class ProjectPage {
         container.innerHTML = `
             <div class="project-page">
                 <div class="project-header">
-                    <button onclick="projectPage.goBackToDashboard()" class="back-btn">← Back to Dashboard</button>
+                    <button onclick="window.projectPage.goBackToDashboard()" class="back-btn">← Back to Dashboard</button>
                     <div class="project-title-section">
                         <h1>${project.title}</h1>
                         <div class="project-meta">
@@ -197,7 +202,7 @@ class ProjectPage {
         }
 
         return this.tasks.map(task => `
-            <div class="task-card small" data-task-id="${task.id}" style="cursor: pointer;">
+            <div class="task-card small" data-task-id="${task.id}" style="cursor: pointer; position: relative;">
                 <div class="task-meta">
                     <div class="task-priority priority-${task.priority}">${task.priority}</div>
                     <div class="task-status status-${task.status}">${task.status}</div>
@@ -231,56 +236,57 @@ class ProjectPage {
         
         let actions = '';
         
-        // Show assignee info if task is assigned
+        // Create left/right button layout
+        actions += '<div class="task-card-button-container">';
+        
+        // Left side - Assignee info or claim button
+        actions += '<div class="task-card-left">';
         if (isAssigned) {
             const assigneeDisplay = isCurrentUserAssigned ? 'You' : (task.assignee_email || task.assignee_id);
             actions += `
-                <div class="task-assignee-info">
-                    <span class="assignee-label">👤 ${assigneeDisplay}</span>
-                </div>
+                <span class="assignee-label">👤 ${assigneeDisplay}</span>
             `;
-        }
-        
-        // Action buttons section
-        actions += '<div class="task-card-actions">';
-        
-        if (!isAssigned) {
-            // Task is unassigned - show claim and assign options
+        } else {
+            // Show claim button on the left for unassigned tasks
             actions += `
-                <button onclick="event.stopPropagation(); window.projectPage.claimTask('${task.id}')" 
+                <button onclick="event.stopPropagation(); try { if (window.projectPage && window.projectPage.claimTask) { window.projectPage.claimTask('${task.id}').catch(err => console.error('Claim failed:', err)); } else { console.error('ProjectPage not available'); } } catch(e) { console.error('Claim error:', e); }" 
                         class="action-btn claim-btn-small">
                     🙋‍♂️ Claim
                 </button>
             `;
-            
-            if (isOwner) {
-                actions += `
-                    <button onclick="event.stopPropagation(); window.projectPage.showAssignModal('${task.id}')" 
-                            class="action-btn assign-btn-small">
-                        👥 Assign
-                    </button>
-                `;
-            }
-        } else if (isOwner && !isCurrentUserAssigned) {
+        }
+        actions += '</div>';
+        
+        // Right side - Management buttons
+        actions += '<div class="task-card-right">';
+        
+        if (!isAssigned && isOwner) {
+            // Owner can assign unassigned tasks
+            actions += `
+                <button onclick="event.stopPropagation(); try { if (window.projectPage && window.projectPage.showAssignModal) { window.projectPage.showAssignModal('${task.id}'); } else { console.error('ProjectPage not available'); } } catch(e) { console.error('Assign modal error:', e); }" 
+                        class="action-btn assign-btn-small">
+                    👥 Assign
+                </button>
+            `;
+        } else if (isAssigned && isOwner && !isCurrentUserAssigned) {
             // Task is assigned to someone else, owner can reassign
             actions += `
-                <button onclick="event.stopPropagation(); window.projectPage.showAssignModal('${task.id}')" 
+                <button onclick="event.stopPropagation(); try { if (window.projectPage && window.projectPage.showAssignModal) { window.projectPage.showAssignModal('${task.id}'); } else { console.error('ProjectPage not available'); } } catch(e) { console.error('Reassign modal error:', e); }" 
                         class="action-btn reassign-btn-small">
                     🔄 Reassign
                 </button>
             `;
-        } else if (isCurrentUserAssigned) {
-            // Current user is assigned - show status options
-            if (task.status === 'in_progress') {
-                actions += `
-                    <button onclick="event.stopPropagation(); window.projectPage.markTaskCompleted('${task.id}')" 
-                            class="action-btn complete-btn-small">
-                        ✅ Complete
-                    </button>
-                `;
-            }
+        } else if (isCurrentUserAssigned && task.status === 'in_progress') {
+            // Current user is assigned - show complete button
+            actions += `
+                <button onclick="event.stopPropagation(); try { if (window.projectPage && window.projectPage.markTaskCompleted) { window.projectPage.markTaskCompleted('${task.id}').catch(err => console.error('Complete failed:', err)); } else { console.error('ProjectPage not available'); } } catch(e) { console.error('Complete error:', e); }" 
+                        class="action-btn complete-btn-small">
+                    ✅ Complete
+                </button>
+            `;
         }
         
+        actions += '</div>';
         actions += '</div>';
         
         return actions;
@@ -298,11 +304,30 @@ class ProjectPage {
     setupEventListeners() {
         // Add click handlers for task cards
         const taskCards = document.querySelectorAll('.task-card.small[data-task-id]');
+        const currentProjectId = this.project?.id; // Capture project ID before event listener
+        
         taskCards.forEach(card => {
             card.addEventListener('click', (e) => {
                 const taskId = card.dataset.taskId;
                 console.log('Task card clicked, navigating to task:', taskId);
                 if (taskId) {
+                    // Store the current project ID for back navigation using multiple methods
+                    console.log('DEBUG: About to set project context. currentProjectId =', currentProjectId);
+                    console.log('DEBUG: window.taskPageManager exists?', !!window.taskPageManager);
+                    
+                    if (currentProjectId) {
+                        // Method 1: Set on taskPageManager if available
+                        if (window.taskPageManager) {
+                            console.log('DEBUG: Calling setProjectContext with:', currentProjectId);
+                            window.taskPageManager.setProjectContext(currentProjectId);
+                        }
+                        
+                        // Method 2: Store in sessionStorage as backup
+                        sessionStorage.setItem('currentProjectId', currentProjectId);
+                        console.log('DEBUG: Stored project ID in sessionStorage:', currentProjectId);
+                    } else {
+                        console.log('DEBUG: Cannot set project context - no projectId available');
+                    }
                     // First hide the project page
                     this.hide();
                     // Then navigate to task
@@ -491,7 +516,7 @@ class ProjectPage {
                             style="padding: 10px 20px; border: 1px solid rgba(68, 68, 68, 0.4); background: rgba(68, 68, 68, 0.1); color: #ffffff; border-radius: 8px; cursor: pointer;">
                         Cancel
                     </button>
-                    <button onclick="window.projectPage.assignTaskToUser('${taskId}', document.getElementById('assigneeEmail').value); this.closest('.modal').remove()" 
+                    <button onclick="try { const email = document.getElementById('assigneeEmail').value; if (window.projectPage && window.projectPage.assignTaskToUser) { window.projectPage.assignTaskToUser('${taskId}', email).then(() => this.closest('.modal').remove()).catch(err => { console.error('Assignment failed:', err); this.closest('.modal').remove(); }); } else { console.error('ProjectPage not available'); this.closest('.modal').remove(); } } catch(e) { console.error('Assignment error:', e); this.closest('.modal').remove(); }" 
                             class="create-btn" style="padding: 10px 20px;">
                         Assign Task
                     </button>

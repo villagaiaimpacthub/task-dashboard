@@ -38,11 +38,62 @@ class HIVEApp {
         console.log('Page managers initialized successfully');
     }
 
+    // Set up global error handling to prevent click failures
+    setupGlobalErrorHandling() {
+        // Catch unhandled JavaScript errors
+        window.addEventListener('error', (event) => {
+            console.error('Global JavaScript Error:', {
+                message: event.message,
+                filename: event.filename,
+                line: event.lineno,
+                column: event.colno,
+                error: event.error
+            });
+            
+            // Don't prevent default - let the error be logged normally
+            // but log extra context for debugging click issues
+            if (event.message && (
+                event.message.includes('click') || 
+                event.message.includes('addEventListener') ||
+                event.message.includes('router') ||
+                event.message.includes('projectPage')
+            )) {
+                console.error('CLICK-RELATED ERROR DETECTED:', event.message);
+                this.showNotification('A click handler error occurred. Refreshing page may help.', 'warning');
+            }
+        });
+
+        // Catch unhandled promise rejections
+        window.addEventListener('unhandledrejection', (event) => {
+            console.error('Unhandled Promise Rejection:', event.reason);
+            
+            // Check if it's related to API calls that might affect clicking
+            if (event.reason && event.reason.message && (
+                event.reason.message.includes('api') ||
+                event.reason.message.includes('fetch') ||
+                event.reason.message.includes('project')
+            )) {
+                console.error('API-RELATED ERROR DETECTED:', event.reason.message);
+            }
+        });
+
+        console.log('Global error handling initialized');
+    }
+
     // Initialize the application
     async init() {
         console.log('Initializing HIVE Application...');
         
+        // Set up global error handling to prevent click handler failures
+        this.setupGlobalErrorHandling();
+        
+        // Clean up any existing listeners first
+        this.removeProjectEventListeners();
+        
         this.setupEventListeners();
+        
+        // Set up project listeners ONCE at app level
+        this.setupProjectEventListeners();
         this.initializePageManagers();
         this.setupRouting();
         // WebSocket disabled - backend doesn't support real WebSocket
@@ -336,8 +387,9 @@ class HIVEApp {
         try {
             if (!this.currentUser) return;
             
-            // Filter tasks assigned to current user that are in progress
-            const activeTasks = this.tasks.filter(task => 
+            // Load all tasks and filter for active ones assigned to current user
+            const allTasks = await api.getTasks();
+            const activeTasks = allTasks.filter(task => 
                 task.assignee_id === this.currentUser.id && 
                 ['in_progress', 'available'].includes(task.status)
             );
@@ -345,6 +397,8 @@ class HIVEApp {
             this.renderActiveTasks(activeTasks);
         } catch (error) {
             console.error('Failed to load active tasks:', error);
+            // Show empty active tasks on error
+            this.renderActiveTasks([]);
         }
     }
 
@@ -487,8 +541,7 @@ class HIVEApp {
 
         container.innerHTML = this.filteredProjects.map(project => this.createProjectCard(project)).join('');
         
-        // Add event listeners to project cards
-        this.setupProjectEventListeners();
+        // Project event listeners are now handled globally at body level
     }
 
     createProjectCard(project) {
@@ -570,38 +623,156 @@ class HIVEApp {
     }
 
     setupProjectEventListeners() {
-        // Project card clicks - navigate to project page
-        const projectCards = document.querySelectorAll('.project-card');
+        // Skip if already set up to prevent conflicts
+        if (this._projectListenersSetup) {
+            console.log('Project listeners already setup, skipping');
+            return;
+        }
         
-        projectCards.forEach(card => {
-            card.addEventListener('click', (e) => {
-                // Don't navigate if clicking on action buttons or their children
-                if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
-                    return;
+        try {
+            // Use EVENT DELEGATION at BODY level for maximum resilience
+            const body = document.body;
+            
+            // Single delegated click handler for ALL project interactions anywhere in the app
+            const globalProjectClickHandler = (e) => {
+                try {
+                    // Only handle clicks within the main interface
+                    const mainInterface = e.target.closest('#mainInterface');
+                    if (!mainInterface) return;
+                    
+                    // Find the project card (might be clicking on child elements)
+                    const projectCard = e.target.closest('.project-card');
+                    const button = e.target.closest('button');
+                    
+                    if (button && projectCard) {
+                        // Handle button clicks within project cards
+                        if (button.classList.contains('claim-btn')) {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            this.handleJoinProject(e);
+                        } else if (button.classList.contains('update-status-btn')) {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            this.handleUpdateProjectStatus(e);
+                        } else if (button.classList.contains('delete-btn')) {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            this.handleDeleteProject(e);
+                        }
+                        return; // Don't process project card click if button was clicked
+                    }
+                    
+                    // Handle project card clicks (only if not clicking buttons)
+                    if (projectCard && !button) {
+                        const projectId = projectCard.dataset.projectId;
+                        console.log('Project card clicked globally, ID:', projectId);
+                        
+                        if (projectId) {
+                            e.preventDefault(); // Prevent any default behavior
+                            
+                            // Debug state before navigation
+                            console.log('Navigation state check:', {
+                                hasRouter: !!(window.router && window.router.navigate),
+                                hasProjectPage: !!(window.projectPage && window.projectPage.render),
+                                hasApp: !!(window.app),
+                                currentUrl: window.location.href,
+                                projectId: projectId
+                            });
+                            
+                            // Multiple fallback strategies with state validation
+                            if (window.router && typeof window.router.navigate === 'function') {
+                                console.log('Using router navigation for project:', projectId);
+                                try {
+                                    window.router.navigate(`/project/${projectId}`);
+                                } catch (routerError) {
+                                    console.error('Router navigation failed:', routerError);
+                                    // Fallback to direct method
+                                    if (window.projectPage && window.projectPage.render) {
+                                        window.projectPage.render(projectId);
+                                    }
+                                }
+                            } else if (window.projectPage && typeof window.projectPage.render === 'function') {
+                                console.log('Using direct project page for:', projectId);
+                                try {
+                                    window.projectPage.render(projectId);
+                                } catch (pageError) {
+                                    console.error('Direct project page failed:', pageError);
+                                }
+                            } else {
+                                console.error('No navigation method available, system state corrupted');
+                                console.error('Available globals:', {
+                                    router: typeof window.router,
+                                    projectPage: typeof window.projectPage,
+                                    app: typeof window.app
+                                });
+                                // Last resort - try URL change
+                                window.location.hash = `project/${projectId}`;
+                            }
+                        } else {
+                            console.error('No project ID found on clicked card');
+                        }
+                    }
+                    
+                } catch (error) {
+                    console.error('Error in global project click handler:', error);
+                    // Don't let this error break other interactions
                 }
-                
-                const projectId = card.dataset.projectId;
-                
-                if (projectId && router && router.navigate) {
-                    router.navigate(`/project/${projectId}`);
+            };
+            
+            // Add the global listener to body (survives all DOM changes)
+            body.addEventListener('click', globalProjectClickHandler, true); // Use capture phase
+            
+            // Store reference for cleanup and mark as setup
+            body._globalProjectClickHandler = globalProjectClickHandler;
+            this._projectListenersSetup = true;
+            
+            console.log('Global project event delegation setup completed successfully');
+            
+        } catch (error) {
+            console.error('Error setting up global project event delegation:', error);
+        }
+    }
+
+    removeProjectEventListeners() {
+        try {
+            // Remove global click handler from body
+            const body = document.body;
+            if (body && body._globalProjectClickHandler) {
+                body.removeEventListener('click', body._globalProjectClickHandler, true);
+                delete body._globalProjectClickHandler;
+                this._projectListenersSetup = false;
+                console.log('Removed global project click handler');
+            }
+            
+            // Legacy cleanup - remove container-level handlers
+            const container = document.getElementById('taskGrid');
+            if (container && container._delegatedProjectClickHandler) {
+                container.removeEventListener('click', container._delegatedProjectClickHandler);
+                delete container._delegatedProjectClickHandler;
+            }
+            
+            // Legacy cleanup - remove any individual card handlers that might still exist
+            document.querySelectorAll('.project-card').forEach(card => {
+                if (card._projectClickHandler) {
+                    card.removeEventListener('click', card._projectClickHandler);
+                    delete card._projectClickHandler;
                 }
             });
-        });
-
-        // Claim buttons (Join Project)
-        document.querySelectorAll('.claim-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => this.handleJoinProject(e));
-        });
-
-        // Update status buttons
-        document.querySelectorAll('.update-status-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => this.handleUpdateProjectStatus(e));
-        });
-
-        // Delete buttons
-        document.querySelectorAll('.delete-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => this.handleDeleteProject(e));
-        });
+            
+            // Legacy cleanup - remove any individual button handlers
+            ['claim-btn', 'update-status-btn', 'delete-btn'].forEach(btnClass => {
+                document.querySelectorAll(`.${btnClass}`).forEach(btn => {
+                    const handlerProp = `_${btnClass.replace('-', '')}ClickHandler`;
+                    if (btn[handlerProp]) {
+                        btn.removeEventListener('click', btn[handlerProp]);
+                        delete btn[handlerProp];
+                    }
+                });
+            });
+            
+        } catch (error) {
+            console.error('Error removing project event listeners:', error);
+        }
     }
 
     async handleClaimTask(e) {

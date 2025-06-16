@@ -45,18 +45,18 @@
             <div class="left-section">
                 <div class="logo">HIVE TASK</div>
                 <div class="scores-container">
-                    <div class="wallet-score" id="walletScore" onclick="window.location.href='wallet.html'" title="Task Credits">💰 Credits</div>
-                    <div class="impact-score" onclick="window.location.href='impact.html'">+ Impact</div>
+                    <div class="wallet-score" id="walletScore" onclick="if (window.router) { router.navigate('/wallet'); } else { console.error('Router not available'); }" title="Task Credits">💰 Credits</div>
+                    <div class="impact-score" onclick="if (window.router) { router.navigate('/impact'); } else { console.error('Router not available'); }">+ Impact</div>
                 </div>
             </div>
             <div class="prime-directive">
                 Prime Directive: Consciousness attunement for the benefit of all beings.
             </div>
             <div class="user-info">
-                <button onclick="window.location.href='kairos.html'" class="action-score-btn" title="Kairos - Task Timeline">Kairos</button>
-                <button onclick="window.location.href='telotype.html'" class="action-score-btn" title="My Telotype">My Telotype</button>
-                <button onclick="window.location.href='messages.html'" class="nav-btn" title="Messages">💬</button>
-                <button onclick="window.location.href='notifications.html'" class="nav-btn" title="Notifications">🔔</button>
+                <button onclick="if (window.router) { router.navigate('/kairos'); } else { console.error('Router not available'); }" class="action-score-btn" title="Kairos - Task Timeline">Kairos</button>
+                <button onclick="if (window.router) { router.navigate('/telotype'); } else { console.error('Router not available'); }" class="action-score-btn" title="My Telotype">My Telotype</button>
+                <button onclick="if (window.router) { router.navigate('/messages'); } else { console.error('Router not available'); }" class="nav-btn" title="Messages">💬</button>
+                <button onclick="if (window.router) { router.navigate('/notifications'); } else { console.error('Router not available'); }" class="nav-btn" title="Notifications">🔔</button>
                 <button id="settingsBtn" class="settings-btn" title="Settings">⚙️</button>
                 <button id="logoutBtn" class="logout-btn" title="Logout">🚪</button>
             </div>
@@ -627,20 +627,20 @@
     <!-- Connection status removed - backend doesn't support real-time WebSocket -->
 
 
-    <script src="api.js"></script>
-    <script src="websocket.js"></script>
-    <script src="dark-mode.js"></script>
-    <script src="router.js"></script>
-    <script src="task-page.js"></script>
-    <script src="project-page.js"></script>
-    <script src="settings-page.js"></script>
-    <script src="hierarchy-pages.js"></script>
-    <script src="impact-page.js"></script>
-    <script src="wallet-page.js"></script>
-    <script src="notifications-page.js"></script>
-    <script src="messages-page.js"></script>
-    <script src="kairos-page.js"></script>
-    <script src="telotype-page.js"></script>
-    <script src="app.js"></script>
+    <script src="api.js?v=20250616"></script>
+    <script src="websocket.js?v=20250616"></script>
+    <script src="dark-mode.js?v=20250616"></script>
+    <script src="router.js?v=20250616"></script>
+    <script src="task-page.js?v=20250616"></script>
+    <script src="project-page.js?v=20250616"></script>
+    <script src="settings-page.js?v=20250616"></script>
+    <script src="hierarchy-pages.js?v=20250616"></script>
+    <script src="impact-page.js?v=20250616"></script>
+    <script src="wallet-page.js?v=20250616"></script>
+    <script src="notifications-page.js?v=20250616"></script>
+    <script src="messages-page.js?v=20250616"></script>
+    <script src="kairos-page.js?v=20250616"></script>
+    <script src="telotype-page.js?v=20250616"></script>
+    <script src="app.js?v=20250616"></script>
 </body>
 </html>

@@ -548,29 +548,34 @@ body {
     transform: translateY(-1px);
 }
 
-/* Task Card Actions */
-.task-assignee-info {
-    margin-top: 8px;
-    padding: 6px 12px;
-    background: rgba(76, 175, 80, 0.1);
-    border-radius: 8px;
-    text-align: center;
+/* Task Card Button Layout */
+.task-card-button-container {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(76, 175, 80, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.task-card-left {
+    display: flex;
+    align-items: center;
+}
+
+.task-card-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .assignee-label {
     color: #4caf50;
     font-size: 12px;
     font-weight: 600;
-}
-
-.task-card-actions {
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px solid rgba(76, 175, 80, 0.1);
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    flex-wrap: wrap;
+    padding: 6px 12px;
+    background: rgba(76, 175, 80, 0.1);
+    border-radius: 8px;
 }
 
 .action-btn {

@@ -46,53 +46,13 @@ class WalletPageManager {
 
     async loadWalletData() {
         try {
-            // For now, simulate wallet data
-            // In the future, this would call an API endpoint
-            this.credits = 250; // Sample credit balance
-            this.transactions = [
-                {
-                    id: '1',
-                    description: 'Task Completed: Implement user authentication',
-                    amount: 50,
-                    date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-                    type: 'earned'
-                },
-                {
-                    id: '2',
-                    description: 'Milestone Bonus: Phase 1 completion',
-                    amount: 100,
-                    date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-                    type: 'bonus'
-                },
-                {
-                    id: '3',
-                    description: 'Task Completed: Database optimization',
-                    amount: 75,
-                    date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-                    type: 'earned'
-                },
-                {
-                    id: '4',
-                    description: 'Premium Feature Access',
-                    amount: -25,
-                    date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-                    type: 'spent'
-                },
-                {
-                    id: '5',
-                    description: 'Task Completed: API endpoint development',
-                    amount: 60,
-                    date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-                    type: 'earned'
-                },
-                {
-                    id: '6',
-                    description: 'Community Contribution Bonus',
-                    amount: 30,
-                    date: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
-                    type: 'bonus'
-                }
-            ];
+            // Check if backend supports wallet functionality
+            // Real implementation would call: const walletData = await api.getWalletData();
+            
+            // Since no wallet API endpoints exist yet, show implementation notice
+            this.credits = 'N/A';
+            this.transactions = [];
+            this.isFeatureAvailable = false;
 
         } catch (error) {
             console.error('Failed to load wallet data:', error);
@@ -103,6 +63,87 @@ class WalletPageManager {
 
     renderWalletPage(container) {
         const currentUser = this.app.currentUser;
+        
+        if (!this.isFeatureAvailable) {
+            container.innerHTML = `
+                <div class="page-container" style="
+                    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+                    min-height: 100vh;
+                    padding: 70px 0 0 0;
+                    color: #ffffff;
+                ">
+                    <div style="max-width: 800px; margin: 0 auto; padding: 32px;">
+                        <!-- Header -->
+                        <div style="
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            margin-bottom: 32px;
+                            padding-bottom: 20px;
+                            border-bottom: 1px solid rgba(255, 152, 0, 0.2);
+                        ">
+                            <div>
+                                <h1 style="margin: 0 0 8px 0; font-size: 32px; font-weight: 700;">💰 Task Credits Wallet</h1>
+                                <p style="margin: 0; color: #d0d0d0; font-size: 16px;">Credit system implementation status</p>
+                            </div>
+                            <button onclick="window.router.navigate('/')" style="
+                                background: rgba(255, 152, 0, 0.15);
+                                color: #ff9800;
+                                border: 1px solid rgba(255, 152, 0, 0.3);
+                                padding: 12px 24px;
+                                border-radius: 8px;
+                                cursor: pointer;
+                                font-weight: 500;
+                                transition: all 0.3s ease;
+                            " onmouseover="this.style.background='rgba(255, 152, 0, 0.25)'" 
+                               onmouseout="this.style.background='rgba(255, 152, 0, 0.15)'">
+                                ← Back to Dashboard
+                            </button>
+                        </div>
+
+                        <!-- Implementation Notice -->
+                        <div style="
+                            background: rgba(255, 193, 7, 0.1);
+                            border: 1px solid rgba(255, 193, 7, 0.3);
+                            border-radius: 16px;
+                            padding: 40px;
+                            text-align: center;
+                            margin-bottom: 32px;
+                        ">
+                            <div style="font-size: 64px; margin-bottom: 24px;">🚧</div>
+                            <h2 style="margin: 0 0 16px 0; color: #ffc107; font-size: 24px;">Credit System Not Yet Implemented</h2>
+                            <p style="margin: 0 0 24px 0; color: #d0d0d0; font-size: 16px; line-height: 1.6;">
+                                The wallet and credit system requires backend API endpoints that haven't been implemented yet. 
+                                This feature will track credits earned from completing tasks and allow you to manage your balance.
+                            </p>
+                            <div style="background: rgba(68, 68, 68, 0.4); border-radius: 8px; padding: 16px; margin: 24px 0;">
+                                <p style="margin: 0; color: #a0a0a0; font-size: 14px; font-family: monospace;">
+                                    Backend TODO: Implement /api/v1/wallet endpoints<br>
+                                    - GET /api/v1/wallet/balance<br>
+                                    - GET /api/v1/wallet/transactions<br>
+                                    - POST /api/v1/wallet/earn<br>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Current Task Integration -->
+                        <div style="
+                            background: rgba(76, 175, 80, 0.1);
+                            border: 1px solid rgba(76, 175, 80, 0.2);
+                            border-radius: 16px;
+                            padding: 24px;
+                        ">
+                            <h3 style="margin: 0 0 16px 0; color: #4caf50; font-size: 20px;">🎯 Current Implementation</h3>
+                            <p style="margin: 0; color: #d0d0d0; font-size: 14px; line-height: 1.6;">
+                                Track your progress through task completion on the main dashboard. Impact points from completed 
+                                tasks will be converted to credits once the wallet system is implemented.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            return;
+        }
         
         container.innerHTML = `
             <div class="page-container" style="

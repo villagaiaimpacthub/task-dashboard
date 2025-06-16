@@ -55,47 +55,7 @@ class ImpactPageManager {
                 (project.owner_id === this.app.currentUser?.id || project.assignee_id === this.app.currentUser?.id)
             );
 
-            // If no completed projects found, add sample data for demo
-            if (this.completedProjects.length === 0) {
-                this.completedProjects = [
-                    {
-                        id: 'sample1',
-                        title: 'User Authentication System',
-                        description: 'Implemented secure user login and registration system',
-                        category: 'Software Development',
-                        impact_points: 150,
-                        completed_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-                        status: 'completed'
-                    },
-                    {
-                        id: 'sample2',
-                        title: 'Database Optimization',
-                        description: 'Improved query performance and reduced load times by 40%',
-                        category: 'Data Analysis',
-                        impact_points: 120,
-                        completed_at: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
-                        status: 'completed'
-                    },
-                    {
-                        id: 'sample3',
-                        title: 'UI/UX Redesign',
-                        description: 'Modernized user interface with improved accessibility',
-                        category: 'UI/UX Design',
-                        impact_points: 100,
-                        completed_at: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(),
-                        status: 'completed'
-                    },
-                    {
-                        id: 'sample4',
-                        title: 'API Documentation',
-                        description: 'Created comprehensive API documentation for developers',
-                        category: 'Project Management',
-                        impact_points: 80,
-                        completed_at: new Date(Date.now() - 75 * 24 * 60 * 60 * 1000).toISOString(),
-                        status: 'completed'
-                    }
-                ];
-            }
+            // Keep only real completed projects - no fake demo data
 
             // Calculate total impact
             this.totalImpact = this.completedProjects.reduce((total, project) => 
@@ -104,30 +64,9 @@ class ImpactPageManager {
 
         } catch (error) {
             console.error('Failed to load completed projects:', error);
-            // Use sample data on error
-            this.completedProjects = [
-                {
-                    id: 'sample1',
-                    title: 'User Authentication System',
-                    description: 'Implemented secure user login and registration system',
-                    category: 'Software Development',
-                    impact_points: 150,
-                    completed_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-                    status: 'completed'
-                },
-                {
-                    id: 'sample2',
-                    title: 'Database Optimization',
-                    description: 'Improved query performance and reduced load times by 40%',
-                    category: 'Data Analysis',
-                    impact_points: 120,
-                    completed_at: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
-                    status: 'completed'
-                }
-            ];
-            this.totalImpact = this.completedProjects.reduce((total, project) => 
-                total + (project.impact_points || 0), 0
-            );
+            // On error, use empty arrays - no fake data
+            this.completedProjects = [];
+            this.totalImpact = 0;
         }
     }
 
