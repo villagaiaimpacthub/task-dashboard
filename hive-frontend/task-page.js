@@ -422,58 +422,36 @@ class TaskPageManager {
         
         let actions = '';
         
-        // Show claim button for unassigned tasks (regardless of exact status)
+        // Task detail page - focus on viewing and status, actions are at project level
         if (!isAssigned) {
             actions += `
-                <div style="margin-top: 8px;">
-                    <button onclick="taskPageManager.claimTask()" class="claim-btn" style="
-                        background: #4caf50;
-                        color: white;
-                        border: none;
-                        padding: 10px 20px;
-                        border-radius: 12px;
-                        font-weight: 600;
-                        cursor: pointer;
-                        transition: all 0.2s;
-                        margin-left: 0;
-                    ">
-                        🙋‍♂️ Claim Task
-                    </button>
+                <div style="margin-top: 8px; padding: 12px; background: rgba(78, 205, 196, 0.1); border-radius: 8px;">
+                    <span style="color: #4ecdc4; font-size: 14px;">💡 This task is available for assignment</span>
+                    <br><small style="color: #999;">Go to the project page to claim or assign this task</small>
                 </div>
             `;
         }
         
         if (isOwner && task.status !== 'completed') {
-            // Owner can assign/reassign or make available
-            if (isAssigned) {
-                actions += `
-                    <div style="margin-top: 8px;">
-                        <button onclick="taskPageManager.makeTaskAvailable()" class="btn-warning make-available-btn">
-                            🔄 Make Available
-                        </button>
-                        <button onclick="taskPageManager.showAssignModal()" class="btn-primary assign-btn" style="margin-left: 8px;">
-                            👥 Reassign
-                        </button>
-                    </div>
-                `;
-            } else {
-                actions += `
-                    <div style="margin-top: 8px;">
-                        <button onclick="taskPageManager.showAssignModal()" class="btn-primary assign-btn">
-                            👥 Assign to Team Member
-                        </button>
-                    </div>
-                `;
-            }
+            actions += `
+                <div style="margin-top: 8px; padding: 12px; background: rgba(33, 150, 243, 0.1); border-radius: 8px;">
+                    <span style="color: #2196f3; font-size: 14px;">👑 You own this task</span>
+                    <br><small style="color: #999;">Manage assignments and status from the project page</small>
+                </div>
+            `;
         }
         
         if (isCurrentUserAssigned && task.status === 'in_progress') {
-            // Current user is assigned - show status update options
             actions += `
-                <div style="margin-top: 8px;">
-                    <button onclick="taskPageManager.markTaskCompleted()" class="btn-success complete-btn">
-                        ✅ Mark Complete
-                    </button>
+                <div style="margin-top: 8px; padding: 12px; background: rgba(76, 175, 80, 0.1); border-radius: 8px;">
+                    <span style="color: #4caf50; font-size: 14px;">🎯 This task is assigned to you</span>
+                    <br><small style="color: #999;">Update status from the project page or mark complete when done</small>
+                </div>
+            `;
+        } else if (isCurrentUserAssigned && task.status === 'completed') {
+            actions += `
+                <div style="margin-top: 8px; padding: 12px; background: rgba(76, 175, 80, 0.2); border-radius: 8px;">
+                    <span style="color: #4caf50; font-size: 14px;">✅ You completed this task</span>
                 </div>
             `;
         }

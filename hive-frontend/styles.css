@@ -549,28 +549,82 @@ body {
 }
 
 /* Task Card Actions */
+.task-assignee-info {
+    margin-top: 8px;
+    padding: 6px 12px;
+    background: rgba(76, 175, 80, 0.1);
+    border-radius: 8px;
+    text-align: center;
+}
+
+.assignee-label {
+    color: #4caf50;
+    font-size: 12px;
+    font-weight: 600;
+}
+
 .task-card-actions {
     margin-top: 12px;
     padding-top: 12px;
     border-top: 1px solid rgba(76, 175, 80, 0.1);
     display: flex;
     justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    border: none;
+    white-space: nowrap;
 }
 
 .claim-btn-small {
     background: rgba(78, 205, 196, 0.15);
     color: #4ecdc4;
     border: 1px solid rgba(78, 205, 196, 0.3);
-    padding: 6px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 600;
-    transition: all 0.2s ease;
 }
 
 .claim-btn-small:hover {
     background: rgba(78, 205, 196, 0.25);
+    transform: translateY(-1px);
+}
+
+.assign-btn-small {
+    background: rgba(33, 150, 243, 0.15);
+    color: #2196f3;
+    border: 1px solid rgba(33, 150, 243, 0.3);
+}
+
+.assign-btn-small:hover {
+    background: rgba(33, 150, 243, 0.25);
+    transform: translateY(-1px);
+}
+
+.reassign-btn-small {
+    background: rgba(255, 152, 0, 0.15);
+    color: #ff9800;
+    border: 1px solid rgba(255, 152, 0, 0.3);
+}
+
+.reassign-btn-small:hover {
+    background: rgba(255, 152, 0, 0.25);
+    transform: translateY(-1px);
+}
+
+.complete-btn-small {
+    background: rgba(76, 175, 80, 0.15);
+    color: #4caf50;
+    border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.complete-btn-small:hover {
+    background: rgba(76, 175, 80, 0.25);
     transform: translateY(-1px);
 }
 

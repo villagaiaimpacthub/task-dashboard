@@ -225,21 +225,65 @@ class ProjectPage {
         const currentUser = this.app.currentUser;
         if (!currentUser) return '';
 
-        const isAssigned = task.assignee_id === currentUser.id;
-        const isAvailable = task.status === 'available' && !task.assignee_id;
+        const isAssigned = task.assignee_id && task.assignee_id !== 'Available';
+        const isCurrentUserAssigned = task.assignee_id === currentUser.id;
+        const isOwner = task.owner_id === currentUser.id;
         
-        if (isAvailable) {
-            return `
-                <div class="task-card-actions">
-                    <button onclick="event.stopPropagation(); projectPageManager.claimTask('${task.id}')" 
-                            class="btn-primary claim-btn-small">
-                        🙋‍♂️ Claim
-                    </button>
+        let actions = '';
+        
+        // Show assignee info if task is assigned
+        if (isAssigned) {
+            const assigneeDisplay = isCurrentUserAssigned ? 'You' : (task.assignee_email || task.assignee_id);
+            actions += `
+                <div class="task-assignee-info">
+                    <span class="assignee-label">👤 ${assigneeDisplay}</span>
                 </div>
             `;
         }
         
-        return '';
+        // Action buttons section
+        actions += '<div class="task-card-actions">';
+        
+        if (!isAssigned) {
+            // Task is unassigned - show claim and assign options
+            actions += `
+                <button onclick="event.stopPropagation(); window.projectPage.claimTask('${task.id}')" 
+                        class="action-btn claim-btn-small">
+                    🙋‍♂️ Claim
+                </button>
+            `;
+            
+            if (isOwner) {
+                actions += `
+                    <button onclick="event.stopPropagation(); window.projectPage.showAssignModal('${task.id}')" 
+                            class="action-btn assign-btn-small">
+                        👥 Assign
+                    </button>
+                `;
+            }
+        } else if (isOwner && !isCurrentUserAssigned) {
+            // Task is assigned to someone else, owner can reassign
+            actions += `
+                <button onclick="event.stopPropagation(); window.projectPage.showAssignModal('${task.id}')" 
+                        class="action-btn reassign-btn-small">
+                    🔄 Reassign
+                </button>
+            `;
+        } else if (isCurrentUserAssigned) {
+            // Current user is assigned - show status options
+            if (task.status === 'in_progress') {
+                actions += `
+                    <button onclick="event.stopPropagation(); window.projectPage.markTaskCompleted('${task.id}')" 
+                            class="action-btn complete-btn-small">
+                        ✅ Complete
+                    </button>
+                `;
+            }
+        }
+        
+        actions += '</div>';
+        
+        return actions;
     }
 
     renderTasks() {
@@ -408,6 +452,114 @@ class ProjectPage {
         setTimeout(() => {
             notification.remove();
         }, 3000);
+    }
+
+    showAssignModal(taskId) {
+        // Create assignment modal
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        `;
+
+        modal.innerHTML = `
+            <div style="
+                background: rgba(68, 68, 68, 0.95);
+                border-radius: 16px;
+                padding: 24px;
+                max-width: 400px;
+                width: 90%;
+                border: 1px solid rgba(78, 205, 196, 0.2);
+            ">
+                <h3 style="color: #ffffff; margin-bottom: 16px;">👥 Assign Task</h3>
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; color: #ffffff;">Team Member Email:</label>
+                    <input type="email" id="assigneeEmail" placeholder="Enter team member's email" 
+                           style="width: 100%; padding: 12px; border: 1px solid rgba(78, 205, 196, 0.3); border-radius: 8px; background: rgba(68, 68, 68, 0.1); color: #ffffff;">
+                </div>
+                <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                    <button onclick="this.closest('.modal').remove()" 
+                            style="padding: 10px 20px; border: 1px solid rgba(68, 68, 68, 0.4); background: rgba(68, 68, 68, 0.1); color: #ffffff; border-radius: 8px; cursor: pointer;">
+                        Cancel
+                    </button>
+                    <button onclick="window.projectPage.assignTaskToUser('${taskId}', document.getElementById('assigneeEmail').value); this.closest('.modal').remove()" 
+                            class="create-btn" style="padding: 10px 20px;">
+                        Assign Task
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+        document.getElementById('assigneeEmail').focus();
+    }
+
+    async assignTaskToUser(taskId, email) {
+        if (!email || !email.trim()) {
+            this.showError('Please enter a valid email address');
+            return;
+        }
+
+        try {
+            // Update the task with the new assignee email
+            const task = this.tasks.find(t => t.id === taskId);
+            if (!task) {
+                this.showError('Task not found');
+                return;
+            }
+
+            const updatedTask = {
+                ...task,
+                assignee_id: email.trim(),
+                assignee_email: email.trim(),
+                status: 'in_progress'
+            };
+            
+            const response = await api.updateTask(taskId, updatedTask);
+            if (response) {
+                // Update local task data
+                Object.assign(task, updatedTask);
+                this.renderTasks();
+                this.showSuccess(`Task assigned to ${email}`);
+            }
+        } catch (error) {
+            console.error('Error assigning task:', error);
+            this.showError('Failed to assign task');
+        }
+    }
+
+    async markTaskCompleted(taskId) {
+        try {
+            const task = this.tasks.find(t => t.id === taskId);
+            if (!task) {
+                this.showError('Task not found');
+                return;
+            }
+
+            const updatedTask = {
+                ...task,
+                status: 'completed'
+            };
+            
+            const response = await api.updateTask(taskId, updatedTask);
+            if (response) {
+                Object.assign(task, updatedTask);
+                this.renderTasks();
+                this.showSuccess('Task marked as completed!');
+            }
+        } catch (error) {
+            console.error('Error completing task:', error);
+            this.showError('Failed to complete task');
+        }
     }
 
     hide() {
