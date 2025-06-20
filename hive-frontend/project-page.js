@@ -71,6 +71,9 @@ class ProjectPage {
             this.project = await api.getProject(projectId);
             console.log('Project loaded successfully:', this.project);
             this.currentUser = app.currentUser;
+            
+            // Store project data for task breadcrumbs
+            sessionStorage.setItem(`project_${projectId}`, JSON.stringify(this.project));
         } catch (error) {
             console.error('Error loading project:', error);
             throw error;
@@ -116,8 +119,11 @@ class ProjectPage {
             `<div class="skill-tag">${skill}</div>`
         ).join('');
         
+        // Ensure dark mode is applied
+        const isDarkMode = document.body.classList.contains('dark-mode');
+        
         container.innerHTML = `
-            <div class="project-page">
+            <div class="project-page" ${isDarkMode ? 'data-dark-mode="true"' : ''}>
                 <div class="project-header">
                     <button onclick="window.projectPage.goBackToDashboard()" class="back-btn">← Back to Dashboard</button>
                     <div class="project-title-section">
@@ -226,13 +232,28 @@ class ProjectPage {
         `).join('');
     }
 
+    // Get user display name with @ prefix (same as task page)
+    getUserDisplayName(userId) {
+        if (!userId) return null;
+        
+        // Check if it's the current user
+        if (this.app?.currentUser?.id === userId) {
+            const email = this.app.currentUser.email;
+            const username = email ? email.split('@')[0] : 'You';
+            return `@${username}`;
+        }
+        
+        // For other users, create a readable username from the ID
+        const shortId = userId.substring(0, 8);
+        return `@user_${shortId}`;
+    }
+
     renderTaskCardActions(task) {
         const currentUser = this.app.currentUser;
         if (!currentUser) return '';
 
         const isAssigned = task.assignee_id && task.assignee_id !== 'Available';
         const isCurrentUserAssigned = task.assignee_id === currentUser.id;
-        const isOwner = task.owner_id === currentUser.id;
         
         let actions = '';
         
@@ -242,7 +263,7 @@ class ProjectPage {
         // Left side - Assignee info or claim button
         actions += '<div class="task-card-left">';
         if (isAssigned) {
-            const assigneeDisplay = isCurrentUserAssigned ? 'You' : (task.assignee_email || task.assignee_id);
+            const assigneeDisplay = this.getUserDisplayName(task.assignee_id);
             actions += `
                 <span class="assignee-label">👤 ${assigneeDisplay}</span>
             `;
@@ -260,23 +281,7 @@ class ProjectPage {
         // Right side - Management buttons
         actions += '<div class="task-card-right">';
         
-        if (!isAssigned && isOwner) {
-            // Owner can assign unassigned tasks
-            actions += `
-                <button onclick="event.stopPropagation(); try { if (window.projectPage && window.projectPage.showAssignModal) { window.projectPage.showAssignModal('${task.id}'); } else { console.error('ProjectPage not available'); } } catch(e) { console.error('Assign modal error:', e); }" 
-                        class="action-btn assign-btn-small">
-                    👥 Assign
-                </button>
-            `;
-        } else if (isAssigned && isOwner && !isCurrentUserAssigned) {
-            // Task is assigned to someone else, owner can reassign
-            actions += `
-                <button onclick="event.stopPropagation(); try { if (window.projectPage && window.projectPage.showAssignModal) { window.projectPage.showAssignModal('${task.id}'); } else { console.error('ProjectPage not available'); } } catch(e) { console.error('Reassign modal error:', e); }" 
-                        class="action-btn reassign-btn-small">
-                    🔄 Reassign
-                </button>
-            `;
-        } else if (isCurrentUserAssigned && task.status === 'in_progress') {
+        if (isCurrentUserAssigned && task.status === 'in_progress') {
             // Current user is assigned - show complete button
             actions += `
                 <button onclick="event.stopPropagation(); try { if (window.projectPage && window.projectPage.markTaskCompleted) { window.projectPage.markTaskCompleted('${task.id}').catch(err => console.error('Complete failed:', err)); } else { console.error('ProjectPage not available'); } } catch(e) { console.error('Complete error:', e); }" 
@@ -309,7 +314,16 @@ class ProjectPage {
         taskCards.forEach(card => {
             card.addEventListener('click', (e) => {
                 const taskId = card.dataset.taskId;
-                console.log('Task card clicked, navigating to task:', taskId);
+                console.log('🔍 TASK CLICK DEBUG START');
+                console.log('Task ID:', taskId);
+                console.log('window.router exists?', !!window.router);
+                console.log('window.router.navigate type:', typeof window.router?.navigate);
+                console.log('window.taskPageManager exists?', !!window.taskPageManager);
+                console.log('window.taskPageManager.showTaskPage type:', typeof window.taskPageManager?.showTaskPage);
+                console.log('window.app exists?', !!window.app);
+                
+                // Log all global objects for debugging
+                console.log('Available globals:', Object.keys(window).filter(k => k.includes('Page') || k.includes('router') || k.includes('app')));
                 if (taskId) {
                     // Store the current project ID for back navigation using multiple methods
                     console.log('DEBUG: About to set project context. currentProjectId =', currentProjectId);
@@ -328,10 +342,12 @@ class ProjectPage {
                     } else {
                         console.log('DEBUG: Cannot set project context - no projectId available');
                     }
-                    // First hide the project page
-                    this.hide();
-                    // Then navigate to task
-                    router.navigate(`/task/${taskId}`);
+                    // Navigate to task using window.router
+                    if (window.router) {
+                        window.router.navigate(`/task/${taskId}`);
+                    } else {
+                        console.error('Router not available');
+                    }
                 }
             });
         });

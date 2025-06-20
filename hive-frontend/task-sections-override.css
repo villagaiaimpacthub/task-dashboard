@@ -1,0 +1,133 @@
+/* Task Sections Override - Specific fix for white background issue */
+/* This file contains ONLY the fixes needed for task page sections */
+
+/* Override the problematic white backgrounds with maximum specificity */
+body.dark-mode .project-tasks .task-files-section,
+body.dark-mode .project-tasks .task-chat-section, 
+body.dark-mode .project-tasks .public-comments-section {
+    background: rgba(68, 68, 68, 0.15) !important;
+    border: 1px solid rgba(78, 205, 196, 0.2) !important;
+    color: #ffffff !important;
+    margin-bottom: 24px !important;
+}
+
+/* Headers in these sections */
+body.dark-mode .project-tasks .task-files-section h3,
+body.dark-mode .project-tasks .task-chat-section h3,
+body.dark-mode .project-tasks .public-comments-section h3 {
+    color: #ffffff !important;
+}
+
+/* Ensure the parent container doesn't override */
+body.dark-mode .project-tasks {
+    background: transparent !important;
+}
+
+/* Fix any nested elements that might have white backgrounds */
+body.dark-mode .project-tasks .task-files-section *,
+body.dark-mode .project-tasks .task-chat-section *,
+body.dark-mode .project-tasks .public-comments-section * {
+    background-color: transparent !important;
+}
+
+/* Text color for content in these sections */
+body.dark-mode .project-tasks .task-files-section p,
+body.dark-mode .project-tasks .task-chat-section p,
+body.dark-mode .project-tasks .public-comments-section p {
+    color: #d0d0d0 !important;
+}
+
+/* Placeholder messages */
+body.dark-mode .project-tasks .no-tasks,
+body.dark-mode .project-tasks .no-messages,
+body.dark-mode .project-tasks .no-comments {
+    background: transparent !important;
+    color: #d0d0d0 !important;
+}
+
+/* Chat and file containers */
+body.dark-mode .project-tasks .chat-container,
+body.dark-mode .project-tasks .comments-container,
+body.dark-mode .project-tasks .files-list {
+    background: transparent !important;
+}
+
+/* Button styling to match Add Milestone button */
+body.dark-mode .project-tasks .task-files-section .create-btn,
+body.dark-mode .project-tasks .task-chat-section .create-btn,
+body.dark-mode .project-tasks .public-comments-section .create-btn,
+body.dark-mode .project-tasks button[onclick*="uploadSelectedFiles"],
+body.dark-mode .project-tasks button[onclick*="sendChatMessage"],
+body.dark-mode .project-tasks button[onclick*="submitComment"] {
+    background: rgba(78, 205, 196, 0.2) !important;
+    color: #4ecdc4 !important;
+    border: 1px solid rgba(78, 205, 196, 0.3) !important;
+    padding: 8px 16px !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+}
+
+body.dark-mode .project-tasks .task-files-section .create-btn:hover,
+body.dark-mode .project-tasks .task-chat-section .create-btn:hover,
+body.dark-mode .project-tasks .public-comments-section .create-btn:hover,
+body.dark-mode .project-tasks button[onclick*="uploadSelectedFiles"]:hover,
+body.dark-mode .project-tasks button[onclick*="sendChatMessage"]:hover,
+body.dark-mode .project-tasks button[onclick*="submitComment"]:hover {
+    background: rgba(78, 205, 196, 0.3) !important;
+    border-color: rgba(78, 205, 196, 0.4) !important;
+}
+
+/* Chat message bubbles */
+body.dark-mode .project-tasks .chat-message {
+    margin-bottom: 16px !important;
+    padding: 12px 16px !important;
+    border-radius: 16px !important;
+    max-width: 80% !important;
+    word-wrap: break-word !important;
+}
+
+body.dark-mode .project-tasks .chat-message.own-message {
+    background: rgba(78, 205, 196, 0.2) !important;
+    border: 1px solid rgba(78, 205, 196, 0.3) !important;
+    margin-left: auto !important;
+    margin-right: 0 !important;
+    border-bottom-right-radius: 6px !important;
+    color: #ffffff !important;
+}
+
+body.dark-mode .project-tasks .chat-message.other-message {
+    background: rgba(68, 68, 68, 0.3) !important;
+    border: 1px solid rgba(68, 68, 68, 0.5) !important;
+    margin-left: 0 !important;
+    margin-right: auto !important;
+    border-bottom-left-radius: 6px !important;
+    color: #ffffff !important;
+}
+
+body.dark-mode .project-tasks .message-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-bottom: 6px !important;
+    font-size: 12px !important;
+    opacity: 0.8 !important;
+}
+
+body.dark-mode .project-tasks .sender-name {
+    font-weight: 600 !important;
+    color: #4ecdc4 !important;
+}
+
+body.dark-mode .project-tasks .message-time {
+    color: #d0d0d0 !important;
+    font-size: 11px !important;
+}
+
+body.dark-mode .project-tasks .message-content {
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+    color: #ffffff !important;
+}

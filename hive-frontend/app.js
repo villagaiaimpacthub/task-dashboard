@@ -2440,10 +2440,45 @@ class HIVEApp {
         });
         
         window.router.register('/task/:id', (params) => {
-            console.log('Task route triggered with params:', params);
+            console.log('🚀 TASK ROUTE DEBUG START');
+            console.log('Route params:', params);
+            console.log('window.taskPageManager exists?', !!window.taskPageManager);
+            console.log('typeof window.taskPageManager:', typeof window.taskPageManager);
+            if (window.taskPageManager) {
+                console.log('taskPageManager methods:', Object.getOwnPropertyNames(window.taskPageManager.__proto__));
+            }
+            console.log('mainInterface element found?', !!document.getElementById('mainInterface'));
+            
             // Show task page
             if (params.id) {
-                taskPageManager.showTaskPage(params.id);
+                // Hide main interface first
+                const mainInterface = document.getElementById('mainInterface');
+                if (mainInterface) {
+                    mainInterface.style.display = 'none';
+                }
+                // Ensure task page manager exists
+                if (window.taskPageManager && window.taskPageManager.showTaskPage) {
+                    console.log('🎯 Calling showTaskPage with ID:', params.id);
+                    try {
+                        window.taskPageManager.showTaskPage(params.id);
+                        console.log('🎯 showTaskPage call completed');
+                        
+                        // Debug: Check what containers are visible after the call
+                        setTimeout(() => {
+                            console.log('🔍 POST-TASK-LOAD DEBUG:');
+                            console.log('  mainInterface display:', document.getElementById('mainInterface')?.style.display);
+                            console.log('  task-page-container display:', document.getElementById('task-page-container')?.style.display);
+                            console.log('  projectPageContainer display:', document.getElementById('projectPageContainer')?.style.display);
+                        }, 100);
+                    } catch (error) {
+                        console.error('🚨 Error in showTaskPage:', error);
+                    }
+                } else {
+                    console.error('TaskPageManager not available');
+                    if (window.app && window.app.showNotification) {
+                        window.app.showNotification('Error loading task page', 'error');
+                    }
+                }
             }
         });
         
@@ -2512,7 +2547,20 @@ class HIVEApp {
             console.log('Project route triggered with params:', params);
             if (params.id) {
                 console.log('Calling window.projectPage.render with ID:', params.id);
-                window.projectPage.render(params.id);
+                // Hide main interface first
+                const mainInterface = document.getElementById('mainInterface');
+                if (mainInterface) {
+                    mainInterface.style.display = 'none';
+                }
+                // Ensure project page manager exists
+                if (window.projectPage && window.projectPage.render) {
+                    window.projectPage.render(params.id);
+                } else {
+                    console.error('ProjectPage not available');
+                    if (window.app && window.app.showNotification) {
+                        window.app.showNotification('Error loading project page', 'error');
+                    }
+                }
             } else {
                 console.error('No project ID in route params');
             }

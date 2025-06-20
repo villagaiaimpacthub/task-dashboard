@@ -4,9 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HIVE - Collective Task Coordination</title>
-    <link rel="stylesheet" href="styles.css?v=20250616d">
-    <link rel="stylesheet" href="dark-theme.css">
-    <link rel="stylesheet" href="task-page-enhancements.css">
+    <link rel="stylesheet" href="styles.css?v=20250620backbuttonfix">
+    <link rel="stylesheet" href="dark-theme.css?v=20250620backbuttonfix">
+    <link rel="stylesheet" href="task-page-enhancements.css?v=20250620backbuttonfix">
+    <link rel="stylesheet" href="task-sections-override.css?v=20250620backbuttonfix">
+    
+    <!-- Apply dark mode immediately to prevent flash -->
+    <script>
+        (function() {
+            const savedMode = localStorage.getItem('darkMode');
+            if (savedMode !== 'false') {
+                document.documentElement.classList.add('dark-mode');
+                document.body.classList.add('dark-mode');
+            }
+        })();
+    </script>
 </head>
 <body>
     <!-- Login Modal -->
@@ -631,8 +643,8 @@
     <script src="websocket.js?v=20250616"></script>
     <script src="dark-mode.js?v=20250616"></script>
     <script src="router.js?v=20250616"></script>
-    <script src="task-page.js?v=20250616"></script>
-    <script src="project-page.js?v=20250616"></script>
+    <script src="task-page.js?v=20250620backbuttonfix"></script>
+    <script src="project-page.js?v=20250620backbuttonfix"></script>
     <script src="settings-page.js?v=20250616"></script>
     <script src="hierarchy-pages.js?v=20250616"></script>
     <script src="impact-page.js?v=20250616"></script>
@@ -641,6 +653,7 @@
     <script src="messages-page.js?v=20250616"></script>
     <script src="kairos-page.js?v=20250616"></script>
     <script src="telotype-page.js?v=20250616"></script>
-    <script src="app.js?v=20250616d"></script>
+    <script src="css-debug.js"></script>
+    <script src="app.js?v=20250620backbuttonfix"></script>
 </body>
 </html>

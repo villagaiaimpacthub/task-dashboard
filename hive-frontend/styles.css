@@ -1399,6 +1399,7 @@ body {
     padding: 32px;
     max-width: 1200px;
     margin: 0 auto;
+    background: #11120f;
     min-height: 100vh;
     overflow: visible;
 }
@@ -2257,11 +2258,16 @@ body {
 
 /* Public Comments Section */
 .public-comments-section {
-    background: white;
-    border: 1px solid rgba(76, 175, 80, 0.1);
+    background: rgba(68, 68, 68, 0.15);
+    border: 1px solid rgba(78, 205, 196, 0.2);
     border-radius: 16px;
     padding: 20px;
     margin-bottom: 32px;
+    color: #ffffff;
+}
+
+.public-comments-section h3 {
+    color: #ffffff;
 }
 
 .comments-container {
@@ -2455,10 +2461,16 @@ body {
 /* Chat and Files Sections */
 .task-chat-section,
 .task-files-section {
-    background: white;
-    border: 1px solid rgba(76, 175, 80, 0.1);
+    background: rgba(68, 68, 68, 0.15);
+    border: 1px solid rgba(78, 205, 196, 0.2);
     border-radius: 16px;
     padding: 20px;
+    color: #ffffff;
+}
+
+.task-chat-section h3,
+.task-files-section h3 {
+    color: #ffffff;
 }
 
 .chat-container {
@@ -4270,7 +4282,7 @@ EOF < /dev/null
     padding: 20px;
     max-width: 1200px;
     margin: 0 auto;
-    background: #faf9f7;
+    background: #11120f;
     min-height: 100vh;
 }
 
@@ -4321,12 +4333,18 @@ EOF < /dev/null
     gap: 30px;
 }
 
-.project-overview,
-.project-tasks {
+.project-overview {
     background: white;
     border-radius: 12px;
     padding: 24px;
     border: 1px solid rgba(76, 175, 80, 0.1);
+}
+
+.project-tasks {
+    background: transparent;
+    border-radius: 12px;
+    padding: 24px;
+    border: none;
 }
 
 .project-overview h3,
@@ -4441,8 +4459,14 @@ EOF < /dev/null
 }
 
 /* Dark mode support for project page */
-.dark-mode .project-page {
-    background: #121212;
+.dark-mode .project-page,
+.project-page[data-dark-mode="true"] {
+    background: #11120f !important;
+    color: #ffffff !important;
+}
+
+.dark-mode .task-page {
+    background: #11120f;
 }
 
 .dark-mode .project-overview,
@@ -4621,4 +4645,21 @@ EOF < /dev/null
 .btn-close:hover {
     background: rgba(255, 255, 255, 0.3);
     transform: translateY(-1px);
+}
+
+/* FINAL OVERRIDE - Task page sections dark mode - Added 2025-06-20 */
+/* This should override any previous styling issues */
+.task-files-section,
+.task-chat-section,
+.public-comments-section {
+    background: rgba(68, 68, 68, 0.15) !important;
+    border: 1px solid rgba(78, 205, 196, 0.2) !important;
+    color: #ffffff !important;
+    margin-bottom: 24px !important;
+}
+
+.task-files-section h3,
+.task-chat-section h3,
+.public-comments-section h3 {
+    color: #ffffff !important;
 }

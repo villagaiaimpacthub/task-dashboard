@@ -1,3 +1,29 @@
+/* FORCE DARK MODE FOR TASK PAGE SECTIONS - Higher specificity to override dark-theme.css */
+body.dark-mode .task-files-section,
+body.dark-mode .team-chat-section, 
+body.dark-mode .public-comments-section,
+body.dark-mode .task-chat-section {
+    background: rgba(68, 68, 68, 0.15) !important;
+    background-color: rgba(68, 68, 68, 0.15) !important;
+}
+
+/* Override the transparent background rule from dark-theme.css */
+body.dark-mode .project-skills.task-files-section,
+body.dark-mode .project-description.team-chat-section,
+body.dark-mode .project-skills.public-comments-section,
+body.dark-mode .project-tasks.task-files-section {
+    background: rgba(68, 68, 68, 0.15) !important;
+    background-color: rgba(68, 68, 68, 0.15) !important;
+}
+
+/* Double specificity override for stubborn cases */
+body.dark-mode div.task-files-section,
+body.dark-mode div.team-chat-section,
+body.dark-mode div.public-comments-section {
+    background: rgba(68, 68, 68, 0.15) !important;
+    background-color: rgba(68, 68, 68, 0.15) !important;
+}
+
 /* Inline Editing Styles */
 .editable-field {
     cursor: pointer;
@@ -326,4 +352,83 @@
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+/* Dark mode styling for task page sections - HIGHER SPECIFICITY OVERRIDE */
+body.dark-mode .task-files-section,
+body.dark-mode .team-chat-section,
+body.dark-mode .public-comments-section {
+    color: #ffffff !important;
+}
+
+/* Override ALL nested elements with dark mode specificity */
+body.dark-mode .task-files-section *,
+body.dark-mode .team-chat-section *,
+body.dark-mode .public-comments-section *,
+body.dark-mode .task-files-section div,
+body.dark-mode .team-chat-section div,
+body.dark-mode .public-comments-section div {
+    background-color: transparent !important;
+    background: transparent !important;
+}
+
+/* Text color for content with dark mode specificity */
+body.dark-mode .task-files-section p,
+body.dark-mode .task-files-section span,
+body.dark-mode .task-files-section div,
+body.dark-mode .team-chat-section p,
+body.dark-mode .team-chat-section span,
+body.dark-mode .team-chat-section div,
+body.dark-mode .public-comments-section p,
+body.dark-mode .public-comments-section span,
+body.dark-mode .public-comments-section div {
+    color: #d0d0d0 !important;
+}
+
+/* Headers with dark mode specificity */
+body.dark-mode .task-files-section h3,
+body.dark-mode .team-chat-section h3,
+body.dark-mode .public-comments-section h3 {
+    color: #ffffff !important;
+}
+
+/* Specific overrides for problematic classes */
+body.dark-mode .no-tasks,
+body.dark-mode .no-messages,
+body.dark-mode .no-comments,
+body.dark-mode .chat-placeholder,
+body.dark-mode .files-placeholder {
+    background: transparent !important;
+    background-color: transparent !important;
+    color: #d0d0d0 !important;
+}
+
+/* File list container with dark mode specificity */
+body.dark-mode #taskFilesList,
+body.dark-mode .files-list {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+/* Chat and comments containers with dark mode specificity */
+body.dark-mode #chatMessages,
+body.dark-mode #commentsList,
+body.dark-mode .chat-messages,
+body.dark-mode .comments-list {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+/* Dark mode for file items */
+body.dark-mode .file-item {
+    background: rgba(68, 68, 68, 0.15) !important;
+    border: 1px solid rgba(78, 205, 196, 0.2) !important;
+    color: #ffffff !important;
+}
+
+/* Ensure containers don't have white background */
+body.dark-mode .chat-container,
+body.dark-mode .comments-container {
+    background: rgba(68, 68, 68, 0.1) !important;
+    background-color: rgba(68, 68, 68, 0.1) !important;
 }

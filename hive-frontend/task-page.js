@@ -5,7 +5,6 @@ class TaskPageManager {
         this.currentTask = null;
         this.milestones = [];
         this.chatMessages = [];
-        this.publicComments = [];
         this.projectContext = null; // Store project ID for back navigation
     }
 
@@ -17,21 +16,47 @@ class TaskPageManager {
 
     // Show task page
     async showTaskPage(taskId) {
+        console.log('📋 TaskPageManager.showTaskPage called with ID:', taskId);
         try {
             // Hide the dashboard layout immediately to prevent flash
             const mainContainer = document.querySelector('.main-container');
             if (mainContainer) {
+                console.log('📋 Hiding main container');
                 mainContainer.style.display = 'none';
+            } else {
+                console.log('📋 Main container not found');
+            }
+            
+            // Hide project page if it exists
+            const projectContainer = document.getElementById('projectPageContainer');
+            if (projectContainer) {
+                console.log('📋 Hiding project container');
+                projectContainer.style.display = 'none';
             }
             
             // Show loading state in task container
             let taskContainer = document.getElementById('task-page-container');
             if (!taskContainer) {
+                console.log('📋 Creating new task container');
                 taskContainer = document.createElement('div');
                 taskContainer.id = 'task-page-container';
                 document.body.appendChild(taskContainer);
+                console.log('📋 Task container appended to body');
+            } else {
+                console.log('📋 Using existing task container');
             }
             taskContainer.style.display = 'block';
+            taskContainer.style.position = 'fixed';
+            taskContainer.style.top = '0';
+            taskContainer.style.left = '0';
+            taskContainer.style.width = '100%';
+            taskContainer.style.height = '100%';
+            taskContainer.style.zIndex = '9999';
+            taskContainer.style.backgroundColor = '#11120f';
+            taskContainer.style.background = '#11120f';
+            taskContainer.style.color = '#ffffff';
+            console.log('📋 Task container display set to block with full viewport styles');
+            console.log('📋 Task container actual display:', taskContainer.style.display);
             taskContainer.innerHTML = `
                 <div style="
                     display: flex; 
@@ -65,6 +90,14 @@ class TaskPageManager {
             // Enable scrolling on body when showing task page
             document.body.style.overflow = 'auto';
             
+            // Ensure dark mode classes are maintained on task container
+            const isDarkMode = localStorage.getItem('darkMode') !== 'false';
+            if (isDarkMode) {
+                document.documentElement.classList.add('dark-mode');
+                document.body.classList.add('dark-mode');
+                taskContainer.classList.add('dark-mode');
+            }
+            
             // Load task data
             this.currentTask = await api.getTask(taskId);
             
@@ -89,8 +122,6 @@ class TaskPageManager {
             // Load existing chat messages
             await this.loadChatMessages(taskId);
 
-            // Load public comments
-            await this.loadPublicComments(taskId);
 
             // Render the task page
             this.renderTaskPage();
@@ -188,11 +219,16 @@ class TaskPageManager {
         document.title = `${task.title} - HIVE Task`;
         
         const taskPageHTML = `
-            <div class="task-page">
+            <div class="task-page dark-mode" style="background: #11120f !important; color: #ffffff !important; min-height: 100vh !important;">
                 <!-- Task Header -->
                 <div class="project-header">
                     <button onclick="taskPageManager.goBack()" class="back-btn">← Back</button>
                     <div class="project-title-section">
+                        <div class="project-breadcrumb" style="margin-bottom: 8px; font-size: 14px; color: #666;">
+                            <span onclick="taskPageManager.goToProject()" style="color: #4ecdc4; cursor: pointer; text-decoration: underline;">${this.getProjectName()}</span>
+                            <span style="margin: 0 8px; color: #999;">→</span>
+                            <span style="color: #999;">Task</span>
+                        </div>
                         <h1 class="editable-field" onclick="taskPageManager.makeEditable(this, 'title')" title="Click to edit title">${task.title}</h1>
                         <div class="project-meta">
                             <span class="priority priority-${task.priority} editable-field" onclick="taskPageManager.makeEditable(this, 'priority')" title="Click to edit priority">${task.priority}</span>
@@ -258,55 +294,14 @@ class TaskPageManager {
                             ${this.renderMilestones()}
                         </div>
 
-                        <div class="project-skills">
-                            <h3>Public Comments</h3>
-                            <div class="comments-container" id="publicComments">
-                                <div class="comments-list" id="commentsList">
-                                    <!-- Comments will be loaded here -->
-                                </div>
-                                <div class="comment-input-container">
-                                    <div class="comment-input-wrapper">
-                                        <textarea id="commentInput" placeholder="Share your thoughts, feedback, or suggestions..." 
-                                                  rows="3" onkeydown="taskPageManager.handleCommentKeyPress(event)"
-                                                  style="width: 100%; padding: 10px; border: 1px solid rgba(76, 175, 80, 0.2); border-radius: 8px; font-size: 14px; resize: vertical;"></textarea>
-                                        <button class="create-btn" onclick="taskPageManager.submitComment()" style="margin-top: 8px;">
-                                            💬 Comment
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Right Column: Task Info and Communication -->
-                    <div class="project-overview" style="background: transparent !important;">
-                        <div class="project-description" style="margin-bottom: 24px;">
-                            <h3 style="margin-bottom: 16px;">Description</h3>
-                            <p class="editable-field" onclick="taskPageManager.makeEditable(this, 'description')" title="Click to edit description" style="line-height: 1.6; color: #666;">${task.description || 'No description provided'}</p>
-                        </div>
-
-                        <div class="project-details" style="margin-bottom: 24px;">
-                            <h3 style="margin-bottom: 16px;">Task Details</h3>
-                            <div class="details-grid" style="gap: 16px;">
-                                ${this.renderTaskMetadata()}
-                            </div>
-                        </div>
-
-                        <div class="project-skills" style="margin-bottom: 24px;">
-                            <h3 style="margin-bottom: 16px;">Required Skills</h3>
-                            <div class="skills-container" style="gap: 8px;">
-                                ${this.renderRequiredSkills()}
-                            </div>
-                        </div>
-
-                        <div class="project-skills" style="background: transparent !important;">
+                        <!-- Task Files section -->
+                        <div class="task-files-section">
                             <div class="tasks-header">
                                 <h3>Task Files</h3>
                                 <button class="create-btn" onclick="taskPageManager.showFileUpload()">
                                     📎 Upload File
                                 </button>
                             </div>
-                            
                             <div class="file-upload-form" id="fileUploadForm" style="display: none; background: transparent !important;">
                                 <div style="background: rgba(68, 68, 68, 0.15) !important; border-radius: 12px; padding: 20px; border: 1px solid rgba(68, 68, 68, 0.3); margin-bottom: 16px;">
                                     <div class="upload-area" onclick="document.getElementById('fileInput').click()" 
@@ -333,23 +328,23 @@ class TaskPageManager {
                                     </div>
                                 </div>
                             </div>
-                            
-                            <div class="files-list" id="taskFilesList">
+                            <div class="files-list" id="taskFilesList" style="background: transparent !important; background-color: transparent !important;">
                                 ${this.renderTaskFiles()}
                             </div>
                         </div>
 
-                        <div class="project-description">
+                        <!-- Team Chat section -->
+                        <div class="task-chat-section">
                             <h3>Team Chat</h3>
-                            <div class="chat-container" id="taskChat" style="background: rgba(76, 175, 80, 0.05); border-radius: 8px; padding: 16px;">
-                                <div class="chat-messages" id="chatMessages" style="max-height: 300px; overflow-y: auto; margin-bottom: 16px;">
+                            <div class="chat-container" id="taskChat" style="background: rgba(68, 68, 68, 0.1); border-radius: 8px; padding: 16px;">
+                                <div class="chat-messages" id="chatMessages" style="max-height: 300px; overflow-y: auto; margin-bottom: 16px; background: transparent !important; background-color: transparent !important;">
                                     <!-- Chat messages will be loaded here -->
                                 </div>
                                 <div class="chat-input-container">
                                     <div class="chat-input-wrapper" style="display: flex; gap: 8px;">
                                         <input type="text" id="chatInput" placeholder="Type your message..." 
                                                onkeypress="taskPageManager.handleChatKeyPress(event)"
-                                               style="flex: 1; padding: 10px; border: 1px solid rgba(76, 175, 80, 0.2); border-radius: 8px;">
+                                               style="flex: 1; padding: 10px; border: 1px solid rgba(78, 205, 196, 0.3); border-radius: 8px; background: rgba(68, 68, 68, 0.1); color: #ffffff;">
                                         <button class="create-btn" onclick="taskPageManager.sendChatMessage()">
                                             📤 Send
                                         </button>
@@ -357,6 +352,28 @@ class TaskPageManager {
                                 </div>
                             </div>
                         </div>
+
+                    </div>
+
+                    <!-- Right Column: Only Description, Task Details, Required Skills -->
+                    <div class="project-overview" style="background: transparent !important;">
+                        <div class="project-description" style="margin-bottom: 24px;">
+                            <h3 style="margin-bottom: 16px;">Description</h3>
+                            <p class="editable-field" onclick="taskPageManager.makeEditable(this, 'description')" title="Click to edit description" style="line-height: 1.6; color: #666;">${task.description || 'No description provided'}</p>
+                        </div>
+                        <div class="project-details" style="margin-bottom: 24px;">
+                            <h3 style="margin-bottom: 16px;">Task Details</h3>
+                            <div class="details-grid" style="gap: 16px;">
+                                ${this.renderTaskMetadata()}
+                            </div>
+                        </div>
+                        <div class="project-skills" style="margin-bottom: 24px;">
+                            <h3 style="margin-bottom: 16px;">Required Skills</h3>
+                            <div class="skills-container" style="gap: 8px;">
+                                ${this.renderRequiredSkills()}
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -365,6 +382,11 @@ class TaskPageManager {
         // Get the existing task container and update it with the full content
         const taskContainer = document.getElementById('task-page-container');
         taskContainer.innerHTML = taskPageHTML;
+        
+        // Ensure container maintains dark styling for direct URL access
+        taskContainer.style.background = '#11120f';
+        taskContainer.style.color = '#ffffff';
+        taskContainer.classList.add('dark-mode');
 
         // Setup event listeners
         this.setupTaskPageEventListeners();
@@ -389,10 +411,10 @@ class TaskPageManager {
                 <strong>⏰ Due Date:</strong> ${formatDate(task.due_date)}
             </div>
             <div class="detail-item">
-                <strong>👑 Owner:</strong> ${task.owner_id || 'Unassigned'}
+                <strong>👑 Owner:</strong> ${this.getUserDisplayName(task.owner_id) || 'Unassigned'}
             </div>
             <div class="detail-item">
-                <strong>👤 Assignee:</strong> ${task.assignee_id || 'Available'}
+                <strong>👤 Assignee:</strong> ${this.getUserDisplayName(task.assignee_id) || 'Available'}
             </div>
             <!-- Task Assignment Actions Row -->
             <div style="grid-column: 1 / -1; margin-top: 16px;">
@@ -468,7 +490,6 @@ class TaskPageManager {
                 // Owner of available task - can't claim own task, but can assign to others
                 actions += `
                     <div style="margin-top: 8px; padding: 12px; background: rgba(33, 150, 243, 0.1); border-radius: 8px;">
-                        <span style="color: #2196f3; font-size: 14px;">👑 You own this task</span>
                         <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
                             <button onclick="console.log('Assign button clicked'); try { window.taskPageManager.showAssignTaskModal(); } catch(e) { console.error('Assignment modal error:', e); alert('Error: ' + e.message); }" style="
                                 background: rgba(33, 150, 243, 0.2); 
@@ -515,12 +536,7 @@ class TaskPageManager {
         }
         
         if (isOwner && task.status !== 'completed') {
-            actions += `
-                <div style="margin-top: 8px; padding: 12px; background: rgba(33, 150, 243, 0.1); border-radius: 8px;">
-                    <span style="color: #2196f3; font-size: 14px;">👑 You own this task</span>
-                    <br><small style="color: #999;">Manage assignments and status from the project page</small>
-                </div>
-            `;
+            // Owner management actions removed as requested
         }
         
         if (isCurrentUserAssigned && task.status === 'in_progress') {
@@ -1723,13 +1739,62 @@ class TaskPageManager {
         });
     }
 
+    // Get project name for breadcrumb
+    getProjectName() {
+        // Try to get project name from stored project data
+        if (this.currentTask?.project_title) {
+            return this.currentTask.project_title;
+        }
+        
+        // Fallback to stored project data
+        const projectId = this.projectContext || sessionStorage.getItem('currentProjectId');
+        if (projectId) {
+            const storedProject = sessionStorage.getItem(`project_${projectId}`);
+            if (storedProject) {
+                try {
+                    const project = JSON.parse(storedProject);
+                    return project.title;
+                } catch (e) {
+                    console.error('Error parsing stored project:', e);
+                }
+            }
+        }
+        
+        return 'Unknown Project';
+    }
+
+    // Navigate to parent project
+    goToProject() {
+        const projectId = this.projectContext || sessionStorage.getItem('currentProjectId');
+        if (projectId && window.router) {
+            window.router.navigate(`/project/${projectId}`);
+        } else {
+            console.error('No project context available for navigation');
+        }
+    }
+
+    // Get user display name with @ prefix
+    getUserDisplayName(userId) {
+        if (!userId) return null;
+        
+        // Check if it's the current user
+        if (this.app?.currentUser?.id === userId) {
+            const email = this.app.currentUser.email;
+            const username = email ? email.split('@')[0] : 'You';
+            return `@${username} (You)`;
+        }
+        
+        // For other users, try to get their info (this would come from API in real implementation)
+        // For now, create a readable username from the ID
+        const shortId = userId.substring(0, 8);
+        return `@user_${shortId}`;
+    }
+
     // Setup event listeners for task page
     setupTaskPageEventListeners() {
         // Load and render chat messages after page is ready
         this.renderChatMessages();
         
-        // Load and render public comments after page is ready
-        this.renderPublicComments();
         
         // Auto-refresh disabled to reduce API calls while endpoints are being developed
         // Set up auto-refresh for chat (every 5 seconds) - DISABLED
@@ -1775,8 +1840,8 @@ class TaskPageManager {
 
         if (this.chatMessages.length === 0) {
             chatContainer.innerHTML = `
-                <div class="no-messages">
-                    <p>No messages yet. Start the conversation!</p>
+                <div class="no-messages" style="text-align: center; padding: 40px; color: #d0d0d0; background: transparent;">
+                    <p style="margin: 0; color: #d0d0d0;">No messages yet. Start the conversation!</p>
                 </div>
             `;
             return;
@@ -1792,7 +1857,7 @@ class TaskPageManager {
             return `
                 <div class="chat-message ${isCurrentUser ? 'own-message' : 'other-message'}">
                     <div class="message-header">
-                        <span class="sender-name">${message.sender_email}</span>
+                        <span class="sender-name">${this.getUserDisplayName(message.sender_id) || message.sender_email}</span>
                         <span class="message-time">${timestamp}</span>
                     </div>
                     <div class="message-content">
@@ -1885,139 +1950,6 @@ class TaskPageManager {
         }
     }
 
-    // Load public comments for task
-    async loadPublicComments(taskId) {
-        try {
-            this.publicComments = await api.getTaskComments(taskId);
-            this.renderPublicComments();
-        } catch (error) {
-            console.error('Failed to load public comments:', error);
-        }
-    }
-
-    // Render public comments
-    renderPublicComments() {
-        const commentsContainer = document.getElementById('commentsList');
-        if (!commentsContainer) return;
-
-        if (this.publicComments.length === 0) {
-            commentsContainer.innerHTML = `
-                <div class="no-comments">
-                    <p>No comments yet. Be the first to share your thoughts!</p>
-                </div>
-            `;
-            return;
-        }
-
-        const commentsHtml = this.publicComments.map(comment => {
-            const timestamp = new Date(comment.created_at).toLocaleDateString([], {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-            
-            return `
-                <div class="public-comment">
-                    <div class="comment-header">
-                        <div class="comment-author">
-                            <span class="author-avatar">${comment.author_email[0].toUpperCase()}</span>
-                            <div class="author-info">
-                                <span class="author-name">${comment.author_email}</span>
-                                <span class="author-role">${comment.author_role}</span>
-                            </div>
-                        </div>
-                        <span class="comment-time">${timestamp}</span>
-                    </div>
-                    <div class="comment-content">
-                        ${this.formatCommentContent(comment.content)}
-                    </div>
-                </div>
-            `;
-        }).join('');
-
-        commentsContainer.innerHTML = commentsHtml;
-    }
-
-    // Format comment content (similar to chat but with more features)
-    formatCommentContent(content) {
-        return content
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*(.*?)\*/g, '<em>$1</em>')
-            .replace(/`(.*?)`/g, '<code>$1</code>')
-            .replace(/\n/g, '<br>')
-            // Add support for simple links
-            .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
-    }
-
-    // Handle Ctrl+Enter or Shift+Enter in comment textarea
-    handleCommentKeyPress(event) {
-        if ((event.ctrlKey || event.shiftKey) && event.key === 'Enter') {
-            event.preventDefault();
-            this.submitComment();
-        }
-    }
-
-    // Submit public comment
-    async submitComment() {
-        const commentInput = document.getElementById('commentInput');
-        if (!commentInput) return;
-
-        const content = commentInput.value.trim();
-        if (!content) {
-            this.showNotification('Please enter a comment before submitting.', 'error');
-            return;
-        }
-
-        try {
-            const commentData = {
-                content: content,
-                task_id: this.currentTask.id
-            };
-
-            const response = await api.createComment(commentData);
-
-            if (response.id) {
-                this.publicComments.push(response);
-                this.renderPublicComments();
-                commentInput.value = '';
-                
-                // Show success feedback
-                this.showCommentSubmittedFeedback();
-                
-                // Scroll to the new comment
-                setTimeout(() => {
-                    const commentsContainer = document.getElementById('commentsList');
-                    if (commentsContainer) {
-                        commentsContainer.scrollTop = commentsContainer.scrollHeight;
-                    }
-                }, 100);
-            } else {
-                throw new Error('Failed to submit comment');
-            }
-        } catch (error) {
-            console.error('Failed to submit comment:', error);
-            this.showNotification('Failed to submit comment. Please try again.', 'error');
-        }
-    }
-
-    // Show brief feedback when comment is submitted
-    showCommentSubmittedFeedback() {
-        const commentBtn = document.querySelector('.comment-btn');
-        if (commentBtn) {
-            const originalText = commentBtn.textContent;
-            commentBtn.textContent = '✅ Posted';
-            commentBtn.style.background = '#4caf50';
-            commentBtn.disabled = true;
-            
-            setTimeout(() => {
-                commentBtn.textContent = originalText;
-                commentBtn.style.background = '';
-                commentBtn.disabled = false;
-            }, 2000);
-        }
-    }
 
     // Toggle milestone completion
     async toggleMilestone(milestoneId) {
@@ -2699,24 +2631,70 @@ class TaskPageManager {
         
         console.log('DEBUG: Final projectId =', projectId);
         
+        // Hide task page first
+        this.hideTaskPage();
+        
         // Navigate back to project if we found one, otherwise go to dashboard
         if (projectId) {
             console.log('Navigating back to project:', projectId);
-            // Clear the sessionStorage since we're using it
-            sessionStorage.removeItem('currentProjectId');
-            if (window.router) {
-                window.router.navigate(`/project/${projectId}`);
+            // Don't clear sessionStorage - keep it for future navigation
+            if (window.router && window.router.navigate) {
+                try {
+                    window.router.navigate(`/project/${projectId}`);
+                } catch (error) {
+                    console.error('Router navigation failed:', error);
+                    // Fallback to direct project page
+                    if (window.projectPage && window.projectPage.render) {
+                        window.projectPage.render(projectId);
+                    }
+                }
             } else {
-                console.error('Router not available');
+                console.error('Router not available, using fallback');
+                // Fallback to direct project page
+                if (window.projectPage && window.projectPage.render) {
+                    window.projectPage.render(projectId);
+                } else {
+                    console.error('No navigation method available');
+                }
             }
         } else {
             console.log('No project context found, navigating to dashboard');
-            if (window.router) {
-                window.router.navigate('/');
+            if (window.router && window.router.navigate) {
+                try {
+                    window.router.navigate('/');
+                } catch (error) {
+                    console.error('Router navigation to dashboard failed:', error);
+                    // Fallback to showing main interface
+                    this.showMainInterface();
+                }
             } else {
-                console.error('Router not available');
+                console.error('Router not available, using fallback');
+                // Fallback to showing main interface
+                this.showMainInterface();
             }
         }
+    }
+    
+    // Helper method to hide task page
+    hideTaskPage() {
+        const taskContainer = document.getElementById('task-page-container');
+        if (taskContainer) {
+            taskContainer.style.display = 'none';
+        }
+    }
+    
+    // Helper method to show main interface
+    showMainInterface() {
+        const mainInterface = document.getElementById('mainInterface');
+        if (mainInterface) {
+            mainInterface.style.display = 'grid';
+        }
+        const taskContainer = document.getElementById('task-page-container');
+        if (taskContainer) {
+            taskContainer.style.display = 'none';
+        }
+        document.body.style.overflow = 'hidden';
+        document.title = 'HIVE - Task Management System';
     }
 
     // Task Assignment and Management Functions
